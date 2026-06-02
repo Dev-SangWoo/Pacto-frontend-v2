@@ -8,11 +8,17 @@
     "dev:blogger": "pnpm --filter @pacto/blogger dev",
     "dev:dashboard": "pnpm --filter @pacto/dashboard dev",
     "build": "pnpm --recursive --filter \"./apps/*\" build",
-    "lint": "pnpm --recursive --if-present lint",
-    "format": "pnpm --recursive --if-present format",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "typecheck": "pnpm --recursive --if-present typecheck"
   },
   "devDependencies": {
-    "typescript": "^6.0.3"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.1"
   }
 }

@@ -34,7 +34,7 @@ QA 전 통합 확인
 main 반영 전 검증
 ```
 
-## 2.3 feature/*
+## 2.3 feature/\*
 
 기능 단위 작업 브랜치다.
 
@@ -48,7 +48,7 @@ feature/campaign-management
 feature/wallet
 ```
 
-## 2.4 docs/*
+## 2.4 docs/\*
 
 문서 작업 브랜치다.
 
@@ -60,7 +60,7 @@ docs/api-strategy
 docs/ui-ux-spec
 ```
 
-## 2.5 chore/*
+## 2.5 chore/\*
 
 설정, 빌드, 도구 관련 작업 브랜치다.
 
