@@ -1,0 +1,16 @@
+{
+  "name": "pacto-frontend-v2",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:blogger": "pnpm --filter @pacto/blogger dev",
+    "dev:dashboard": "pnpm --filter @pacto/dashboard dev",
+    "build": "pnpm --recursive --filter \"./apps/*\" build",
+    "lint": "pnpm --recursive --if-present lint",
+    "format": "pnpm --recursive --if-present format",
+    "typecheck": "pnpm --recursive --if-present typecheck"
+  },
+  "devDependencies": {}
+}
