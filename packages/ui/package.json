@@ -1,0 +1,14 @@
+{
+  "name": "@pacto/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "echo \"@pacto/ui lint is not configured yet\"",
+    "format": "echo \"@pacto/ui format is not configured yet\"",
+    "typecheck": "echo \"@pacto/ui typecheck is not configured yet\""
+  }
+}

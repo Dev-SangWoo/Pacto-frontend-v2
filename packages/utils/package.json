@@ -1,0 +1,14 @@
+{
+  "name": "@pacto/utils",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "echo \"@pacto/utils lint is not configured yet\"",
+    "format": "echo \"@pacto/utils format is not configured yet\"",
+    "typecheck": "echo \"@pacto/utils typecheck is not configured yet\""
+  }
+}

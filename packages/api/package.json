@@ -1,0 +1,14 @@
+{
+  "name": "@pacto/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "echo \"@pacto/api lint is not configured yet\"",
+    "format": "echo \"@pacto/api format is not configured yet\"",
+    "typecheck": "echo \"@pacto/api typecheck is not configured yet\""
+  }
+}
