@@ -1,10 +1,17 @@
 node_modules/
+**/node_modules/
 .next/
+**/.next/
 out/
+**/out/
 dist/
+**/dist/
 build/
+**/build/
 coverage/
+**/coverage/
 .vercel/
 .local/
 *.tsbuildinfo
+**/*.tsbuildinfo
 pnpm-lock.yaml

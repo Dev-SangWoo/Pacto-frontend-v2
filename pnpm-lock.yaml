@@ -81,6 +81,30 @@ importers:
         specifier: ^19.2.7
         version: 19.2.7(react@19.2.7)
 
+  apps/dashboard:
+    dependencies:
+      '@pacto/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@pacto/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@pacto/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@pacto/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      next:
+        specifier: ^16.2.7
+        version: 16.2.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: ^19.2.7
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.2.7
+        version: 19.2.7(react@19.2.7)
+
   packages/api:
     dependencies:
       '@pacto/types':
