@@ -21,46 +21,46 @@
 
 ## 3. 공통 UI 컴포넌트
 
-| Component | 목적 |
-| --- | --- |
-| Button | 주요 액션 버튼 |
-| IconButton | 아이콘 기반 액션 버튼 |
-| Input | 단일 행 텍스트 입력 |
-| Textarea | 긴 텍스트 입력 |
-| Select | 단일 선택 입력 |
-| Checkbox | 다중 선택 또는 동의 |
-| Switch | on/off 설정 |
-| Modal | 확인/입력 모달 |
-| Drawer | 모바일 또는 보조 패널 |
-| Tabs | 상태 또는 섹션 전환 |
-| Badge | 상태/라벨 표시 |
-| Toast | 전역 피드백 |
-| Table | 대시보드 목록 |
-| Pagination | 목록 페이지 이동 |
-| DatePicker | 날짜 선택 |
-| EmptyState | 데이터 없음 |
-| LoadingState | 로딩 표시 |
-| ErrorState | 에러 표시 |
+| Component    | 목적                  |
+| ------------ | --------------------- |
+| Button       | 주요 액션 버튼        |
+| IconButton   | 아이콘 기반 액션 버튼 |
+| Input        | 단일 행 텍스트 입력   |
+| Textarea     | 긴 텍스트 입력        |
+| Select       | 단일 선택 입력        |
+| Checkbox     | 다중 선택 또는 동의   |
+| Switch       | on/off 설정           |
+| Modal        | 확인/입력 모달        |
+| Drawer       | 모바일 또는 보조 패널 |
+| Tabs         | 상태 또는 섹션 전환   |
+| Badge        | 상태/라벨 표시        |
+| Toast        | 전역 피드백           |
+| Table        | 대시보드 목록         |
+| Pagination   | 목록 페이지 이동      |
+| DatePicker   | 날짜 선택             |
+| EmptyState   | 데이터 없음           |
+| LoadingState | 로딩 표시             |
+| ErrorState   | 에러 표시             |
 
 ---
 
 ## 4. 도메인 컴포넌트
 
-| Component | 목적 |
-| --- | --- |
-| CampaignCard | 블로거 앱의 캠페인 요약 카드 |
-| CampaignStatusBadge | 캠페인 상태 표시 |
-| CampaignSummary | 캠페인 핵심 정보 요약 |
-| ApplicationStatusBadge | 지원 상태 표시 |
-| MissionStatusBadge | 미션 상태 표시 |
-| SettlementStatusBadge | 정산 상태 표시 |
-| WalletBalance | 출금 가능/잠긴 금액 표시 |
-| WithdrawalForm | 출금 신청 입력 폼 |
-| ApplicantTable | 지원자 목록 테이블 |
-| MissionReviewPanel | 미션 검수 패널 |
-| EscrowLedgerTable | 정산 원장 테이블 |
-| PaymentSummary | 결제 금액 요약 |
-| ReportSummary | 캠페인 리포트 요약 |
+| Component              | 목적                         |
+| ---------------------- | ---------------------------- |
+| CampaignCard           | 블로거 앱의 캠페인 요약 카드 |
+| CampaignStatusBadge    | 캠페인 상태 표시             |
+| CampaignSummary        | 캠페인 핵심 정보 요약        |
+| ApplicationStatusBadge | 지원 상태 표시               |
+| MissionStatusBadge     | 미션 상태 표시               |
+| SettlementStatusBadge  | 정산 상태 표시               |
+| WalletBalance          | 출금 가능/잠긴 금액 표시     |
+| WithdrawalForm         | 출금 신청 입력 폼            |
+| ApplicantTable         | 지원자 목록 테이블           |
+| MissionReviewPanel     | 미션 검수 패널               |
+| EscrowLedgerTable      | 정산 원장 테이블             |
+| PaymentSummary         | 결제 금액 요약               |
+| ReportSummary          | 캠페인 리포트 요약           |
 
 ---
 

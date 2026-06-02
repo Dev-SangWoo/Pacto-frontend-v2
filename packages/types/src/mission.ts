@@ -1,9 +1,4 @@
-export type MissionStatus =
-  | "not_started"
-  | "in_progress"
-  | "submitted"
-  | "approved"
-  | "rejected";
+export type MissionStatus = "not_started" | "in_progress" | "submitted" | "approved" | "rejected";
 
 export type Mission = {
   id: number;

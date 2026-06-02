@@ -1,10 +1,4 @@
-export type CampaignStatus =
-  | "draft"
-  | "open"
-  | "full"
-  | "closed"
-  | "completed"
-  | "cancelled";
+export type CampaignStatus = "draft" | "open" | "full" | "closed" | "completed" | "cancelled";
 
 export type Campaign = {
   id: number;
