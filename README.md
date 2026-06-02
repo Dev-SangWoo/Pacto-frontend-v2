@@ -74,25 +74,42 @@ MVP는 다음 흐름을 끝까지 시연 가능하게 만드는 것을 목표로
 
 ---
 
-## 개발 예정 기술 스택
+## 기술 스택
+
+| 영역 | 기술 |
+| --- | --- |
+| Framework | Next.js App Router |
+| Language | TypeScript |
+| Package Manager | pnpm workspace |
+| Styling | Tailwind CSS |
+| UI Primitive | Radix UI |
+| Icons | lucide-react |
+| Server/Client Data | TanStack Query |
+| Form | React Hook Form |
+| Validation | Zod |
+| Mock API | MSW |
+| Unit Test | Vitest |
+| Component Test | Testing Library |
+| E2E Test | Playwright |
+| Lint/Format | ESLint, Prettier |
+| Git Hooks | Husky, lint-staged, commitlint |
+| CI | GitHub Actions |
+| Deploy | Vercel |
+
+테스트는 모든 화면에 무리하게 붙이기보다, Pacto의 핵심 도메인 리스크가 있는 영역에 우선 적용합니다.
 
 ```txt
-Next.js
-TypeScript
-React
-Tailwind CSS
-TanStack Query 또는 SWR
-React Hook Form
-Zod
-ESLint
-Prettier
-Husky
-lint-staged
-commitlint
-Vercel
+상태 매핑
+권한 정책
+금액 포맷
+API adapter
+폼 검증 schema
+캠페인 지원 버튼 활성화 규칙
+미션 제출 버튼 활성화 규칙
+지갑 available/locked 표시
 ```
 
-실제 기술 스택은 프로젝트 초기 세팅 시점에 확정합니다.
+개발/테스트 기본값은 MSW 기반 mock API로 두고, 실제 API는 별도 모드에서 smoke test로 검증합니다.
 
 ---
 
