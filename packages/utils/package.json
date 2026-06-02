@@ -10,5 +10,8 @@
     "lint": "echo \"@pacto/utils lint is not configured yet\"",
     "format": "echo \"@pacto/utils format is not configured yet\"",
     "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@pacto/types": "workspace:^"
   }
 }
