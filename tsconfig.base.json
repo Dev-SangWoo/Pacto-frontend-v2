@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@pacto/ui": ["packages/ui/src/index.ts"],
+      "@pacto/api": ["packages/api/src/index.ts"],
+      "@pacto/types": ["packages/types/src/index.ts"],
+      "@pacto/utils": ["packages/utils/src/index.ts"]
+    }
+  }
+}
