@@ -1,0 +1,23 @@
+{
+  "name": "@pacto/blogger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier . --write",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@pacto/api": "workspace:*",
+    "@pacto/types": "workspace:*",
+    "@pacto/ui": "workspace:*",
+    "@pacto/utils": "workspace:*",
+    "next": "^16.2.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  }
+}
