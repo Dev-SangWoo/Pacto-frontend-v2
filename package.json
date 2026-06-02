@@ -12,5 +12,7 @@
     "format": "pnpm --recursive --if-present format",
     "typecheck": "pnpm --recursive --if-present typecheck"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
 }

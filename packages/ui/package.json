@@ -9,6 +9,6 @@
   "scripts": {
     "lint": "echo \"@pacto/ui lint is not configured yet\"",
     "format": "echo \"@pacto/ui format is not configured yet\"",
-    "typecheck": "echo \"@pacto/ui typecheck is not configured yet\""
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   }
 }
