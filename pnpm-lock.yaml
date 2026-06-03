@@ -110,6 +110,9 @@ importers:
       '@pacto/types':
         specifier: workspace:^
         version: link:../types
+      '@pacto/utils':
+        specifier: workspace:^
+        version: link:../utils
 
   packages/types: {}
 
