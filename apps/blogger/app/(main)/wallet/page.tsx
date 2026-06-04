@@ -1,8 +1,11 @@
 import { getMyWallet } from "@pacto/api";
 import { formatKoreanDate, formatPoint } from "@pacto/utils";
 
+import { getBloggerSession } from "../../_lib/session";
+
 export default async function WalletPage() {
-  const wallet = await getMyWallet();
+  const session = await getBloggerSession();
+  const wallet = await getMyWallet(session.accessToken);
 
   return (
     <section className="screen-stack detail-screen" aria-labelledby="wallet-title">
@@ -18,7 +21,7 @@ export default async function WalletPage() {
 
       <section className="info-list" aria-label="지갑 상세">
         <div>
-          <span>잠긴 금액</span>
+          <span>에스크로 잠긴 금액</span>
           <strong>{formatPoint(wallet.lockedBalance)}</strong>
         </div>
         <div>
@@ -41,12 +44,12 @@ export default async function WalletPage() {
         <div>
           <span>2</span>
           <strong>검수 진행</strong>
-          <p>잠긴 금액으로 보여요.</p>
+          <p>승인 전까지 잠긴 금액으로 보여요.</p>
         </div>
         <div>
           <span>3</span>
           <strong>출금 신청</strong>
-          <p>승인 후 신청해요.</p>
+          <p>승인 후 계좌로 받을 수 있어요.</p>
         </div>
       </section>
 
@@ -56,7 +59,7 @@ export default async function WalletPage() {
           href="/withdrawals"
           aria-disabled={wallet.availableBalance === 0}
         >
-          출금 신청 화면으로 가기
+          출금 신청하기
         </a>
       </div>
     </section>

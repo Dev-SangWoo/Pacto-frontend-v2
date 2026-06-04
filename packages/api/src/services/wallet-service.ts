@@ -4,15 +4,21 @@ import { adaptWallet } from "../adapters/wallet-adapter";
 import type { WalletResponse, WithdrawalResponse } from "../adapters/wallet-adapter";
 import { adaptWithdrawal } from "../adapters/wallet-adapter";
 import { isMockFallbackDisabled } from "../client/env";
-import { apiRequest } from "../client/http-client";
+import { apiRequest, unwrapCommonResponse } from "../client/http-client";
+import type { CommonResponse } from "../client/http-client";
 import { mockWallet } from "../mocks/data";
 
-export async function getMyWallet(): Promise<Wallet> {
+export async function getMyWallet(token?: string): Promise<Wallet> {
   return withMockFallback(
     async () => {
-      const response = await apiRequest<WalletResponse>("/api/v1/wallets/me");
+      const response = await apiRequest<CommonResponse<WalletResponse> | WalletResponse>(
+        "/api/v1/wallets/me",
+        {
+          token,
+        },
+      );
 
-      return adaptWallet(response);
+      return adaptWallet(unwrapCommonResponse<WalletResponse>(response));
     },
     () =>
       adaptWallet({
@@ -31,13 +37,17 @@ export type WithdrawPayload = {
   bankName: string;
 };
 
-export async function requestWithdraw(payload: WithdrawPayload) {
-  const response = await apiRequest<WithdrawalResponse>("/api/v1/wallets/withdraw", {
-    body: payload,
-    method: "POST",
-  });
+export async function requestWithdraw(payload: WithdrawPayload, token?: string) {
+  const response = await apiRequest<CommonResponse<WithdrawalResponse> | WithdrawalResponse>(
+    "/api/v1/wallets/withdraw",
+    {
+      body: payload,
+      method: "POST",
+      token,
+    },
+  );
 
-  return adaptWithdrawal(response);
+  return adaptWithdrawal(unwrapCommonResponse<WithdrawalResponse>(response));
 }
 
 async function withMockFallback<T>(request: () => Promise<T>, fallback: () => T): Promise<T> {

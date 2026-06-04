@@ -1,15 +1,18 @@
 import { getMyWallet } from "@pacto/api";
 import { formatPoint } from "@pacto/utils";
 
+import { getBloggerSession } from "../../_lib/session";
+
 export default async function WithdrawalsPage() {
-  const wallet = await getMyWallet();
+  const session = await getBloggerSession();
+  const wallet = await getMyWallet(session.accessToken);
 
   return (
     <section className="screen-stack detail-screen" aria-labelledby="withdrawals-title">
       <div className="page-heading">
         <p className="section-label">출금 신청</p>
         <h1 id="withdrawals-title">계좌를 등록하면 출금할 수 있어요</h1>
-        <p>현재는 출금 가능 금액을 확인하고, 계좌 등록이 필요한 상태예요.</p>
+        <p>현재 출금 가능 금액을 확인하고, 정산 계좌 등록 후 신청해요.</p>
       </div>
 
       <section className="wallet-hero" aria-label="출금 가능 금액">

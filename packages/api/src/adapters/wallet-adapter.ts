@@ -1,11 +1,11 @@
 import type { Wallet, Withdrawal } from "@pacto/types";
 
 export type WalletResponse = {
-  walletId: number;
   balance: number;
   lockedBalance: number;
-  totalEarned: number;
+  totalEarned?: number;
   updatedAt: string;
+  walletId: number;
 };
 
 export type WithdrawalResponse = {
@@ -20,7 +20,7 @@ export function adaptWallet(response: WalletResponse): Wallet {
     id: response.walletId,
     availableBalance: response.balance,
     lockedBalance: response.lockedBalance,
-    totalEarned: response.totalEarned,
+    totalEarned: response.totalEarned ?? 0,
     updatedAt: response.updatedAt,
   };
 }

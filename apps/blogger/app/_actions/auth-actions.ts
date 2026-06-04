@@ -1,8 +1,9 @@
 "use server";
 
 import { getMe, login, signup } from "@pacto/api";
+import { redirect } from "next/navigation";
 
-import { setBloggerSession } from "../_lib/session";
+import { clearBloggerSession, setBloggerSession } from "../_lib/session";
 
 type AuthActionResult = {
   message?: string;
@@ -51,4 +52,9 @@ export async function signupAction(email: string, password: string): Promise<Aut
   } catch {
     return { message: "회원가입에 실패했어요. 잠시 후 다시 시도해 주세요.", ok: false };
   }
+}
+
+export async function logoutAction() {
+  await clearBloggerSession();
+  redirect("/login");
 }
