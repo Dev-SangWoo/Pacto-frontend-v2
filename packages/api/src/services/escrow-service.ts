@@ -1,17 +1,44 @@
 import type { EscrowLedger } from "@pacto/types";
 
 import { adaptEscrowLedger } from "../adapters/escrow-adapter";
+import type { EscrowLedgerResponse } from "../adapters/escrow-adapter";
+import { isMockFallbackDisabled } from "../client/env";
+import { apiRequest, unwrapListResponse } from "../client/http-client";
 import { mockEscrows } from "../mocks/data";
 
 export async function getMyEscrows(): Promise<EscrowLedger[]> {
-  return mockEscrows.map((escrow) =>
-    adaptEscrowLedger({
-      escrowId: escrow.id,
-      campaignId: escrow.campaignId,
-      amount: escrow.amount,
-      status:
-        escrow.status === "locked" ? "LOCKED" : escrow.status === "paid" ? "RELEASED" : "CANCELED",
-      createdAt: escrow.createdAt,
-    }),
+  return withMockFallback(
+    async () => {
+      const response = await apiRequest("/api/v1/escrows");
+
+      return unwrapListResponse<EscrowLedgerResponse>(response).map(adaptEscrowLedger);
+    },
+    () =>
+      mockEscrows.map((escrow) =>
+        adaptEscrowLedger({
+          escrowId: escrow.id,
+          campaignId: escrow.campaignId,
+          amount: escrow.amount,
+          status:
+            escrow.status === "locked"
+              ? "LOCKED"
+              : escrow.status === "paid"
+                ? "RELEASED"
+                : "CANCELED",
+          createdAt: escrow.createdAt,
+        }),
+      ),
   );
+}
+
+async function withMockFallback<T>(request: () => Promise<T>, fallback: () => T): Promise<T> {
+  try {
+    return await request();
+  } catch (error) {
+    if (isMockFallbackDisabled()) {
+      throw error;
+    }
+
+    return fallback();
+  }
 }

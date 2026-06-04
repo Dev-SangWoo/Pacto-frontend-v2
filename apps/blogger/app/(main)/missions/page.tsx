@@ -1,9 +1,11 @@
 import { getMyMissions } from "@pacto/api";
 
+import { getBloggerSession } from "../../_lib/session";
 import { MissionBoard } from "../../_components/mission-board";
 
 export default async function MissionsPage() {
-  const missions = await getMyMissions();
+  const session = await getBloggerSession();
+  const missions = await getMyMissions({ bloggerId: session.bloggerId });
 
   return (
     <section className="screen-stack" aria-labelledby="missions-title">

@@ -1,14 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+
+import { acceptCampaignAction, submitMissionAction } from "../_actions/blogger-actions";
 
 type CampaignApplyActionProps = {
+  campaignId: number;
   enabled: boolean;
 };
 
-export function CampaignApplyAction({ enabled }: CampaignApplyActionProps) {
+export function CampaignApplyAction({ campaignId, enabled }: CampaignApplyActionProps) {
   const [isApplied, setIsApplied] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [isPending, startTransition] = useTransition();
 
   if (!enabled) {
     return (
@@ -30,19 +35,41 @@ export function CampaignApplyAction({ enabled }: CampaignApplyActionProps) {
   }
 
   return (
-    <button className="primary-button" onClick={() => setIsApplied(true)} type="button">
-      캠페인 지원 요청하기
-    </button>
+    <div className="cta-stack">
+      {errorMessage != null ? <p>{errorMessage}</p> : null}
+      <button
+        className="primary-button"
+        disabled={isPending}
+        onClick={() => {
+          setErrorMessage(undefined);
+          startTransition(async () => {
+            const result = await acceptCampaignAction(campaignId);
+
+            if (result.ok) {
+              setIsApplied(true);
+            } else {
+              setErrorMessage(result.message);
+            }
+          });
+        }}
+        type="button"
+      >
+        {isPending ? "지원 요청 중" : "캠페인 지원 요청하기"}
+      </button>
+    </div>
   );
 }
 
 type MissionSubmitActionProps = {
   enabled: boolean;
+  missionId: number;
 };
 
-export function MissionSubmitAction({ enabled }: MissionSubmitActionProps) {
+export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionProps) {
   const [reviewUrl, setReviewUrl] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const trimmedUrl = reviewUrl.trim();
 
   if (!enabled) {
@@ -70,10 +97,20 @@ export function MissionSubmitAction({ enabled }: MissionSubmitActionProps) {
       onSubmit={(event) => {
         event.preventDefault();
         if (trimmedUrl.length > 0) {
-          setIsSubmitted(true);
+          setErrorMessage(undefined);
+          startTransition(async () => {
+            const result = await submitMissionAction(missionId, trimmedUrl);
+
+            if (result.ok) {
+              setIsSubmitted(true);
+            } else {
+              setErrorMessage(result.message);
+            }
+          });
         }
       }}
     >
+      {errorMessage != null ? <p>{errorMessage}</p> : null}
       <label>
         리뷰 URL
         <input
@@ -84,8 +121,12 @@ export function MissionSubmitAction({ enabled }: MissionSubmitActionProps) {
           value={reviewUrl}
         />
       </label>
-      <button className="primary-button" disabled={trimmedUrl.length === 0} type="submit">
-        리뷰 URL 제출하기
+      <button
+        className="primary-button"
+        disabled={trimmedUrl.length === 0 || isPending}
+        type="submit"
+      >
+        {isPending ? "제출 중" : "리뷰 URL 제출하기"}
       </button>
     </form>
   );

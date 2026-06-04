@@ -8,6 +8,7 @@ import {
   getMissionStatusView,
 } from "@pacto/utils";
 
+import { getBloggerSession } from "../../../_lib/session";
 import { MissionSubmitAction } from "../../../_components/mock-actions";
 
 type MissionDetailPageProps = {
@@ -18,7 +19,8 @@ type MissionDetailPageProps = {
 
 export default async function MissionDetailPage({ params }: MissionDetailPageProps) {
   const { missionId } = await params;
-  const mission = await getMissionDetail(Number(missionId));
+  const session = await getBloggerSession();
+  const mission = await getMissionDetail(Number(missionId), { bloggerId: session.bloggerId });
 
   if (mission == null) {
     notFound();
@@ -75,7 +77,7 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
       </section>
 
       <div className="fixed-cta">
-        <MissionSubmitAction enabled={isSubmitEnabled} />
+        <MissionSubmitAction enabled={isSubmitEnabled} missionId={mission.id} />
       </div>
     </section>
   );

@@ -83,7 +83,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
       </section>
 
       <div className="fixed-cta">
-        <CampaignApplyAction enabled={isApplyEnabled} />
+        <CampaignApplyAction campaignId={campaign.id} enabled={isApplyEnabled} />
       </div>
     </section>
   );

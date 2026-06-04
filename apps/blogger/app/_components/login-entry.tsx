@@ -1,12 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+
+import { loginAction, signupAction } from "../_actions/auth-actions";
 
 type AuthStep = "login" | "signup" | null;
 
 export function LoginEntry() {
   const [authStep, setAuthStep] = useState<AuthStep>(null);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function handleAuthSubmit(formData: FormData, mode: Exclude<AuthStep, null>) {
+    const email = String(formData.get("email") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
+
+    setErrorMessage(undefined);
+    startTransition(async () => {
+      const result =
+        mode === "login" ? await loginAction(email, password) : await signupAction(email, password);
+
+      if (result.ok) {
+        router.push("/campaigns");
+      } else {
+        setErrorMessage(result.message);
+      }
+    });
+  }
 
   return (
     <section className="auth-panel auth-panel-hero" aria-labelledby="login-title">
@@ -35,12 +58,21 @@ export function LoginEntry() {
             <strong>계정으로 로그인</strong>
             <p>가입한 이메일과 비밀번호를 입력해요.</p>
           </div>
-          <form className="login-form" aria-label="블로거 로그인">
+          <form
+            className="login-form"
+            aria-label="블로거 로그인"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleAuthSubmit(new FormData(event.currentTarget), "login");
+            }}
+          >
+            {errorMessage != null ? <p>{errorMessage}</p> : null}
             <label>
               이메일
               <input
                 autoComplete="email"
                 inputMode="email"
+                name="email"
                 placeholder="blogger@pacto.test"
                 type="email"
               />
@@ -49,13 +81,14 @@ export function LoginEntry() {
               비밀번호
               <input
                 autoComplete="current-password"
+                name="password"
                 placeholder="비밀번호를 입력하세요"
                 type="password"
               />
             </label>
-            <Link className="primary-button" href="/campaigns">
-              로그인하고 캠페인 보기
-            </Link>
+            <button className="primary-button" disabled={isPending} type="submit">
+              {isPending ? "로그인 중" : "로그인하고 캠페인 보기"}
+            </button>
           </form>
 
           <button className="text-button" onClick={() => setAuthStep(null)} type="button">
@@ -68,12 +101,21 @@ export function LoginEntry() {
             <strong>크리에이터 가입</strong>
             <p>캠페인 안내와 정산 알림을 받을 정보를 입력해요.</p>
           </div>
-          <form className="login-form" aria-label="블로거 회원가입">
+          <form
+            className="login-form"
+            aria-label="블로거 회원가입"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleAuthSubmit(new FormData(event.currentTarget), "signup");
+            }}
+          >
+            {errorMessage != null ? <p>{errorMessage}</p> : null}
             <label>
               이메일
               <input
                 autoComplete="email"
                 inputMode="email"
+                name="email"
                 placeholder="이메일을 입력하세요"
                 type="email"
               />
@@ -82,6 +124,7 @@ export function LoginEntry() {
               비밀번호
               <input
                 autoComplete="new-password"
+                name="password"
                 placeholder="8자 이상 입력하세요"
                 type="password"
               />
@@ -95,9 +138,9 @@ export function LoginEntry() {
                 type="url"
               />
             </label>
-            <Link className="primary-button" href="/campaigns">
-              가입하고 캠페인 보기
-            </Link>
+            <button className="primary-button" disabled={isPending} type="submit">
+              {isPending ? "가입 중" : "가입하고 캠페인 보기"}
+            </button>
           </form>
 
           <button className="text-button" onClick={() => setAuthStep(null)} type="button">

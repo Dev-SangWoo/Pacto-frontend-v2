@@ -49,7 +49,9 @@ export default async function CampaignsPage() {
         {campaigns.map((campaign) => {
           const statusView = getCampaignStatusView(campaign.status);
           const competitionRate =
-            Math.round((campaign.applicantCount / campaign.recruitCount) * 10) / 10;
+            campaign.recruitCount > 0
+              ? `${Math.round((campaign.applicantCount / campaign.recruitCount) * 10) / 10}:1`
+              : "산정 전";
 
           return (
             <Link
@@ -71,7 +73,7 @@ export default async function CampaignsPage() {
               </div>
               <div className="campaign-signal">
                 <span>지원 {campaign.applicantCount}명</span>
-                <span>경쟁률 {competitionRate}:1</span>
+                <span>경쟁률 {competitionRate}</span>
                 <span>{formatKoreanDate(campaign.deadline)} 마감</span>
               </div>
               <div className="row-meta">
