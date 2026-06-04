@@ -35,6 +35,10 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
         <h1 id="campaign-detail-title">{campaign.title}</h1>
       </div>
 
+      <div className="campaign-detail-media">
+        <img src={campaign.thumbnailUrl} alt={`${campaign.title} 대표 이미지`} />
+      </div>
+
       <section className="reward-panel" aria-label="캠페인 보상">
         <span>승인 후 지갑에 반영될 금액</span>
         <strong>{formatPoint(campaign.rewardPoint)}</strong>

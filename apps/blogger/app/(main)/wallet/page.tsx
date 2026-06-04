@@ -7,9 +7,7 @@ export default async function WalletPage() {
   return (
     <section className="screen-stack detail-screen" aria-labelledby="wallet-title">
       <div className="page-heading">
-        <p className="section-label">지갑</p>
-        <h1 id="wallet-title">정산 흐름을 한눈에 확인해요</h1>
-        <p>검수 중인 금액과 바로 출금할 수 있는 금액을 분리해서 보여드려요.</p>
+        <h1 id="wallet-title">지갑</h1>
       </div>
 
       <section className="wallet-hero" aria-label="출금 가능 금액">

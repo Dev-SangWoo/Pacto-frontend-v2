@@ -11,9 +11,7 @@ export default async function CampaignsPage() {
   return (
     <section className="screen-stack" aria-labelledby="campaigns-title">
       <div className="page-heading">
-        <p className="section-label">참여 가능 캠페인</p>
-        <h1 id="campaigns-title">조건과 정산 흐름이 분명한 캠페인을 골라요</h1>
-        <p>모집 현황, 마감일, 보상 금액을 먼저 비교하고 지원할 수 있어요.</p>
+        <h1 id="campaigns-title">캠페인</h1>
       </div>
 
       <section className="summary-strip" aria-label="캠페인 요약">
@@ -59,6 +57,13 @@ export default async function CampaignsPage() {
               href={`/campaigns/${campaign.id}`}
               key={campaign.id}
             >
+              <div className="campaign-media">
+                <img
+                  src={campaign.thumbnailUrl}
+                  alt={`${campaign.title} 대표 이미지`}
+                  loading="lazy"
+                />
+              </div>
               <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
               <div>
                 <p className="muted-text">{campaign.brandName}</p>

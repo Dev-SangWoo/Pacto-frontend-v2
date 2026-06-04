@@ -8,9 +8,7 @@ export default function ProfilePage() {
   return (
     <section className="screen-stack" aria-labelledby="profile-title">
       <div className="page-heading">
-        <p className="section-label">프로필</p>
-        <h1 id="profile-title">정산에 필요한 정보를 확인해요</h1>
-        <p>출금 신청 전 계좌 정보와 연락처가 정확한지 확인할 수 있어요.</p>
+        <h1 id="profile-title">프로필</h1>
       </div>
 
       <section className="info-list" aria-label="프로필 정보">
