@@ -34,8 +34,11 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
       </div>
 
       <section className="reward-panel" aria-label="캠페인 보상">
-        <span>미션 승인 후 받을 보상</span>
+        <span>미션 승인 후 지갑에 반영될 금액</span>
         <strong>{formatPoint(campaign.rewardPoint)}</strong>
+        <p>
+          캠페인 예산은 에스크로 기준으로 관리되며, 미션 검수 완료 후 정산 가능 금액으로 이동해요.
+        </p>
       </section>
 
       <section className="info-list" aria-label="캠페인 조건">
@@ -58,6 +61,18 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
       <section className="content-section" aria-labelledby="guideline-title">
         <h2 id="guideline-title">미션 가이드</h2>
         <p>{campaign.guidelines}</p>
+      </section>
+
+      <section
+        className="content-section checklist-section"
+        aria-labelledby="apply-checklist-title"
+      >
+        <h2 id="apply-checklist-title">지원 전 확인</h2>
+        <ul>
+          <li>마감일까지 방문과 리뷰 작성이 가능한지 확인해 주세요.</li>
+          <li>가이드에 맞지 않는 제출물은 정산이 지연될 수 있어요.</li>
+          <li>선착순 캠페인은 승인 인원이 차면 자동 마감돼요.</li>
+        </ul>
       </section>
 
       <div className="fixed-cta">

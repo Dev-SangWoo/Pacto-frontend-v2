@@ -16,12 +16,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
     <main className="mobile-shell">
       <header className="app-top">
         <div>
-          <p className="top-eyebrow">Pacto</p>
-          <strong>블로거 홈</strong>
+          <p className="top-eyebrow">Pacto Creator</p>
+          <strong>안전 캠페인 탐색</strong>
         </div>
-        <span className="top-avatar" aria-label="로그인 사용자">
+        <Link className="top-avatar" href="/profile" aria-label="내 프로필">
           B
-        </span>
+        </Link>
       </header>
       <div className="screen-content">{children}</div>
       <nav className="bottom-nav" aria-label="블로거 메뉴">
