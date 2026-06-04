@@ -8,6 +8,8 @@ import {
   getCampaignStatusView,
 } from "@pacto/utils";
 
+import { CampaignApplyAction } from "../../../_components/mock-actions";
+
 type CampaignDetailPageProps = {
   params: Promise<{
     campaignId: string;
@@ -34,10 +36,11 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
       </div>
 
       <section className="reward-panel" aria-label="캠페인 보상">
-        <span>미션 승인 후 지갑에 반영될 금액</span>
+        <span>승인 후 지갑에 반영될 금액</span>
         <strong>{formatPoint(campaign.rewardPoint)}</strong>
         <p>
-          캠페인 예산은 에스크로 기준으로 관리되며, 미션 검수 완료 후 정산 가능 금액으로 이동해요.
+          미션을 제출하면 검수 후 정산 가능 금액으로 이동해요. 지급 조건은 아래 가이드에서 먼저
+          확인할 수 있어요.
         </p>
       </section>
 
@@ -67,18 +70,16 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
         className="content-section checklist-section"
         aria-labelledby="apply-checklist-title"
       >
-        <h2 id="apply-checklist-title">지원 전 확인</h2>
+        <h2 id="apply-checklist-title">지원하기 전에 확인해요</h2>
         <ul>
-          <li>마감일까지 방문과 리뷰 작성이 가능한지 확인해 주세요.</li>
-          <li>가이드에 맞지 않는 제출물은 정산이 지연될 수 있어요.</li>
-          <li>선착순 캠페인은 승인 인원이 차면 자동 마감돼요.</li>
+          <li>마감일까지 방문과 리뷰 작성을 할 수 있어요.</li>
+          <li>가이드에 맞게 제출하면 검수와 정산이 빨라져요.</li>
+          <li>승인 인원이 차면 모집이 자동으로 끝나요.</li>
         </ul>
       </section>
 
       <div className="fixed-cta">
-        <button className="primary-button" disabled={!isApplyEnabled} type="button">
-          {isApplyEnabled ? "캠페인 지원하기" : statusView.label}
-        </button>
+        <CampaignApplyAction enabled={isApplyEnabled} />
       </div>
     </section>
   );
