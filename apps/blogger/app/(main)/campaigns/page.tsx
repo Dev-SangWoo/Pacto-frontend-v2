@@ -21,7 +21,9 @@ export default async function CampaignsPage() {
         </div>
         <div>
           <span>예상 보상</span>
-          <strong>{formatPoint(campaigns.reduce((sum, campaign) => sum + campaign.rewardPoint, 0))}</strong>
+          <strong>
+            {formatPoint(campaigns.reduce((sum, campaign) => sum + campaign.rewardPoint, 0))}
+          </strong>
         </div>
       </section>
 
@@ -30,7 +32,11 @@ export default async function CampaignsPage() {
           const statusView = getCampaignStatusView(campaign.status);
 
           return (
-            <Link className="list-card campaign-row" href={`/campaigns/${campaign.id}`} key={campaign.id}>
+            <Link
+              className="list-card campaign-row"
+              href={`/campaigns/${campaign.id}`}
+              key={campaign.id}
+            >
               <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
               <div>
                 <p className="muted-text">{campaign.brandName}</p>
@@ -39,7 +45,8 @@ export default async function CampaignsPage() {
               <div className="row-meta">
                 <strong>{formatPoint(campaign.rewardPoint)}</strong>
                 <span>
-                  {campaign.approvedCount}/{campaign.recruitCount}명 · {formatKoreanDate(campaign.deadline)} 마감
+                  {campaign.approvedCount}/{campaign.recruitCount}명 ·{" "}
+                  {formatKoreanDate(campaign.deadline)} 마감
                 </span>
               </div>
             </Link>

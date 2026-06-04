@@ -19,7 +19,11 @@ export default async function MissionsPage() {
           const statusView = getMissionStatusView(mission.status);
 
           return (
-            <Link className="list-card campaign-row" href={`/missions/${mission.id}`} key={mission.id}>
+            <Link
+              className="list-card campaign-row"
+              href={`/missions/${mission.id}`}
+              key={mission.id}
+            >
               <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
               <div>
                 <p className="muted-text">{mission.brandName}</p>

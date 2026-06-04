@@ -11,7 +11,10 @@ export default async function DashboardHomePage() {
   const campaigns = await getCampaigns();
   const openCampaignCount = campaigns.filter((campaign) => campaign.status === "open").length;
   const totalApplicants = campaigns.reduce((sum, campaign) => sum + campaign.applicantCount, 0);
-  const escrowAmount = campaigns.reduce((sum, campaign) => sum + campaign.rewardPoint * campaign.recruitCount, 0);
+  const escrowAmount = campaigns.reduce(
+    (sum, campaign) => sum + campaign.rewardPoint * campaign.recruitCount,
+    0,
+  );
 
   return (
     <>
@@ -76,7 +79,9 @@ export default async function DashboardHomePage() {
                         <span>{campaign.brandName}</span>
                       </td>
                       <td>
-                        <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
+                        <span className={`status-badge ${statusView.tone}`}>
+                          {statusView.label}
+                        </span>
                       </td>
                       <td>{campaign.applicantCount}명</td>
                       <td>

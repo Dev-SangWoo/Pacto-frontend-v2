@@ -41,7 +41,10 @@ export default async function ReportsPage() {
           </div>
         </div>
         <div className="panel-body">
-          <p>캠페인별 모집, 승인, 미션 제출, 정산 상태를 연결하면 광고주 제한 View와 같은 지표를 재사용할 수 있습니다.</p>
+          <p>
+            캠페인별 모집, 승인, 미션 제출, 정산 상태를 연결하면 광고주 제한 View와 같은 지표를
+            재사용할 수 있습니다.
+          </p>
         </div>
       </section>
     </>

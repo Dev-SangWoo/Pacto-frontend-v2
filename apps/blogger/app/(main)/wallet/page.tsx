@@ -31,7 +31,9 @@ export default async function WalletPage() {
 
       <section className="content-section" aria-labelledby="wallet-helper-title">
         <h2 id="wallet-helper-title">잠긴 금액이란?</h2>
-        <p>미션 검수 또는 에스크로 정산을 기다리는 금액이에요. 승인 후 출금 가능 금액으로 이동해요.</p>
+        <p>
+          미션 검수 또는 에스크로 정산을 기다리는 금액이에요. 승인 후 출금 가능 금액으로 이동해요.
+        </p>
       </section>
 
       <div className="fixed-cta">

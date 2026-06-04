@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 
 import { getCampaignDetail } from "@pacto/api";
-import { canApplyToCampaign, formatKoreanDate, formatPoint, getCampaignStatusView } from "@pacto/utils";
+import {
+  canApplyToCampaign,
+  formatKoreanDate,
+  formatPoint,
+  getCampaignStatusView,
+} from "@pacto/utils";
 
 type CampaignDetailPageProps = {
   params: Promise<{

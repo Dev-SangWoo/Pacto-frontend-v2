@@ -9,7 +9,9 @@ describe("dashboard rbac policy", () => {
   });
 
   it("대행사 운영자는 설정 메뉴를 볼 수 없다", () => {
-    expect(getDashboardMenus("AGENCY_OPERATOR").some((menu) => menu.href === "/dashboard/settings")).toBe(false);
+    expect(
+      getDashboardMenus("AGENCY_OPERATOR").some((menu) => menu.href === "/dashboard/settings"),
+    ).toBe(false);
   });
 
   it("광고주는 결제와 리포트 중심 메뉴만 본다", () => {

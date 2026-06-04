@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 
 import { getMissionDetail } from "@pacto/api";
-import { canSubmitMission, formatKoreanDate, formatPoint, getMissionStatusView } from "@pacto/utils";
+import {
+  canSubmitMission,
+  formatKoreanDate,
+  formatPoint,
+  getMissionStatusView,
+} from "@pacto/utils";
 
 type MissionDetailPageProps = {
   params: Promise<{

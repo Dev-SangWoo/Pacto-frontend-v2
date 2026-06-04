@@ -31,6 +31,10 @@ export function adaptWithdrawal(response: WithdrawalResponse): Withdrawal {
     requestedAmount: response.requestedAmount,
     remainingBalance: response.remainingBalance,
     status:
-      response.status === "PENDING" ? "requested" : response.status === "COMPLETED" ? "completed" : "failed",
+      response.status === "PENDING"
+        ? "requested"
+        : response.status === "COMPLETED"
+          ? "completed"
+          : "failed",
   };
 }
