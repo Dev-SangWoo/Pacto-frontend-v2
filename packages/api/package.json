@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@pacto/types": "workspace:^"
+    "@pacto/types": "workspace:^",
+    "@pacto/utils": "workspace:^"
   }
 }
