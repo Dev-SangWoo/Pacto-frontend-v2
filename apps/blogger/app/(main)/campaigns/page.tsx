@@ -12,8 +12,8 @@ export default async function CampaignsPage() {
     <section className="screen-stack" aria-labelledby="campaigns-title">
       <div className="page-heading">
         <p className="section-label">참여 가능 캠페인</p>
-        <h1 id="campaigns-title">예산이 확인된 캠페인만 확인하세요</h1>
-        <p>모집 경쟁률, 마감일, 정산 예정 금액을 먼저 비교하고 지원할 수 있어요.</p>
+        <h1 id="campaigns-title">조건과 정산 흐름이 분명한 캠페인을 골라요</h1>
+        <p>모집 현황, 마감일, 보상 금액을 먼저 비교하고 지원할 수 있어요.</p>
       </div>
 
       <section className="summary-strip" aria-label="캠페인 요약">
@@ -30,7 +30,7 @@ export default async function CampaignsPage() {
       <section className="safety-banner" aria-label="안전 참여 안내">
         <div>
           <span>안전 정산</span>
-          <strong>대행사 검수 후 지갑으로 이동</strong>
+          <strong>검수 후 지갑 반영</strong>
         </div>
         <p>지원 전 가이드와 마감일을 확인하고, 승인된 미션만 정산 대상으로 관리해요.</p>
       </section>
@@ -67,12 +67,12 @@ export default async function CampaignsPage() {
               <div className="campaign-signal">
                 <span>지원 {campaign.applicantCount}명</span>
                 <span>경쟁률 {competitionRate}:1</span>
+                <span>{formatKoreanDate(campaign.deadline)} 마감</span>
               </div>
               <div className="row-meta">
                 <strong>{formatPoint(campaign.rewardPoint)}</strong>
                 <span>
-                  {campaign.approvedCount}/{campaign.recruitCount}명 ·{" "}
-                  {formatKoreanDate(campaign.deadline)} 마감
+                  {campaign.approvedCount}/{campaign.recruitCount}명 승인
                 </span>
               </div>
             </Link>

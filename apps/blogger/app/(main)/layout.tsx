@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const navItems = [
   { href: "/campaigns", label: "캠페인" },
-  { href: "/missions", label: "내 미션" },
+  { href: "/missions", label: "미션" },
   { href: "/wallet", label: "지갑" },
   { href: "/profile", label: "프로필" },
 ];
@@ -17,7 +17,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <header className="app-top">
         <div>
           <p className="top-eyebrow">Pacto Creator</p>
-          <strong>안전 캠페인 탐색</strong>
+          <strong>캠페인부터 정산까지</strong>
         </div>
         <Link className="top-avatar" href="/profile" aria-label="내 프로필">
           B
