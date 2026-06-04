@@ -16,7 +16,7 @@ export const handlers = [
     });
   }),
 
-  http.get(`${API_BASE_URL}/api/v1/auth/me`, () => {
+  http.get(`${API_BASE_URL}/api/v1/users/me`, () => {
     return HttpResponse.json({
       success: true,
       message: "내 정보 조회 성공",
@@ -31,10 +31,22 @@ export const handlers = [
 
   http.get(`${API_BASE_URL}/api/v1/campaigns`, () => {
     return HttpResponse.json({
-      content: mockCampaigns,
-      page: 0,
-      size: mockCampaigns.length,
-      totalElements: mockCampaigns.length,
+      success: true,
+      data: {
+        content: mockCampaigns.map((campaign) => ({
+          campaign_id: campaign.id,
+          advertiser_id: campaign.advertiserId,
+          title: campaign.title,
+          thumbnail_url: campaign.thumbnailUrl,
+          reward_point: campaign.rewardPoint,
+          status: "RECRUITING",
+          deadline: campaign.deadline,
+        })),
+        page: 0,
+        size: mockCampaigns.length,
+        total_elements: mockCampaigns.length,
+        total_pages: 1,
+      },
     });
   }),
 
@@ -46,33 +58,102 @@ export const handlers = [
       return new HttpResponse(null, { status: 404 });
     }
 
-    return HttpResponse.json(campaign);
+    return HttpResponse.json({
+      success: true,
+      data: {
+        campaign_id: campaign.id,
+        advertiser_id: campaign.advertiserId,
+        title: campaign.title,
+        thumbnail_url: campaign.thumbnailUrl,
+        reward_point: campaign.rewardPoint,
+        status: "RECRUITING",
+        guidelines: [campaign.guidelines],
+        deadline: campaign.deadline,
+      },
+    });
+  }),
+
+  http.post(`${API_BASE_URL}/api/v1/campaigns`, async () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        campaign_id: 999,
+        status: "RECRUITING",
+      },
+    });
+  }),
+
+  http.patch(`${API_BASE_URL}/api/v1/campaigns/:campaignId/status`, async ({ params, request }) => {
+    const body = (await request.json()) as { status?: string };
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        campaign_id: Number(params.campaignId),
+        status: body.status ?? "COMPLETED",
+      },
+    });
   }),
 
   http.post(`${API_BASE_URL}/api/v1/campaigns/:campaignId/missions`, ({ params }) => {
     const campaignId = Number(params.campaignId);
 
     return HttpResponse.json({
-      missionId: 100 + campaignId,
-      campaignId,
-      status: "IN_PROGRESS",
+      success: true,
+      data: {
+        mission_id: 100 + campaignId,
+        escrow_id: 300 + campaignId,
+        status: "IN_PROGRESS",
+      },
     });
   }),
 
   http.get(`${API_BASE_URL}/api/v1/missions/me`, () => {
     return HttpResponse.json({
-      content: mockMissions,
-      totalElements: mockMissions.length,
+      success: true,
+      data: mockMissions.map((mission) => ({
+        mission_id: mission.id,
+        campaign_id: mission.campaignId,
+        submitted_url: mission.submittedUrl ?? null,
+        status: mission.status.toUpperCase(),
+        created_at: mission.dueDate,
+        updated_at: mission.dueDate,
+      })),
     });
   }),
 
   http.patch(`${API_BASE_URL}/api/v1/missions/:missionId/submit`, async ({ params, request }) => {
-    const body = (await request.json()) as { submittedUrl?: string };
+    const body = (await request.json()) as { submitted_url?: string };
 
     return HttpResponse.json({
-      missionId: Number(params.missionId),
-      submittedUrl: body.submittedUrl,
-      status: "SUBMITTED",
+      success: true,
+      data: {
+        mission_id: Number(params.missionId),
+        submitted_url: body.submitted_url,
+        status: "SUBMITTED",
+      },
+    });
+  }),
+
+  http.patch(`${API_BASE_URL}/api/v1/missions/:missionId/approve`, ({ params }) => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        mission_id: Number(params.missionId),
+        status: "APPROVED",
+        escrow_status: "RELEASED",
+      },
+    });
+  }),
+
+  http.patch(`${API_BASE_URL}/api/v1/missions/:missionId/cancel`, ({ params }) => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        mission_id: Number(params.missionId),
+        status: "REJECTED",
+        escrow_status: "CANCELED",
+      },
     });
   }),
 
@@ -87,11 +168,20 @@ export const handlers = [
 
   http.get(`${API_BASE_URL}/api/v1/wallets/me/histories`, () => {
     return HttpResponse.json({
-      historyId: 1,
-      amount: 50000,
-      type: "RELEASE",
-      referenceId: 1,
-      createdAt: "2026-05-26T10:00:00",
+      success: true,
+      data: {
+        content: [
+          {
+            historyId: 1,
+            amount: 50000,
+            type: "RELEASE",
+            referenceId: 1,
+            createdAt: "2026-05-26T10:00:00",
+          },
+        ],
+        totalPages: 1,
+        currentPage: 1,
+      },
     });
   }),
 
@@ -101,10 +191,13 @@ export const handlers = [
 
     return HttpResponse.json(
       {
-        withdrawalId: 1,
-        requestedAmount,
-        remainingBalance: mockWallet.availableBalance - requestedAmount,
-        status: "PENDING",
+        success: true,
+        data: {
+          withdrawalId: 1,
+          requestedAmount,
+          remainingBalance: mockWallet.availableBalance - requestedAmount,
+          status: "PENDING",
+        },
       },
       { status: 201 },
     );
@@ -112,19 +205,74 @@ export const handlers = [
 
   http.get(`${API_BASE_URL}/api/v1/escrows`, () => {
     return HttpResponse.json({
-      content: mockEscrows.map((escrow) => ({
-        escrowId: escrow.id,
-        campaignId: escrow.campaignId,
-        amount: escrow.amount,
-        status:
-          escrow.status === "locked"
-            ? "LOCKED"
-            : escrow.status === "paid"
-              ? "RELEASED"
-              : "CANCELED",
-        createdAt: escrow.createdAt,
-      })),
-      totalElements: mockEscrows.length,
+      success: true,
+      data: {
+        content: mockEscrows.map((escrow) => ({
+          escrowId: escrow.id,
+          campaignId: escrow.campaignId,
+          campaignTitle: escrow.campaignTitle,
+          bloggerName: escrow.bloggerName,
+          amount: escrow.amount,
+          status:
+            escrow.status === "locked"
+              ? "LOCKED"
+              : escrow.status === "paid"
+                ? "RELEASED"
+                : "CANCELED",
+          createdAt: escrow.createdAt,
+        })),
+        totalPages: 1,
+        currentPage: 1,
+      },
+    });
+  }),
+
+  http.post(`${API_BASE_URL}/api/v1/payments`, async ({ request }) => {
+    const body = (await request.json()) as { amount?: number };
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        paymentId: 1,
+        userId: 201,
+        merchantUid: "payment_mock_1",
+        impUid: null,
+        amount: body.amount ?? 0,
+        status: "READY",
+        createdAt: new Date().toISOString(),
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }),
+
+  http.post(`${API_BASE_URL}/api/v1/payments/verify`, async ({ request }) => {
+    const body = (await request.json()) as { impUid?: string; merchantUid?: string };
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        paymentId: 1,
+        merchantUid: body.merchantUid ?? "payment_mock_1",
+        impUid: body.impUid ?? "imp_mock_1",
+        amount: 50000,
+        status: "PAID",
+        paidAt: new Date().toISOString(),
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }),
+
+  http.get(`${API_BASE_URL}/api/v1/payments/:paymentId`, ({ params }) => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        paymentId: Number(params.paymentId),
+        merchantUid: "payment_mock_1",
+        amount: 50000,
+        status: "PAID",
+        paidAt: new Date().toISOString(),
+      },
+      timestamp: new Date().toISOString(),
     });
   }),
 ];

@@ -8,9 +8,6 @@ export type DashboardMenuItem = {
 const agencyMenus: DashboardMenuItem[] = [
   { href: "/dashboard", label: "대시보드" },
   { href: "/dashboard/campaigns", label: "캠페인" },
-  { href: "/dashboard/campaigns/1/applicants", label: "지원자" },
-  { href: "/dashboard/campaigns/1/missions", label: "미션 검수" },
-  { href: "/dashboard/escrow", label: "정산" },
   { href: "/dashboard/reports", label: "리포트" },
   { href: "/dashboard/settings", label: "설정" },
 ];
@@ -23,7 +20,6 @@ const advertiserMenus: DashboardMenuItem[] = [
 const adminMenus: DashboardMenuItem[] = [
   { href: "/dashboard", label: "전체 캠페인" },
   { href: "/dashboard/payments", label: "결제" },
-  { href: "/dashboard/escrow", label: "정산" },
   { href: "/dashboard/reports", label: "리포트" },
   { href: "/dashboard/settings", label: "설정" },
 ];

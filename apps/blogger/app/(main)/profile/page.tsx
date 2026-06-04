@@ -3,30 +3,56 @@ import { getBloggerSession } from "../../_lib/session";
 
 export default async function ProfilePage() {
   const session = await getBloggerSession();
-  const profileItems = [
-    { label: "이메일", value: session.email ?? "로그인이 필요해요" },
-    { label: "역할", value: "블로거" },
-    { label: "정산 계좌", value: "등록하면 출금할 수 있어요" },
-  ];
 
   return (
     <section className="screen-stack" aria-labelledby="profile-title">
-      <div className="page-heading">
-        <h1 id="profile-title">프로필</h1>
-      </div>
-
-      <section className="info-list" aria-label="프로필 정보">
-        {profileItems.map((item) => (
-          <div key={item.label}>
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-          </div>
-        ))}
+      <section className="task-hero">
+        <p className="section-label">내 정보</p>
+        <h1 id="profile-title">캠페인 추천과 정산에 쓰이는 정보</h1>
+        <p>{session.email ?? "로그인이 필요해요"}</p>
       </section>
 
-      <section className="content-section" aria-labelledby="profile-helper-title">
-        <h2 id="profile-helper-title">계좌 등록이 필요해요</h2>
-        <p>계좌 등록 기능이 연결되면 출금 신청 화면에서 바로 정산을 요청할 수 있어요.</p>
+      <section className="section-block" aria-labelledby="creator-profile-title">
+        <div className="section-head">
+          <div>
+            <p className="section-label">참가자 프로필</p>
+            <h2 id="creator-profile-title">추천 기준</h2>
+          </div>
+        </div>
+        <div className="info-list">
+          <div>
+            <span>활동 지역</span>
+            <strong>서울 / 수도권</strong>
+          </div>
+          <div>
+            <span>선호 캠페인</span>
+            <strong>맛집, 뷰티, 운동</strong>
+          </div>
+          <div>
+            <span>참가자 유형</span>
+            <strong>블로거</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-block" aria-labelledby="payout-profile-title">
+        <div className="section-head">
+          <div>
+            <p className="section-label">정산 정보</p>
+            <h2 id="payout-profile-title">출금 준비</h2>
+          </div>
+          <span>확인 필요</span>
+        </div>
+        <div className="info-list">
+          <div>
+            <span>정산 계좌</span>
+            <strong>등록 후 출금 가능</strong>
+          </div>
+          <div>
+            <span>수익 상태</span>
+            <strong>지갑에서 확인</strong>
+          </div>
+        </div>
       </section>
 
       <form action={logoutAction}>

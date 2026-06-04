@@ -222,7 +222,7 @@ B2B Dashboard는 대행사가 캠페인을 등록하고, 지원자를 관리하�
 /dashboard/campaigns/:id
 /dashboard/campaigns/:id/applicants
 /dashboard/campaigns/:id/missions
-/dashboard/escrow
+/dashboard/campaigns/:id/settlements
 /dashboard/payments
 /dashboard/reports
 /dashboard/settings

@@ -1,0 +1,9 @@
+﻿이름,타입,설명,날짜,상태
+data.campaign_id,Number,캠페인 고유 식별자,,시작 전
+data.advertiser_id,Number,광고주 고유 식별자,,시작 전
+data.title,String,캠페인 제목,,시작 전
+data.thumbnail_url,String,S3 썸네일 이미지 URL,,시작 전
+data.reward_point,Number,블로거 1인당 지급 포인트,,시작 전
+data.status,String,RECRUITING · IN_PROGRESS · COMPLETED,,시작 전
+data.guidelines,Array,상세 이미지 URL 목록 (JSONB),,시작 전
+data.deadline,Timestamp,미션 마감 일시,,시작 전

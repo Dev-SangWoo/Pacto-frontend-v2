@@ -10,7 +10,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <header className="app-top">
         <div>
           <p className="top-eyebrow">Pacto Creator</p>
-          <strong>캠페인부터 정산까지</strong>
+          <strong>참가할 캠페인을 쉽게 고르는 앱</strong>
         </div>
         <TopActions />
       </header>

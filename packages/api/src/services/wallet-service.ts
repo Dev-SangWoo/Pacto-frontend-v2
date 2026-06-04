@@ -1,12 +1,26 @@
-import type { Wallet } from "@pacto/types";
+import type { PointHistory, Wallet } from "@pacto/types";
 
-import { adaptWallet } from "../adapters/wallet-adapter";
-import type { WalletResponse, WithdrawalResponse } from "../adapters/wallet-adapter";
-import { adaptWithdrawal } from "../adapters/wallet-adapter";
+import { adaptPointHistory, adaptWallet, adaptWithdrawal } from "../adapters/wallet-adapter";
+import type {
+  PointHistoryResponse,
+  WalletResponse,
+  WithdrawalResponse,
+} from "../adapters/wallet-adapter";
 import { isMockFallbackDisabled } from "../client/env";
-import { apiRequest, unwrapCommonResponse } from "../client/http-client";
+import { apiRequest, unwrapCommonResponse, unwrapListResponse } from "../client/http-client";
 import type { CommonResponse } from "../client/http-client";
 import { mockWallet } from "../mocks/data";
+
+export type GetPointHistoriesParams = {
+  page?: number;
+  size?: number;
+};
+
+export type WithdrawPayload = {
+  accountNumber: string;
+  amount: number;
+  bankName: string;
+};
 
 export async function getMyWallet(token?: string): Promise<Wallet> {
   return withMockFallback(
@@ -31,11 +45,14 @@ export async function getMyWallet(token?: string): Promise<Wallet> {
   );
 }
 
-export type WithdrawPayload = {
-  accountNumber: string;
-  amount: number;
-  bankName: string;
-};
+export async function getMyPointHistories(
+  params: GetPointHistoriesParams = {},
+  token?: string,
+): Promise<PointHistory[]> {
+  const response = await apiRequest("/api/v1/wallets/me/histories", { query: params, token });
+
+  return unwrapListResponse<PointHistoryResponse>(response).map(adaptPointHistory);
+}
 
 export async function requestWithdraw(payload: WithdrawPayload, token?: string) {
   const response = await apiRequest<CommonResponse<WithdrawalResponse> | WithdrawalResponse>(

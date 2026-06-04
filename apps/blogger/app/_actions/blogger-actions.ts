@@ -15,7 +15,7 @@ export async function acceptCampaignAction(campaignId: number): Promise<ActionRe
   try {
     const session = await getBloggerSession();
 
-    await acceptMission(campaignId, session.bloggerId);
+    await acceptMission(campaignId, session.accessToken);
     revalidatePath("/missions");
 
     return { ok: true };

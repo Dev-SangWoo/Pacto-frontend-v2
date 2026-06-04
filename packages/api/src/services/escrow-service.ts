@@ -6,10 +6,16 @@ import { isMockFallbackDisabled } from "../client/env";
 import { apiRequest, unwrapListResponse } from "../client/http-client";
 import { mockEscrows } from "../mocks/data";
 
-export async function getMyEscrows(): Promise<EscrowLedger[]> {
+export type GetEscrowsParams = {
+  page?: number;
+  size?: number;
+  status?: "CANCELED" | "LOCKED" | "RELEASED";
+};
+
+export async function getMyEscrows(params: GetEscrowsParams = {}): Promise<EscrowLedger[]> {
   return withMockFallback(
     async () => {
-      const response = await apiRequest("/api/v1/escrows");
+      const response = await apiRequest("/api/v1/escrows", { query: params });
 
       return unwrapListResponse<EscrowLedgerResponse>(response).map(adaptEscrowLedger);
     },
@@ -18,6 +24,8 @@ export async function getMyEscrows(): Promise<EscrowLedger[]> {
         adaptEscrowLedger({
           escrowId: escrow.id,
           campaignId: escrow.campaignId,
+          campaignTitle: escrow.campaignTitle,
+          bloggerName: escrow.bloggerName,
           amount: escrow.amount,
           status:
             escrow.status === "locked"

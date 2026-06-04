@@ -6,10 +6,11 @@ export default async function DashboardCampaignsPage() {
 
   return (
     <>
-      <header className="topbar">
+      <header className="topbar topbar-pro">
         <div>
           <p className="eyebrow">Campaigns</p>
           <h1>캠페인 관리</h1>
+          <p className="topbar-copy">모집 상태와 승인 인원을 기준으로 운영 병목을 확인합니다.</p>
         </div>
         <a className="primary-link" href="/dashboard/campaigns/new">
           신규 캠페인
@@ -20,7 +21,7 @@ export default async function DashboardCampaignsPage() {
         <div className="panel-heading">
           <div>
             <h2>전체 캠페인</h2>
-            <p>모집 상태와 운영 지표를 기준으로 캠페인을 관리합니다.</p>
+            <p>모집, 승인, 마감일, 보상 기준을 함께 보고 상세 운영 화면으로 이동합니다.</p>
           </div>
           <span>{campaigns.length}건</span>
         </div>
@@ -58,7 +59,7 @@ export default async function DashboardCampaignsPage() {
                     <td>{formatPoint(campaign.rewardPoint)}</td>
                     <td>
                       <a className="table-action" href={`/dashboard/campaigns/${campaign.id}`}>
-                        상세
+                        상세 보기
                       </a>
                     </td>
                   </tr>

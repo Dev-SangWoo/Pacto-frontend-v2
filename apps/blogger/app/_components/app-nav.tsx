@@ -13,7 +13,7 @@ const navItems: Array<{
   { href: "/campaigns", icon: House, label: "홈" },
   { href: "/missions", icon: Target, label: "미션" },
   { href: "/wallet", icon: WalletCards, label: "지갑" },
-  { href: "/profile", icon: UserCircle, label: "프로필" },
+  { href: "/profile", icon: UserCircle, label: "내 정보" },
 ];
 
 export function TopActions() {
@@ -22,7 +22,7 @@ export function TopActions() {
       <button className="icon-button" type="button" aria-label="알림 열기">
         <Bell aria-hidden="true" size={21} strokeWidth={2.25} />
       </button>
-      <Link className="icon-button profile" href="/profile" aria-label="내 프로필">
+      <Link className="icon-button profile" href="/profile" aria-label="내 정보">
         <UserCircle aria-hidden="true" size={23} strokeWidth={2.25} />
       </Link>
     </div>

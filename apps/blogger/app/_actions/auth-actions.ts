@@ -46,7 +46,9 @@ export async function signupAction(email: string, password: string): Promise<Aut
   try {
     const result = await signup({ email, password });
 
-    await saveAuthenticatedSession(result.accessToken, email);
+    if (result.accessToken.length > 0) {
+      await saveAuthenticatedSession(result.accessToken, email);
+    }
 
     return { ok: true };
   } catch {

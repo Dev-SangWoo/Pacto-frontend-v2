@@ -1,5 +1,29 @@
 # Pacto API Strategy
 
+## 0. Latest api-docs sync
+
+2026-06-05 기준 `docs/api-docs` 최신 명세를 API 계층에 반영했다.
+
+핵심 변경:
+
+```txt
+GET /api/v1/users/me
+POST /api/v1/payments
+POST /api/v1/payments/verify
+GET /api/v1/payments/{paymentId}
+GET /api/v1/dashboard/summary
+```
+
+반영 내용:
+
+```txt
+Campaign/Mission 응답의 snake_case 필드(campaign_id, reward_point, mission_id, submitted_url)를 adapter에서 도메인 타입으로 변환한다.
+GET /api/v1/campaigns, GET /api/v1/escrows, GET /api/v1/wallets/me/histories의 data.content pagination 응답을 unwrapListResponse로 처리한다.
+Auth me endpoint는 /api/v1/auth/me가 아니라 /api/v1/users/me를 사용한다.
+Payment service를 추가하고 prepare/verify/detail 조회를 연결한다.
+Signup은 최신 명세상 accessToken을 반환하지 않을 수 있으므로 빈 token 응답을 허용한다.
+```
+
 ## 1. 문서 목적
 
 이 문서는 `swagger-openapi.json` 기준으로 Pacto MVP 프론트엔드의 API 연동 전략을 정의한다.
