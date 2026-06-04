@@ -9,6 +9,7 @@ export function adaptMission(response: MissionResponse): Mission {
     bloggerId: response.bloggerId,
     campaignTitle: response.campaignTitle,
     brandName: response.brandName,
+    thumbnailUrl: response.thumbnailUrl,
     rewardPoint: response.rewardPoint,
     dueDate: response.dueDate,
     submittedUrl: response.submittedUrl,

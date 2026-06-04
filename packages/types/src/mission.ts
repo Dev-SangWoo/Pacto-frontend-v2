@@ -1,4 +1,11 @@
-export type MissionStatus = "not_started" | "in_progress" | "submitted" | "approved" | "rejected";
+export type MissionStatus =
+  | "applied"
+  | "application_rejected"
+  | "not_started"
+  | "in_progress"
+  | "submitted"
+  | "approved"
+  | "rejected";
 
 export type Mission = {
   id: number;
@@ -6,6 +13,7 @@ export type Mission = {
   bloggerId: number;
   campaignTitle: string;
   brandName: string;
+  thumbnailUrl: string;
   rewardPoint: number;
   dueDate: string;
   submittedUrl?: string;

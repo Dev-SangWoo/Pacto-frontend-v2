@@ -35,6 +35,14 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
         <h1 id="mission-detail-title">{mission.campaignTitle}</h1>
       </div>
 
+      <div className="mission-detail-brief">
+        <img src={mission.thumbnailUrl} alt={`${mission.campaignTitle} 대표 이미지`} />
+        <div>
+          <span>연결된 캠페인</span>
+          <strong>{mission.brandName}</strong>
+        </div>
+      </div>
+
       <section className="reward-panel" aria-label="미션 보상">
         <span>검수 승인 후 정산 예정</span>
         <strong>{formatPoint(mission.rewardPoint)}</strong>
