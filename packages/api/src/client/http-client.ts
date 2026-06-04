@@ -1,0 +1,119 @@
+import { ApiError } from "./api-error";
+import { getServerAccessToken } from "./auth-token";
+import { getApiEnv } from "./env";
+
+const DEFAULT_API_BASE_URL = "http://localhost:8080";
+
+type HttpMethod = "GET" | "POST" | "PATCH";
+
+type ApiRequestOptions = {
+  body?: unknown;
+  method?: HttpMethod;
+  query?: Record<string, number | string | undefined>;
+  token?: string;
+};
+
+export type CommonResponse<T> = {
+  data: T;
+  message?: string;
+  success?: boolean;
+  timestamp?: string;
+};
+
+export function getApiBaseUrl(): string {
+  return (
+    getApiEnv("PACTO_API_BASE_URL") ??
+    getApiEnv("NEXT_PUBLIC_PACTO_API_BASE_URL") ??
+    DEFAULT_API_BASE_URL
+  ).replace(/\/$/, "");
+}
+
+export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  const { body, method = "GET", query, token = getServerAccessToken() } = options;
+  const url = new URL(`${getApiBaseUrl()}${path}`);
+
+  Object.entries(query ?? {}).forEach(([key, value]) => {
+    if (value != null) {
+      url.searchParams.set(key, String(value));
+    }
+  });
+
+  const headers = new Headers();
+
+  if (body != null) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  if (token != null && token.length > 0) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const response = await fetch(url, {
+    body: body == null ? undefined : JSON.stringify(body),
+    cache: "no-store",
+    headers,
+    method,
+  });
+
+  const payload = await parseResponseBody(response);
+
+  if (!response.ok) {
+    throw toApiError(response.status, payload);
+  }
+
+  return payload as T;
+}
+
+export function unwrapCommonResponse<T>(response: CommonResponse<T> | T): T {
+  if (isRecord(response) && "data" in response) {
+    return response.data as T;
+  }
+
+  return response as T;
+}
+
+export function unwrapListResponse<T>(response: unknown): T[] {
+  const unwrapped = unwrapCommonResponse(response);
+
+  if (Array.isArray(unwrapped)) {
+    return unwrapped as T[];
+  }
+
+  if (isRecord(unwrapped) && Array.isArray(unwrapped.content)) {
+    return unwrapped.content as T[];
+  }
+
+  return [];
+}
+
+async function parseResponseBody(response: Response): Promise<unknown> {
+  const text = await response.text();
+
+  if (text.length === 0) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return text;
+  }
+}
+
+function toApiError(statusCode: number, payload: unknown): ApiError {
+  if (isRecord(payload)) {
+    const message =
+      typeof payload.message === "string"
+        ? payload.message
+        : `API 요청에 실패했어요. (${statusCode})`;
+    const code = typeof payload.code === "string" ? payload.code : undefined;
+
+    return new ApiError(message, statusCode, code, payload);
+  }
+
+  return new ApiError(`API 요청에 실패했어요. (${statusCode})`, statusCode, undefined, payload);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}

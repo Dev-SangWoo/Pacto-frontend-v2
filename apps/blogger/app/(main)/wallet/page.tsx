@@ -7,9 +7,7 @@ export default async function WalletPage() {
   return (
     <section className="screen-stack detail-screen" aria-labelledby="wallet-title">
       <div className="page-heading">
-        <p className="section-label">지갑</p>
-        <h1 id="wallet-title">출금 가능한 금액을 확인하세요</h1>
-        <p>검수 중인 금액과 바로 출금 가능한 금액을 분리해서 보여드려요.</p>
+        <h1 id="wallet-title">지갑</h1>
       </div>
 
       <section className="wallet-hero" aria-label="출금 가능 금액">
@@ -31,9 +29,25 @@ export default async function WalletPage() {
 
       <section className="content-section" aria-labelledby="wallet-helper-title">
         <h2 id="wallet-helper-title">잠긴 금액이란?</h2>
-        <p>
-          미션 검수 또는 에스크로 정산을 기다리는 금액이에요. 승인 후 출금 가능 금액으로 이동해요.
-        </p>
+        <p>미션 검수 또는 정산 확인을 기다리는 금액이에요. 승인 후 출금 가능 금액으로 이동해요.</p>
+      </section>
+
+      <section className="flow-steps compact" aria-label="정산 흐름">
+        <div>
+          <span>1</span>
+          <strong>미션 제출</strong>
+          <p>리뷰 URL을 제출해요.</p>
+        </div>
+        <div>
+          <span>2</span>
+          <strong>검수 진행</strong>
+          <p>잠긴 금액으로 보여요.</p>
+        </div>
+        <div>
+          <span>3</span>
+          <strong>출금 신청</strong>
+          <p>승인 후 신청해요.</p>
+        </div>
       </section>
 
       <div className="fixed-cta">
@@ -42,7 +56,7 @@ export default async function WalletPage() {
           href="/withdrawals"
           aria-disabled={wallet.availableBalance === 0}
         >
-          출금 신청하기
+          출금 신청 화면으로 가기
         </a>
       </div>
     </section>

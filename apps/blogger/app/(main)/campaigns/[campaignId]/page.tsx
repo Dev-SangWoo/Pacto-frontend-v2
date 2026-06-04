@@ -8,6 +8,8 @@ import {
   getCampaignStatusView,
 } from "@pacto/utils";
 
+import { CampaignApplyAction } from "../../../_components/mock-actions";
+
 type CampaignDetailPageProps = {
   params: Promise<{
     campaignId: string;
@@ -33,9 +35,17 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
         <h1 id="campaign-detail-title">{campaign.title}</h1>
       </div>
 
+      <div className="campaign-detail-media">
+        <img src={campaign.thumbnailUrl} alt={`${campaign.title} 대표 이미지`} />
+      </div>
+
       <section className="reward-panel" aria-label="캠페인 보상">
-        <span>미션 승인 후 받을 보상</span>
+        <span>승인 후 지갑에 반영될 금액</span>
         <strong>{formatPoint(campaign.rewardPoint)}</strong>
+        <p>
+          미션을 제출하면 검수 후 정산 가능 금액으로 이동해요. 지급 조건은 아래 가이드에서 먼저
+          확인할 수 있어요.
+        </p>
       </section>
 
       <section className="info-list" aria-label="캠페인 조건">
@@ -60,10 +70,20 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
         <p>{campaign.guidelines}</p>
       </section>
 
+      <section
+        className="content-section checklist-section"
+        aria-labelledby="apply-checklist-title"
+      >
+        <h2 id="apply-checklist-title">지원하기 전에 확인해요</h2>
+        <ul>
+          <li>마감일까지 방문과 리뷰 작성을 할 수 있어요.</li>
+          <li>가이드에 맞게 제출하면 검수와 정산이 빨라져요.</li>
+          <li>승인 인원이 차면 모집이 자동으로 끝나요.</li>
+        </ul>
+      </section>
+
       <div className="fixed-cta">
-        <button className="primary-button" disabled={!isApplyEnabled} type="button">
-          {isApplyEnabled ? "캠페인 지원하기" : statusView.label}
-        </button>
+        <CampaignApplyAction campaignId={campaign.id} enabled={isApplyEnabled} />
       </div>
     </section>
   );
