@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 
-import { getCampaignDetail, getMyEscrows, getMyMissions } from "@pacto/api";
+import { getCampaignDetail, getMe, getMyEscrows, getMyMissions } from "@pacto/api";
 import { formatKoreanDate, formatPoint, getCampaignStatusView } from "@pacto/utils";
 
+import { getDashboardSession } from "../../../_lib/session";
 import { CampaignStepProgress } from "./_components/campaign-step-progress";
 
 type CampaignDetailPageProps = {
@@ -13,9 +14,22 @@ type CampaignDetailPageProps = {
 
 export default async function DashboardCampaignDetailPage({ params }: CampaignDetailPageProps) {
   const { campaignId } = await params;
-  const campaign = await getCampaignDetail(Number(campaignId));
+  const session = await getDashboardSession();
+  const campaign = await getCampaignDetail(Number(campaignId), session.accessToken);
 
   if (campaign == null) {
+    notFound();
+  }
+
+  const currentUserId =
+    session.userId ??
+    (session.accessToken != null
+      ? await getMe(session.accessToken)
+          .then((user) => user.id)
+          .catch(() => undefined)
+      : undefined);
+
+  if (currentUserId != null && campaign.advertiserId !== currentUserId) {
     notFound();
   }
 
@@ -30,6 +44,9 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
   const campaignEscrows = escrows.filter((escrow) => escrow.campaignId === campaign.id);
   const settlementReadyAmount = approvedMissionCount * campaign.rewardPoint;
   const statusView = getCampaignStatusView(campaign.status);
+  const remainingSlots =
+    campaign.remainingSlots ?? Math.max(campaign.recruitCount - campaign.approvedCount, 0);
+  const totalSlots = campaign.totalSlots ?? campaign.recruitCount;
 
   const operationSteps = [
     {
@@ -72,11 +89,11 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
           <span>참여자 1명 기준</span>
         </article>
         <article className="summary-card">
-          <p>승인 현황</p>
+          <p>모집 현황</p>
           <strong>
-            {campaign.approvedCount}/{campaign.recruitCount}명
+            {remainingSlots}/{totalSlots}명
           </strong>
-          <span>지원자 {campaign.applicantCount}명</span>
+          <span>남은 모집 인원</span>
         </article>
         <article className="summary-card">
           <p>마감일</p>
@@ -90,7 +107,7 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
           <div className="panel-heading">
             <div>
               <h2>캠페인 운영 흐름</h2>
-              <p>지원자를 승인한 뒤 제출 URL을 검수하고, 최종 승인된 건만 정산합니다.</p>
+              <p>지원자를 승인하고 제출 URL을 검수한 뒤 최종 승인 건만 정산합니다.</p>
             </div>
           </div>
           <div className="flow-list">

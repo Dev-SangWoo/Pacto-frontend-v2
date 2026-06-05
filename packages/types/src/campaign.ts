@@ -10,6 +10,8 @@ export type Campaign = {
   recruitCount: number;
   approvedCount: number;
   applicantCount: number;
+  totalSlots: number;
+  remainingSlots: number;
   guidelines: string;
   deadline: string;
   status: CampaignStatus;

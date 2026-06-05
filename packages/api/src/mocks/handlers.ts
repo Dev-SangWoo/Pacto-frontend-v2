@@ -16,7 +16,7 @@ export const handlers = [
     });
   }),
 
-  http.get(`${API_BASE_URL}/api/v1/users/me`, () => {
+  http.get(`${API_BASE_URL}/api/v1/auth/me`, () => {
     return HttpResponse.json({
       success: true,
       message: "내 정보 조회 성공",
@@ -39,6 +39,8 @@ export const handlers = [
           title: campaign.title,
           thumbnail_url: campaign.thumbnailUrl,
           reward_point: campaign.rewardPoint,
+          totalSlots: campaign.totalSlots,
+          remainingSlots: campaign.remainingSlots,
           status: "RECRUITING",
           deadline: campaign.deadline,
         })),
@@ -66,6 +68,8 @@ export const handlers = [
         title: campaign.title,
         thumbnail_url: campaign.thumbnailUrl,
         reward_point: campaign.rewardPoint,
+        totalSlots: campaign.totalSlots,
+        remainingSlots: campaign.remainingSlots,
         status: "RECRUITING",
         guidelines: [campaign.guidelines],
         deadline: campaign.deadline,
@@ -73,14 +77,22 @@ export const handlers = [
     });
   }),
 
-  http.post(`${API_BASE_URL}/api/v1/campaigns`, async () => {
-    return HttpResponse.json({
-      success: true,
-      data: {
-        campaign_id: 999,
-        status: "RECRUITING",
+  http.post(`${API_BASE_URL}/api/v1/campaigns`, async ({ request }) => {
+    const body = (await request.json()) as { totalSlots?: number };
+
+    return HttpResponse.json(
+      {
+        success: true,
+        message: "캠페인 등록 성공",
+        data: {
+          campaign_id: 999,
+          remainingSlots: body.totalSlots ?? 0,
+          status: "RECRUITING",
+          totalSlots: body.totalSlots ?? 0,
+        },
       },
-    });
+      { status: 201 },
+    );
   }),
 
   http.patch(`${API_BASE_URL}/api/v1/campaigns/:campaignId/status`, async ({ params, request }) => {

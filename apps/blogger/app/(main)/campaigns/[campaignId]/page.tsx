@@ -26,7 +26,8 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
 
   const statusView = getCampaignStatusView(campaign.status);
   const isApplyEnabled = canApplyToCampaign(campaign.status);
-  const remainingSlots = Math.max(campaign.recruitCount - campaign.approvedCount, 0);
+  const remainingSlots =
+    campaign.remainingSlots ?? Math.max(campaign.recruitCount - campaign.approvedCount, 0);
 
   return (
     <section className="screen-stack detail-screen" aria-labelledby="campaign-detail-title">
@@ -41,9 +42,9 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
         <strong>{formatPoint(campaign.rewardPoint)}</strong>
       </section>
 
-      <section className="ticket-facts detail-facts" aria-label="캠페인 핵심 조건">
+      <section className="ticket-facts detail-facts" aria-label="캠페인 조건">
         <div>
-          <dt>남은 자리</dt>
+          <dt>남은 모집</dt>
           <dd>{remainingSlots}명</dd>
         </div>
         <div>

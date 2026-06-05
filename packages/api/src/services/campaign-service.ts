@@ -14,6 +14,7 @@ import type {
 import { adaptMissionAction } from "../adapters/mission-adapter";
 import { isMockFallbackDisabled } from "../client/env";
 import { apiRequest, unwrapCommonResponse, unwrapListResponse } from "../client/http-client";
+import type { CommonResponse } from "../client/http-client";
 import { mockCampaigns } from "../mocks/data";
 
 export type GetCampaignsParams = {
@@ -24,20 +25,24 @@ export type GetCampaignsParams = {
 
 export type CreateCampaignPayload = {
   deadline: string;
-  guidelines: string[] | string;
-  reward_point: number;
-  thumbnail_url?: string;
+  guidelines: string;
+  rewardPoint: number;
+  thumbnailUrl?: string;
   title: string;
+  totalSlots: number;
 };
 
 export type UpdateCampaignStatusPayload = {
   status: CampaignStatusResponse;
 };
 
-export async function getCampaigns(params: GetCampaignsParams = {}): Promise<Campaign[]> {
+export async function getCampaigns(
+  params: GetCampaignsParams = {},
+  token?: string,
+): Promise<Campaign[]> {
   return withMockFallback(
     async () => {
-      const response = await apiRequest("/api/v1/campaigns", { query: params });
+      const response = await apiRequest("/api/v1/campaigns", { query: params, token });
 
       return unwrapListResponse<CampaignResponse>(response).map(adaptCampaign);
     },
@@ -45,10 +50,16 @@ export async function getCampaigns(params: GetCampaignsParams = {}): Promise<Cam
   );
 }
 
-export async function getCampaignDetail(campaignId: number): Promise<Campaign | undefined> {
+export async function getCampaignDetail(
+  campaignId: number,
+  token?: string,
+): Promise<Campaign | undefined> {
   return withMockFallback(
     async () => {
-      const response = await apiRequest<CampaignResponse>(`/api/v1/campaigns/${campaignId}`);
+      const response = await apiRequest<CommonResponse<CampaignResponse> | CampaignResponse>(
+        `/api/v1/campaigns/${campaignId}`,
+        { token },
+      );
 
       return adaptCampaign(unwrapCommonResponse<CampaignResponse>(response));
     },
@@ -61,7 +72,9 @@ export async function getCampaignDetail(campaignId: number): Promise<Campaign | 
 }
 
 export async function createCampaign(payload: CreateCampaignPayload, token?: string) {
-  const response = await apiRequest<CreateCampaignResponse>("/api/v1/campaigns", {
+  const response = await apiRequest<
+    CommonResponse<CreateCampaignResponse> | CreateCampaignResponse
+  >("/api/v1/campaigns", {
     body: payload,
     method: "POST",
     token,

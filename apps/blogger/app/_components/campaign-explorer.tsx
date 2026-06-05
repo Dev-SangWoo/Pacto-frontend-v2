@@ -90,7 +90,8 @@ type CampaignCardProps = {
 
 function CampaignCard({ campaign, viewMode }: CampaignCardProps) {
   const statusView = getCampaignStatusView(campaign.status);
-  const remainingSlots = Math.max(campaign.recruitCount - campaign.approvedCount, 0);
+  const remainingSlots =
+    campaign.remainingSlots ?? Math.max(campaign.recruitCount - campaign.approvedCount, 0);
 
   return (
     <Link className="campaign-ticket" href={`/campaigns/${campaign.id}`}>

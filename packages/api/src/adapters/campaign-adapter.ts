@@ -22,22 +22,36 @@ export type CampaignResponse = {
   guidelines?: string | string[];
   id?: number;
   recruitCount?: number;
+  remaining_slots?: number;
+  remainingSlots?: number;
   reward_point?: number;
   rewardPoint?: number;
   status?: CampaignStatusResponse;
   thumbnail_url?: string;
   thumbnailUrl?: string;
   title?: string;
+  total_slots?: number;
+  totalSlots?: number;
 };
 
 export type CreateCampaignResponse = {
   campaign_id?: number;
   campaignId?: number;
+  remainingSlots?: number;
   status?: CampaignStatusResponse;
+  totalSlots?: number;
 };
 
 export function adaptCampaign(response: CampaignResponse): Campaign {
   const id = response.id ?? response.campaignId ?? response.campaign_id ?? 0;
+  const totalSlots = response.totalSlots ?? response.total_slots ?? response.recruitCount ?? 0;
+  const remainingSlots =
+    response.remainingSlots ??
+    response.remaining_slots ??
+    Math.max(totalSlots - (response.approvedCount ?? 0), 0);
+  const approvedCount =
+    response.approvedCount ??
+    (totalSlots > 0 && remainingSlots >= 0 ? Math.max(totalSlots - remainingSlots, 0) : 0);
 
   return {
     id,
@@ -46,9 +60,11 @@ export function adaptCampaign(response: CampaignResponse): Campaign {
     title: response.title ?? "캠페인",
     thumbnailUrl: response.thumbnailUrl ?? response.thumbnail_url ?? getFallbackThumbnail(id),
     rewardPoint: response.rewardPoint ?? response.reward_point ?? 0,
-    recruitCount: response.recruitCount ?? 0,
-    approvedCount: response.approvedCount ?? 0,
+    recruitCount: totalSlots,
+    approvedCount,
     applicantCount: response.applicantCount ?? 0,
+    totalSlots,
+    remainingSlots,
     guidelines: normalizeGuidelines(response.guidelines),
     deadline: response.deadline ?? new Date().toISOString(),
     status: mapCampaignStatus(response.status),
