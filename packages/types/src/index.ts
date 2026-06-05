@@ -10,3 +10,4 @@ export type {
 } from "./wallet";
 export type { EscrowLedger, SettlementStatus } from "./escrow";
 export type { Payment, PaymentStatus } from "./payment";
+export type { Applicant, ApplicantStatus } from "./applicant";

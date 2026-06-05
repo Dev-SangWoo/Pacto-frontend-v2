@@ -1,14 +1,11 @@
 import { notFound } from "next/navigation";
 
 import { getCampaignDetail } from "@pacto/api";
+import type { Applicant } from "@pacto/types";
 
+import { getDashboardSession } from "../../../../_lib/session";
 import { CampaignStepProgress } from "../_components/campaign-step-progress";
-
-const applicants = [
-  { id: 1, name: "김하린", blogUrl: "blog.naver.com/harin", status: "승인 대기", fitScore: "높음" },
-  { id: 2, name: "이도윤", blogUrl: "blog.naver.com/doyoon", status: "승인됨", fitScore: "보통" },
-  { id: 3, name: "박서아", blogUrl: "blog.naver.com/seoa", status: "반려 검토", fitScore: "낮음" },
-];
+import { ApplicantList } from "./_components/applicant-list";
 
 type ApplicantsPageProps = {
   params: Promise<{
@@ -18,11 +15,14 @@ type ApplicantsPageProps = {
 
 export default async function ApplicantsPage({ params }: ApplicantsPageProps) {
   const { campaignId } = await params;
-  const campaign = await getCampaignDetail(Number(campaignId));
+  const session = await getDashboardSession();
+  const campaign = await getCampaignDetail(Number(campaignId), session.accessToken);
 
   if (campaign == null) {
     notFound();
   }
+
+  const initialApplicants = buildMockApplicants(campaign.id);
 
   return (
     <>
@@ -36,53 +36,36 @@ export default async function ApplicantsPage({ params }: ApplicantsPageProps) {
         <CampaignStepProgress activeStep="applicants" campaignId={campaign.id} />
       </header>
 
-      <section className="panel">
-        <div className="panel-heading">
-          <div>
-            <h2>지원자 목록</h2>
-            <p>지원자를 승인하거나 반려해서 미션 수행 대상을 확정합니다.</p>
-          </div>
-          <span>{applicants.length}명</span>
-        </div>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>블로거</th>
-                <th>블로그 URL</th>
-                <th>상태</th>
-                <th>예상 적합도</th>
-                <th>액션</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applicants.map((applicant) => (
-                <tr key={applicant.id}>
-                  <td>
-                    <strong>{applicant.name}</strong>
-                    <span>지원 #{applicant.id}</span>
-                  </td>
-                  <td>{applicant.blogUrl}</td>
-                  <td>
-                    <span className="status-badge blue">{applicant.status}</span>
-                  </td>
-                  <td>{applicant.fitScore}</td>
-                  <td>
-                    <div className="action-row">
-                      <button className="small-button" type="button">
-                        승인
-                      </button>
-                      <button className="small-button muted" type="button">
-                        반려
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <ApplicantList campaignId={campaign.id} initialApplicants={initialApplicants} />
     </>
   );
+}
+
+function buildMockApplicants(campaignId: number): Applicant[] {
+  return [
+    {
+      id: campaignId * 100 + 1,
+      name: "감성리뷰어 하루",
+      blogUrl: "https://blog.naver.com/haru_review",
+      status: "pending",
+      fitScore: "높음",
+      appliedAt: "2026-06-05T10:30:00",
+    },
+    {
+      id: campaignId * 100 + 2,
+      name: "맛집기록 민",
+      blogUrl: "https://blog.naver.com/min_table",
+      status: "pending",
+      fitScore: "보통",
+      appliedAt: "2026-06-04T16:20:00",
+    },
+    {
+      id: campaignId * 100 + 3,
+      name: "라이프로그 수아",
+      blogUrl: "https://blog.naver.com/sua_log",
+      status: "approved",
+      fitScore: "높음",
+      appliedAt: "2026-06-03T12:10:00",
+    },
+  ];
 }

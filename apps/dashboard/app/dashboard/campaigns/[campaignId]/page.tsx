@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { getCampaignDetail, getMe, getMyEscrows, getMyMissions } from "@pacto/api";
+import { getCampaignDetail, getMyEscrows, getMyMissions } from "@pacto/api";
 import { formatKoreanDate, formatPoint, getCampaignStatusView } from "@pacto/utils";
 
 import { getDashboardSession } from "../../../_lib/session";
@@ -21,19 +21,10 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
     notFound();
   }
 
-  const currentUserId =
-    session.userId ??
-    (session.accessToken != null
-      ? await getMe(session.accessToken)
-          .then((user) => user.id)
-          .catch(() => undefined)
-      : undefined);
-
-  if (currentUserId != null && campaign.advertiserId !== currentUserId) {
-    notFound();
-  }
-
-  const [missions, escrows] = await Promise.all([getMyMissions(), getMyEscrows()]);
+  const [missions, escrows] = await Promise.all([
+    getMyMissions({}, session.accessToken).catch(() => []),
+    getMyEscrows({}, session.accessToken).catch(() => []),
+  ]);
   const campaignMissions = missions.filter((mission) => mission.campaignId === campaign.id);
   const submittedMissionCount = campaignMissions.filter(
     (mission) => mission.status === "submitted",
@@ -44,9 +35,9 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
   const campaignEscrows = escrows.filter((escrow) => escrow.campaignId === campaign.id);
   const settlementReadyAmount = approvedMissionCount * campaign.rewardPoint;
   const statusView = getCampaignStatusView(campaign.status);
-  const remainingSlots =
-    campaign.remainingSlots ?? Math.max(campaign.recruitCount - campaign.approvedCount, 0);
   const totalSlots = campaign.totalSlots ?? campaign.recruitCount;
+  const approvedSlots = campaign.approvedCount;
+  const remainingSlots = campaign.remainingSlots ?? Math.max(totalSlots - approvedSlots, 0);
 
   const operationSteps = [
     {
@@ -91,9 +82,9 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
         <article className="summary-card">
           <p>모집 현황</p>
           <strong>
-            {remainingSlots}/{totalSlots}명
+            {approvedSlots}/{totalSlots}명
           </strong>
-          <span>남은 모집 인원</span>
+          <span>승인된 인원 · 남은 {remainingSlots}명</span>
         </article>
         <article className="summary-card">
           <p>마감일</p>
