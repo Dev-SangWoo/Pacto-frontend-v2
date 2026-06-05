@@ -48,7 +48,8 @@ export default async function DashboardCampaignsPage() {
                 <tr>
                   <th>캠페인</th>
                   <th>상태</th>
-                  <th>모집</th>
+                  <th>모집 현황</th>
+                  <th>남은 모집</th>
                   <th>지원자</th>
                   <th>마감일</th>
                   <th>보상</th>
@@ -58,10 +59,10 @@ export default async function DashboardCampaignsPage() {
               <tbody>
                 {myCampaigns.map((campaign) => {
                   const statusView = getCampaignStatusView(campaign.status);
-                  const remainingSlots =
-                    campaign.remainingSlots ??
-                    Math.max(campaign.recruitCount - campaign.approvedCount, 0);
                   const totalSlots = campaign.totalSlots ?? campaign.recruitCount;
+                  const approvedSlots = campaign.approvedCount;
+                  const remainingSlots =
+                    campaign.remainingSlots ?? Math.max(totalSlots - approvedSlots, 0);
 
                   return (
                     <tr key={campaign.id}>
@@ -75,8 +76,9 @@ export default async function DashboardCampaignsPage() {
                         </span>
                       </td>
                       <td>
-                        {remainingSlots}/{totalSlots}명 남음
+                        {approvedSlots}/{totalSlots}명
                       </td>
+                      <td>{remainingSlots}명</td>
                       <td>{campaign.applicantCount}명</td>
                       <td>{formatKoreanDate(campaign.deadline)}</td>
                       <td>{formatPoint(campaign.rewardPoint)}</td>

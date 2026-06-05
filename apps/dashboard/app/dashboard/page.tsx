@@ -1,5 +1,8 @@
-import { getCampaigns } from "@pacto/api";
+import { getCampaigns, getMyWallet } from "@pacto/api";
 import { formatKoreanDate, formatPoint, getCampaignStatusView } from "@pacto/utils";
+import { redirect } from "next/navigation";
+
+import { getDashboardSession } from "../_lib/session";
 
 const operationQueues = [
   { label: "지원자 승인 대기", count: 32, href: "/dashboard/campaigns/1/applicants" },
@@ -7,14 +10,24 @@ const operationQueues = [
   { label: "정산 실행 가능", count: 3, href: "/dashboard/campaigns/1/settlements" },
 ];
 
+const emptyWallet = {
+  availableBalance: 0,
+  lockedBalance: 0,
+};
+
 export default async function DashboardHomePage() {
-  const campaigns = await getCampaigns();
+  const session = await getDashboardSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  const [campaigns, wallet] = await Promise.all([
+    getCampaigns({}, session.accessToken).catch(() => []),
+    getMyWallet(session.accessToken).catch(() => emptyWallet),
+  ]);
   const openCampaignCount = campaigns.filter((campaign) => campaign.status === "open").length;
   const totalApplicants = campaigns.reduce((sum, campaign) => sum + campaign.applicantCount, 0);
-  const escrowAmount = campaigns.reduce(
-    (sum, campaign) => sum + campaign.rewardPoint * campaign.recruitCount,
-    0,
-  );
 
   return (
     <>
@@ -24,9 +37,15 @@ export default async function DashboardHomePage() {
           <h1>캠페인 운영 현황</h1>
           <p className="topbar-copy">모집, 검수, 정산 흐름을 한 화면에서 점검합니다.</p>
         </div>
-        <a className="primary-link" href="/dashboard/campaigns/new">
-          캠페인 등록
-        </a>
+        <div className="dashboard-header-actions">
+          <div className="wallet-summary-pill">
+            <span>지갑 잔액</span>
+            <strong>{formatPoint(wallet.availableBalance)}</strong>
+          </div>
+          <a className="primary-link" href="/dashboard/campaigns/new">
+            캠페인 등록
+          </a>
+        </div>
       </header>
 
       <section className="summary-grid summary-grid-pro" aria-label="운영 요약">
@@ -41,9 +60,9 @@ export default async function DashboardHomePage() {
           <span>승인/반려 대기 포함</span>
         </article>
         <article className="summary-card emphasis">
-          <p>예치 예정 총액</p>
-          <strong>{formatPoint(escrowAmount)}</strong>
-          <span>캠페인 보상 기준</span>
+          <p>에스크로 잠금</p>
+          <strong>{formatPoint(wallet.lockedBalance)}</strong>
+          <span>지갑 API 권한 기준</span>
         </article>
       </section>
 
@@ -72,6 +91,7 @@ export default async function DashboardHomePage() {
               <tbody>
                 {campaigns.map((campaign) => {
                   const statusView = getCampaignStatusView(campaign.status);
+                  const totalSlots = campaign.totalSlots ?? campaign.recruitCount;
 
                   return (
                     <tr key={campaign.id}>
@@ -86,7 +106,7 @@ export default async function DashboardHomePage() {
                       </td>
                       <td>{campaign.applicantCount}명</td>
                       <td>
-                        {campaign.approvedCount}/{campaign.recruitCount}명
+                        {campaign.approvedCount}/{totalSlots}명
                       </td>
                       <td>{formatKoreanDate(campaign.deadline)}</td>
                       <td>{formatPoint(campaign.rewardPoint)}</td>
@@ -101,7 +121,7 @@ export default async function DashboardHomePage() {
         <aside className="panel queue-panel" aria-labelledby="queue-title">
           <div className="panel-heading compact">
             <div>
-              <h2 id="queue-title">오늘의 운영 큐</h2>
+              <h2 id="queue-title">오늘의 운영 일</h2>
               <p>처리가 늦어지면 정산도 밀립니다.</p>
             </div>
             <span>우선 처리</span>

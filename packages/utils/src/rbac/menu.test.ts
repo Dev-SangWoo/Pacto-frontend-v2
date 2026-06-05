@@ -14,12 +14,19 @@ describe("dashboard rbac policy", () => {
     ).toBe(false);
   });
 
-  it("캠페인 운영 단계는 전역 메뉴가 아니라 캠페인 상세 안에서 접근한다", () => {
+  it("캠페인 운영 단계의 하위 메뉴는 전역 메뉴가 아니라 캠페인 상세 안에서 접근한다", () => {
     const hrefs = getDashboardMenus("AGENCY_ADMIN").map((menu) => menu.href);
 
     expect(hrefs).not.toContain("/dashboard/campaigns/1/applicants");
     expect(hrefs).not.toContain("/dashboard/campaigns/1/missions");
     expect(hrefs).not.toContain("/dashboard/escrow");
+  });
+
+  it("대행사 관리자는 결제 메뉴를 볼 수 있다", () => {
+    expect(getDashboardMenus("AGENCY_ADMIN")).toContainEqual({
+      href: "/dashboard/payments",
+      label: "결제",
+    });
   });
 
   it("광고주는 결제와 리포트 중심 메뉴만 본다", () => {
