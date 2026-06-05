@@ -10,25 +10,25 @@ Dashboard는 하나의 프론트엔드 앱으로 만들고, 로그인한 사용�
 
 ## 2. 사용자 역할
 
-| Role | 설명 |
-| --- | --- |
-| Blogger | 캠페인에 지원하고 미션을 수행하는 사용자 |
-| Agency Admin | 대행사 전체 캠페인 운영 권한을 가진 관리자 |
-| Agency Operator | 캠페인 운영 실무자 |
-| Advertiser | 캠페인 예산을 결제하고 결과를 확인하는 광고주 |
-| Pacto Admin | Pacto 내부 운영자 |
+| Role            | 설명                                          |
+| --------------- | --------------------------------------------- |
+| Blogger         | 캠페인에 지원하고 미션을 수행하는 사용자      |
+| Agency Admin    | 대행사 전체 캠페인 운영 권한을 가진 관리자    |
+| Agency Operator | 캠페인 운영 실무자                            |
+| Advertiser      | 캠페인 예산을 결제하고 결과를 확인하는 광고주 |
+| Pacto Admin     | Pacto 내부 운영자                             |
 
 ---
 
 ## 3. 앱 접근 기준
 
-| Role | Blogger App | Dashboard |
-| --- | --- | --- |
-| Blogger | 가능 | 불가 |
-| Agency Admin | 불가 | 가능 |
-| Agency Operator | 불가 | 가능 |
-| Advertiser | 불가 | 제한 가능 |
-| Pacto Admin | 불가 | 가능 |
+| Role            | Blogger App | Dashboard |
+| --------------- | ----------- | --------- |
+| Blogger         | 가능        | 불가      |
+| Agency Admin    | 불가        | 가능      |
+| Agency Operator | 불가        | 가능      |
+| Advertiser      | 불가        | 제한 가능 |
+| Pacto Admin     | 불가        | 가능      |
 
 블로거는 Dashboard에 접근할 수 없다. 광고주는 Dashboard에 접근하더라도 결제와 리포트 중심의 제한 View만 볼 수 있다.
 
@@ -36,17 +36,17 @@ Dashboard는 하나의 프론트엔드 앱으로 만들고, 로그인한 사용�
 
 ## 4. 기능별 권한
 
-| 기능 | Agency Admin | Agency Operator | Advertiser | Pacto Admin |
-| --- | --- | --- | --- | --- |
-| 캠페인 목록 | 가능 | 가능 | 제한 | 가능 |
-| 캠페인 생성 | 가능 | 가능 | 불가 | 가능 |
-| 캠페인 수정 | 가능 | 가능 | 불가 | 가능 |
-| 지원자 관리 | 가능 | 가능 | 불가 | 가능 |
-| 미션 검수 | 가능 | 가능 | 제한 | 가능 |
-| 결제 | 제한 | 불가 | 가능 | 가능 |
-| 정산 확인 | 가능 | 제한 | 제한 | 가능 |
-| 리포트 | 가능 | 가능 | 가능 | 가능 |
-| 설정 | 가능 | 불가 | 불가 | 가능 |
+| 기능        | Agency Admin | Agency Operator | Advertiser | Pacto Admin |
+| ----------- | ------------ | --------------- | ---------- | ----------- |
+| 캠페인 목록 | 가능         | 가능            | 제한       | 가능        |
+| 캠페인 생성 | 가능         | 가능            | 불가       | 가능        |
+| 캠페인 수정 | 가능         | 가능            | 불가       | 가능        |
+| 지원자 관리 | 가능         | 가능            | 불가       | 가능        |
+| 미션 검수   | 가능         | 가능            | 제한       | 가능        |
+| 결제        | 제한         | 불가            | 가능       | 가능        |
+| 정산 확인   | 가능         | 제한            | 제한       | 가능        |
+| 리포트      | 가능         | 가능            | 가능       | 가능        |
+| 설정        | 가능         | 불가            | 불가       | 가능        |
 
 ---
 
@@ -57,12 +57,11 @@ Dashboard는 하나의 프론트엔드 앱으로 만들고, 로그인한 사용�
 ```txt
 대시보드
 캠페인
-지원자
-미션 검수
-정산
 리포트
 설정
 ```
+
+지원자, 미션 검수, 정산은 전역 메뉴가 아니라 캠페인 상세 안의 운영 단계로 접근한다.
 
 `Agency Operator`는 설정 메뉴를 보지 않는다.
 
@@ -100,18 +99,18 @@ Dashboard는 하나의 프론트엔드 앱으로 만들고, 로그인한 사용�
 
 ## 6. 라우트 접근 규칙
 
-| Route | Blogger | Agency | Advertiser | Pacto Admin |
-| --- | --- | --- | --- | --- |
-| `/blogger/*` | 가능 | 불가 | 불가 | 불가 |
-| `/dashboard` | 불가 | 가능 | 가능 | 가능 |
-| `/dashboard/campaigns` | 불가 | 가능 | 제한 | 가능 |
-| `/dashboard/campaigns/new` | 불가 | 가능 | 불가 | 가능 |
-| `/dashboard/campaigns/:id/applicants` | 불가 | 가능 | 불가 | 가능 |
-| `/dashboard/campaigns/:id/missions` | 불가 | 가능 | 제한 | 가능 |
-| `/dashboard/escrow` | 불가 | 가능 | 제한 | 가능 |
-| `/dashboard/payments` | 불가 | 제한 | 가능 | 가능 |
-| `/dashboard/reports` | 불가 | 가능 | 가능 | 가능 |
-| `/dashboard/settings` | 불가 | 제한 | 불가 | 가능 |
+| Route                                  | Blogger | Agency | Advertiser | Pacto Admin |
+| -------------------------------------- | ------- | ------ | ---------- | ----------- |
+| `/blogger/*`                           | 가능    | 불가   | 불가       | 불가        |
+| `/dashboard`                           | 불가    | 가능   | 가능       | 가능        |
+| `/dashboard/campaigns`                 | 불가    | 가능   | 제한       | 가능        |
+| `/dashboard/campaigns/new`             | 불가    | 가능   | 불가       | 가능        |
+| `/dashboard/campaigns/:id/applicants`  | 불가    | 가능   | 불가       | 가능        |
+| `/dashboard/campaigns/:id/missions`    | 불가    | 가능   | 제한       | 가능        |
+| `/dashboard/campaigns/:id/settlements` | 불가    | 가능   | 제한       | 가능        |
+| `/dashboard/payments`                  | 불가    | 제한   | 가능       | 가능        |
+| `/dashboard/reports`                   | 불가    | 가능   | 가능       | 가능        |
+| `/dashboard/settings`                  | 불가    | 제한   | 불가       | 가능        |
 
 ---
 

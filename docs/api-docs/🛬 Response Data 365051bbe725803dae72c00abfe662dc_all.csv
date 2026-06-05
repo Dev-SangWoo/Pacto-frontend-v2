@@ -1,0 +1,12 @@
+﻿이름,날짜,상태,설명,타입
+data.content[].status,,시작 전,"현재 상태 (LOCKED, RELEASED, CANCELED)",String
+success,,시작 전,요청 성공 여부,Boolean
+data.content[].campaignId,,시작 전,연관된 캠페인 ID,Number
+data.content[].escrowId,,시작 전,에스크로 고유 식별자,Number
+data.content,,시작 전,에스크로 내역 리스트,Array
+data.content[].bloggerName,,시작 전,미션을 수행 중인 블로거 닉네임,String
+data.content[].amount,,시작 전,에스크로에 묶인 금액,Number
+message,,시작 전,응답 메시지,String
+data.totalPages,,시작 전,전체 페이지 수,Number
+data.currentPage,,시작 전,현재 페이지 번호,Number
+data.content[].campaignTitle,,시작 전,연관된 캠페인 제목,String

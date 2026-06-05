@@ -1,0 +1,8 @@
+﻿이름,날짜,상태,설명,타입
+data.content[].escrow_id,,시작 전,연결된 에스크로 원장 식별자,Number
+data.content[].submitted_url,,시작 전,제출한 블로그 URL (미제출 시 null),String
+data[].mission_id,,시작 전,미션 고유 식별자,Number
+data[].campaign_id,,시작 전,연결된 캠페인 식별자,Number
+data[].status,,시작 전,IN_PROGRESS · SUBMITTED · APPROVED · REJECTED,String
+data[].created_at,,시작 전,미션 수락 일시,Timestamp
+data[].updated_at,,시작 전,최종 상태 변경 일시,Timestamp

@@ -95,13 +95,13 @@ Swagger와 백엔드 API가 확정되기 전까지는 mock-first 방식으로 �
 
 ## 4. 사용자 역할
 
-| 역할 | 설명 | 주요 화면 |
-| --- | --- | --- |
-| Blogger | 캠페인에 지원하고, 미션을 제출하고, 정산을 받는 사용자 | Blogger App |
-| Agency Admin | 대행사 전체 캠페인 운영 권한을 가진 관리자 | Dashboard |
-| Agency Operator | 실무 캠페인 운영자 | Dashboard |
-| Advertiser | 캠페인 예산을 결제하고 결과를 확인하는 광고주 | 제한된 Dashboard View |
-| Pacto Admin | Pacto 내부 운영자, MVP 이후 확장 가능 | Dashboard |
+| 역할            | 설명                                                   | 주요 화면             |
+| --------------- | ------------------------------------------------------ | --------------------- |
+| Blogger         | 캠페인에 지원하고, 미션을 제출하고, 정산을 받는 사용자 | Blogger App           |
+| Agency Admin    | 대행사 전체 캠페인 운영 권한을 가진 관리자             | Dashboard             |
+| Agency Operator | 실무 캠페인 운영자                                     | Dashboard             |
+| Advertiser      | 캠페인 예산을 결제하고 결과를 확인하는 광고주          | 제한된 Dashboard View |
+| Pacto Admin     | Pacto 내부 운영자, MVP 이후 확장 가능                  | Dashboard             |
 
 ---
 
@@ -222,7 +222,7 @@ B2B Dashboard는 대행사가 캠페인을 등록하고, 지원자를 관리하�
 /dashboard/campaigns/:id
 /dashboard/campaigns/:id/applicants
 /dashboard/campaigns/:id/missions
-/dashboard/escrow
+/dashboard/campaigns/:id/settlements
 /dashboard/payments
 /dashboard/reports
 /dashboard/settings
@@ -287,16 +287,16 @@ MVP 단계에서는 광고주에게 완전한 캠페인 생성 기능을 제공�
 
 B2B Dashboard는 하나의 프론트엔드 프로젝트로 만든다. 로그인한 사용자의 역할에 따라 메뉴와 접근 가능한 라우트를 다르게 보여준다.
 
-| 기능 | Agency Admin | Agency Operator | Advertiser | Pacto Admin |
-| --- | --- | --- | --- | --- |
-| 캠페인 목록 | 가능 | 가능 | 제한 | 가능 |
-| 캠페인 생성 | 가능 | 가능 | 불가 | 가능 |
-| 지원자 관리 | 가능 | 가능 | 불가 | 가능 |
-| 미션 검수 | 가능 | 가능 | 제한 | 가능 |
-| 결제 | 제한 | 불가 | 가능 | 가능 |
-| 정산 확인 | 가능 | 제한 | 제한 | 가능 |
-| 리포트 | 가능 | 가능 | 가능 | 가능 |
-| 시스템 설정 | 가능 | 불가 | 불가 | 가능 |
+| 기능        | Agency Admin | Agency Operator | Advertiser | Pacto Admin |
+| ----------- | ------------ | --------------- | ---------- | ----------- |
+| 캠페인 목록 | 가능         | 가능            | 제한       | 가능        |
+| 캠페인 생성 | 가능         | 가능            | 불가       | 가능        |
+| 지원자 관리 | 가능         | 가능            | 불가       | 가능        |
+| 미션 검수   | 가능         | 가능            | 제한       | 가능        |
+| 결제        | 제한         | 불가            | 가능       | 가능        |
+| 정산 확인   | 가능         | 제한            | 제한       | 가능        |
+| 리포트      | 가능         | 가능            | 가능       | 가능        |
+| 시스템 설정 | 가능         | 불가            | 불가       | 가능        |
 
 ### 메뉴 예시
 

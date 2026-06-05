@@ -1,0 +1,10 @@
+﻿이름,타입,설명,날짜,상태
+success,Boolean,요청 성공 여부,,시작 전
+message,String,응답 메시지,,시작 전
+data.content,Array,포인트 변동 내역 리스트,,시작 전
+data.content[].historyId,Number,내역 고유 식별자,,시작 전
+data.content[].type,String,"변동 타입(CHARGE, LOCK, RELEASE, REFUND, WITHDRAW)",,시작 전
+data.content[].amount,Number,변동 금액(+/-),,시작 전
+data.content[].referenceId,Number,"변동 원인 추적용 원본 ID. CHARGE=paymentId, LOCK/RELEASE/REFUND=escrowId, WITHDRAW=withdrawalId",,시작 전
+data.totalPages,Number,전체 페이지 수,,시작 전
+data.currentPage,Number,현재 페이지 번호,,시작 전

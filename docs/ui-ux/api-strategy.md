@@ -1,5 +1,29 @@
 # Pacto API Strategy
 
+## 0. Latest api-docs sync
+
+2026-06-05 기준 `docs/api-docs` 최신 명세를 API 계층에 반영했다.
+
+핵심 변경:
+
+```txt
+GET /api/v1/users/me
+POST /api/v1/payments
+POST /api/v1/payments/verify
+GET /api/v1/payments/{paymentId}
+GET /api/v1/dashboard/summary
+```
+
+반영 내용:
+
+```txt
+Campaign/Mission 응답의 snake_case 필드(campaign_id, reward_point, mission_id, submitted_url)를 adapter에서 도메인 타입으로 변환한다.
+GET /api/v1/campaigns, GET /api/v1/escrows, GET /api/v1/wallets/me/histories의 data.content pagination 응답을 unwrapListResponse로 처리한다.
+Auth me endpoint는 /api/v1/auth/me가 아니라 /api/v1/users/me를 사용한다.
+Payment service를 추가하고 prepare/verify/detail 조회를 연결한다.
+Signup은 최신 명세상 accessToken을 반환하지 않을 수 있으므로 빈 token 응답을 허용한다.
+```
+
 ## 1. 문서 목적
 
 이 문서는 `swagger-openapi.json` 기준으로 Pacto MVP 프론트엔드의 API 연동 전략을 정의한다.
@@ -47,11 +71,11 @@ escrow
 
 ## 3.1 Auth
 
-| Method | Path | operationId | 용도 |
-| --- | --- | --- | --- |
-| POST | `/api/v1/auth/signup` | `signup` | 회원가입 |
-| POST | `/api/v1/auth/login` | `login` | 로그인 |
-| GET | `/api/v1/auth/me` | `me` | 내 계정 정보 조회 |
+| Method | Path                  | operationId | 용도              |
+| ------ | --------------------- | ----------- | ----------------- |
+| POST   | `/api/v1/auth/signup` | `signup`    | 회원가입          |
+| POST   | `/api/v1/auth/login`  | `login`     | 로그인            |
+| GET    | `/api/v1/auth/me`     | `me`        | 내 계정 정보 조회 |
 
 로그인 응답은 `CommonResponseLoginResponse` 형태이며, `data.accessToken`을 반환한다.
 
@@ -65,13 +89,13 @@ response.data.accessToken
 
 ## 3.2 Campaign
 
-| Method | Path | operationId | 용도 |
-| --- | --- | --- | --- |
-| GET | `/api/v1/campaigns` | `getCampaigns` | 캠페인 목록 조회 |
-| POST | `/api/v1/campaigns` | `createCampaign` | 캠페인 생성 |
-| GET | `/api/v1/campaigns/{campaignId}` | `getCampaign` | 캠페인 상세 조회 |
-| PATCH | `/api/v1/campaigns/{campaignId}/status` | `updateCampaignStatus` | 캠페인 상태 변경 |
-| POST | `/api/v1/campaigns/{campaignId}/missions` | `acceptMission` | 캠페인 미션 수락/참여 |
+| Method | Path                                      | operationId            | 용도                  |
+| ------ | ----------------------------------------- | ---------------------- | --------------------- |
+| GET    | `/api/v1/campaigns`                       | `getCampaigns`         | 캠페인 목록 조회      |
+| POST   | `/api/v1/campaigns`                       | `createCampaign`       | 캠페인 생성           |
+| GET    | `/api/v1/campaigns/{campaignId}`          | `getCampaign`          | 캠페인 상세 조회      |
+| PATCH  | `/api/v1/campaigns/{campaignId}/status`   | `updateCampaignStatus` | 캠페인 상태 변경      |
+| POST   | `/api/v1/campaigns/{campaignId}/missions` | `acceptMission`        | 캠페인 미션 수락/참여 |
 
 캠페인 목록의 query parameter:
 
@@ -103,12 +127,12 @@ Swagger가 더 구체화되면 adapter만 실제 응답에 맞게 수정한다.
 
 ## 3.3 Mission
 
-| Method | Path | operationId | 용도 |
-| --- | --- | --- | --- |
-| GET | `/api/v1/missions/me` | `getMyMissions` | 내 미션 목록 조회 |
-| PATCH | `/api/v1/missions/{missionId}/submit` | `submitMission` | 미션 제출 |
-| PATCH | `/api/v1/missions/{missionId}/approve` | `approveMission` | 미션 승인 |
-| PATCH | `/api/v1/missions/{missionId}/cancel` | `cancelMission` | 미션 취소 또는 반려 |
+| Method | Path                                   | operationId      | 용도                |
+| ------ | -------------------------------------- | ---------------- | ------------------- |
+| GET    | `/api/v1/missions/me`                  | `getMyMissions`  | 내 미션 목록 조회   |
+| PATCH  | `/api/v1/missions/{missionId}/submit`  | `submitMission`  | 미션 제출           |
+| PATCH  | `/api/v1/missions/{missionId}/approve` | `approveMission` | 미션 승인           |
+| PATCH  | `/api/v1/missions/{missionId}/cancel`  | `cancelMission`  | 미션 취소 또는 반려 |
 
 `getMyMissions` query parameter:
 
@@ -137,11 +161,11 @@ approveMission은 request body 없이 missionId만 받는다.
 
 ## 3.4 Wallet
 
-| Method | Path | operationId | 용도 |
-| --- | --- | --- | --- |
-| GET | `/api/v1/wallets/me` | `getMyWallet` | 내 지갑 조회 |
-| GET | `/api/v1/wallets/me/histories` | `getMyHistories` | 포인트 변경 내역 조회 |
-| POST | `/api/v1/wallets/withdraw` | `requestWithdraw` | 출금 신청 |
+| Method | Path                           | operationId       | 용도                  |
+| ------ | ------------------------------ | ----------------- | --------------------- |
+| GET    | `/api/v1/wallets/me`           | `getMyWallet`     | 내 지갑 조회          |
+| GET    | `/api/v1/wallets/me/histories` | `getMyHistories`  | 포인트 변경 내역 조회 |
+| POST   | `/api/v1/wallets/withdraw`     | `requestWithdraw` | 출금 신청             |
 
 `WalletResponse`:
 
@@ -187,9 +211,9 @@ status: PENDING | COMPLETED | REJECTED
 
 ## 3.5 Escrow
 
-| Method | Path | operationId | 용도 |
-| --- | --- | --- | --- |
-| GET | `/api/v1/escrows` | `getMyEscrows` | 내 에스크로 내역 조회 |
+| Method | Path              | operationId    | 용도                  |
+| ------ | ----------------- | -------------- | --------------------- |
+| GET    | `/api/v1/escrows` | `getMyEscrows` | 내 에스크로 내역 조회 |
 
 query parameter:
 

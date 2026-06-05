@@ -49,50 +49,67 @@ MVP는 다음 흐름을 끝까지 시연 가능하게 만드는 것을 목표로
 
 ## 주요 사용자
 
-| 사용자 | 주요 목적 | 화면 |
-| --- | --- | --- |
-| 블로거 | 캠페인 탐색, 지원, 미션 제출, 정산 확인 | Blogger App |
-| 광고 대행사 | 캠페인 등록, 지원자 관리, 미션 검수, 정산 확인 | Dashboard |
-| 광고주 | 캠페인 예산 결제, 간단 리포트 확인 | Limited Dashboard View |
+| 사용자      | 주요 목적                                      | 화면                   |
+| ----------- | ---------------------------------------------- | ---------------------- |
+| 블로거      | 캠페인 탐색, 지원, 미션 제출, 정산 확인        | Blogger App            |
+| 광고 대행사 | 캠페인 등록, 지원자 관리, 미션 검수, 정산 확인 | Dashboard              |
+| 광고주      | 캠페인 예산 결제, 간단 리포트 확인             | Limited Dashboard View |
 
 ---
 
 ## 문서
 
-| 문서 | 설명 |
-| --- | --- |
-| [프론트엔드 UI/UX 계획](./pacto-frontend-ui-plan.md) | 전체 MVP 프론트 전략 |
-| [UI/UX 상세 설계](./docs/ui-ux/README.md) | 화면 설계 허브 문서 |
-| [Route Map](./docs/ui-ux/route-map.md) | 앱별 라우트와 App Router 구조 |
-| [Component Spec](./docs/ui-ux/component-spec.md) | 공통/도메인 컴포넌트 설계 |
-| [RBAC Policy](./docs/ui-ux/rbac-policy.md) | 역할 기반 접근 제어 정책 |
-| [Status Policy](./docs/ui-ux/status-policy.md) | 상태값과 UI 표시 규칙 |
-| [API Strategy](./docs/ui-ux/api-strategy.md) | Swagger 기준 API 연동 전략 |
-| [Decision Log](./docs/decision-log.md) | 주요 의사결정 기록 |
-| [Git Convention](./docs/git-convention.md) | 브랜치와 작업 흐름 규칙 |
-| [Commit Convention](./docs/commit-convention.md) | 커밋 메시지 규칙 |
+| 문서                                                 | 설명                          |
+| ---------------------------------------------------- | ----------------------------- |
+| [프론트엔드 UI/UX 계획](./pacto-frontend-ui-plan.md) | 전체 MVP 프론트 전략          |
+| [UI/UX 상세 설계](./docs/ui-ux/README.md)            | 화면 설계 허브 문서           |
+| [Route Map](./docs/ui-ux/route-map.md)               | 앱별 라우트와 App Router 구조 |
+| [Component Spec](./docs/ui-ux/component-spec.md)     | 공통/도메인 컴포넌트 설계     |
+| [RBAC Policy](./docs/ui-ux/rbac-policy.md)           | 역할 기반 접근 제어 정책      |
+| [Status Policy](./docs/ui-ux/status-policy.md)       | 상태값과 UI 표시 규칙         |
+| [API Strategy](./docs/ui-ux/api-strategy.md)         | Swagger 기준 API 연동 전략    |
+| [Decision Log](./docs/decision-log.md)               | 주요 의사결정 기록            |
+| [Git Convention](./docs/git-convention.md)           | 브랜치와 작업 흐름 규칙       |
+| [Commit Convention](./docs/commit-convention.md)     | 커밋 메시지 규칙              |
 
 ---
 
-## 개발 예정 기술 스택
+## 기술 스택
+
+| 영역               | 기술                           |
+| ------------------ | ------------------------------ |
+| Framework          | Next.js App Router             |
+| Language           | TypeScript                     |
+| Package Manager    | pnpm workspace                 |
+| Styling            | Tailwind CSS                   |
+| UI Primitive       | Radix UI                       |
+| Icons              | lucide-react                   |
+| Server/Client Data | TanStack Query                 |
+| Form               | React Hook Form                |
+| Validation         | Zod                            |
+| Mock API           | MSW                            |
+| Unit Test          | Vitest                         |
+| Component Test     | Testing Library                |
+| E2E Test           | Playwright                     |
+| Lint/Format        | ESLint, Prettier               |
+| Git Hooks          | Husky, lint-staged, commitlint |
+| CI                 | GitHub Actions                 |
+| Deploy             | Vercel                         |
+
+테스트는 모든 화면에 무리하게 붙이기보다, Pacto의 핵심 도메인 리스크가 있는 영역에 우선 적용합니다.
 
 ```txt
-Next.js
-TypeScript
-React
-Tailwind CSS
-TanStack Query 또는 SWR
-React Hook Form
-Zod
-ESLint
-Prettier
-Husky
-lint-staged
-commitlint
-Vercel
+상태 매핑
+권한 정책
+금액 포맷
+API adapter
+폼 검증 schema
+캠페인 지원 버튼 활성화 규칙
+미션 제출 버튼 활성화 규칙
+지갑 available/locked 표시
 ```
 
-실제 기술 스택은 프로젝트 초기 세팅 시점에 확정합니다.
+개발/테스트 기본값은 MSW 기반 mock API로 두고, 실제 API는 별도 모드에서 smoke test로 검증합니다.
 
 ---
 

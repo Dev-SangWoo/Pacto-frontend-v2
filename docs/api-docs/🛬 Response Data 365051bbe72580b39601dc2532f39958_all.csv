@@ -1,0 +1,4 @@
+﻿이름,날짜,상태,설명,타입
+data.escrow_id,,시작 전,연결된 에스크로 원장 식별자,Number
+data.status,,시작 전,초기 상태: IN_PROGRESS,String
+data.mission_id,,시작 전,생성된 미션 식별자,Number

@@ -1,0 +1,5 @@
+# data[].status
+
+상태: 시작 전
+설명: IN_PROGRESS · SUBMITTED · APPROVED · REJECTED
+타입: String

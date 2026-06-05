@@ -1,0 +1,5 @@
+﻿이름,날짜,상태,설명,타입
+amount,,시작 전,"[Body] 출금 요청 금액 (최소 10,000원 이상)",Number
+accountNumber,,시작 전,[Body] 입금받을 계좌번호,String
+Authorization,,시작 전,[Header] Bearer {JWT_TOKEN} (블로거 필수),String
+bankName,,시작 전,[Body] 입금받을 은행명,String
