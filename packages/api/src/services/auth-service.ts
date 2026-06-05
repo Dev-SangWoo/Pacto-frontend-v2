@@ -40,7 +40,7 @@ export async function signup(payload: SignupPayload): Promise<LoginResponse> {
 }
 
 export async function getMe(token?: string): Promise<User> {
-  const response = await apiRequest<CommonResponse<MeResponse> | MeResponse>("/api/v1/users/me", {
+  const response = await apiRequest<CommonResponse<MeResponse> | MeResponse>("/api/v1/auth/me", {
     token,
   });
 

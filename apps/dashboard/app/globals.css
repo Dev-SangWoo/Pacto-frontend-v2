@@ -67,6 +67,36 @@ p {
   padding: 28px 18px;
 }
 
+.sidebar-session {
+  display: grid;
+  gap: 10px;
+  margin-top: auto;
+  border-top: 1px solid var(--grey-100);
+  padding: 18px 8px 0;
+}
+
+.sidebar-session span {
+  overflow: hidden;
+  color: var(--grey-600);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-session button {
+  min-height: 38px;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  color: var(--grey-700);
+  background: var(--grey-100);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 .brand-block {
   display: grid;
   gap: 4px;
@@ -762,6 +792,91 @@ td strong {
 
 .primary-button.wide {
   width: 100%;
+}
+
+.dashboard-login-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background: var(--grey-100);
+}
+
+.dashboard-login-panel {
+  display: grid;
+  width: min(100%, 420px);
+  gap: 24px;
+  border: 1px solid var(--grey-200);
+  border-radius: 8px;
+  background: var(--white);
+  padding: 28px;
+  box-shadow: 0 18px 50px rgba(25, 31, 40, 0.08);
+}
+
+.dashboard-login-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.dashboard-login-copy p {
+  color: var(--blue-500);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.dashboard-login-copy span {
+  color: var(--grey-600);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.dashboard-login-form {
+  display: grid;
+  gap: 14px;
+}
+
+.dashboard-login-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.dashboard-login-form label > span {
+  color: var(--grey-700);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.dashboard-login-form input {
+  width: 100%;
+  border: 1px solid var(--grey-200);
+  border-radius: 8px;
+  padding: 13px 14px;
+  color: var(--grey-900);
+  background: var(--white);
+  font-size: 15px;
+  outline: none;
+}
+
+.dashboard-login-form input:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.12);
+}
+
+.form-error {
+  border-radius: 8px;
+  color: var(--red-500);
+  background: var(--red-50);
+  padding: 11px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.form-error.inline-error {
+  margin-right: auto;
+  align-self: center;
 }
 
 .skeleton-block {

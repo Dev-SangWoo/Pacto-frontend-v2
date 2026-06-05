@@ -1,4 +1,8 @@
 import { canAccessDashboard, getDashboardMenus } from "@pacto/utils";
+import { redirect } from "next/navigation";
+
+import { logoutAction } from "../_actions/auth-actions";
+import { getDashboardSession } from "../_lib/session";
 
 const mockRole = "AGENCY_ADMIN";
 
@@ -6,7 +10,13 @@ type DashboardLayoutProps = {
   children: React.ReactNode;
 };
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default async function DashboardLayout({ children }: DashboardLayoutProps) {
+  const session = await getDashboardSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
   const canAccess = canAccessDashboard(mockRole);
   const navItems = getDashboardMenus(mockRole);
 
@@ -24,6 +34,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </a>
           ))}
         </nav>
+        <div className="sidebar-session">
+          <span>{session.email ?? "로그인 계정"}</span>
+          <form action={logoutAction}>
+            <button type="submit">로그아웃</button>
+          </form>
+        </div>
       </aside>
       <section className="workspace">
         {canAccess ? (
