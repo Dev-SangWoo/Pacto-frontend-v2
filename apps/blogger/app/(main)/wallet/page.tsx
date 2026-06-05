@@ -1,5 +1,6 @@
-import { getCampaigns, getMyEscrows, getMyWallet } from "@pacto/api";
-import { formatKoreanDate, formatPoint, getSettlementStatusView } from "@pacto/utils";
+import { getMyPointHistories, getMyWallet } from "@pacto/api";
+import { formatKoreanDate, formatPoint } from "@pacto/utils";
+import { redirect } from "next/navigation";
 
 import { getBloggerSession } from "../../_lib/session";
 
@@ -13,54 +14,63 @@ type WalletLedgerItem = {
   type: "deposit" | "withdrawal" | "locked";
 };
 
-const withdrawalHistory: WalletLedgerItem[] = [
-  {
-    amount: -30000,
-    date: "2026-05-24T14:20:00",
-    description: "국민은행 1234로 출금",
-    id: "withdrawal-20260524",
-    title: "출금 완료",
-    tone: "grey",
-    type: "withdrawal",
-  },
-  {
-    amount: -20000,
-    date: "2026-05-18T11:00:00",
-    description: "카카오뱅크 9876으로 출금",
-    id: "withdrawal-20260518",
-    title: "출금 완료",
-    tone: "grey",
-    type: "withdrawal",
-  },
-];
-
 export default async function WalletPage() {
   const session = await getBloggerSession();
-  const [wallet, escrows, campaigns] = await Promise.all([
-    getMyWallet(session.accessToken),
-    getMyEscrows(),
-    getCampaigns(),
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  const [wallet, pointHistories] = await Promise.all([
+    getMyWallet(session.accessToken).catch(() => redirect("/login")),
+    getMyPointHistories({}, session.accessToken).catch(() => []),
   ]);
-  const campaignTitleById = new Map(campaigns.map((campaign) => [campaign.id, campaign.title]));
-  const ledgerItems: WalletLedgerItem[] = [
-    ...escrows.map((escrow) => {
-      const statusView = getSettlementStatusView(escrow.status);
-      const campaignTitle =
-        campaignTitleById.get(escrow.campaignId) ?? `캠페인 #${escrow.campaignId}`;
-      const isPaid = escrow.status === "paid";
+  const ledgerItems = pointHistories
+    .map((history) => {
+      const isWithdrawal = history.amount < 0;
+      let title = "포인트 변동";
+      let tone: WalletLedgerItem["tone"] = isWithdrawal ? "red" : "green";
+      let type: WalletLedgerItem["type"] = isWithdrawal ? "withdrawal" : "deposit";
+
+      switch (history.type) {
+        case "CHARGE":
+          title = "포인트 충전";
+          tone = "green";
+          type = "deposit";
+          break;
+        case "WITHDRAW":
+          title = "출금 신청";
+          tone = "red";
+          type = "withdrawal";
+          break;
+        case "LOCK":
+          title = "에스크로 잠금";
+          tone = "red";
+          type = "locked";
+          break;
+        case "RELEASE":
+          title = "정산 입금";
+          tone = "green";
+          type = "deposit";
+          break;
+        case "REFUND":
+          title = "환불 입금";
+          tone = "green";
+          type = "deposit";
+          break;
+      }
 
       return {
-        amount: escrow.amount,
-        date: escrow.createdAt,
-        description: isPaid ? "정산 입금" : statusView.label,
-        id: `escrow-${escrow.id}`,
-        title: campaignTitle,
-        tone: statusView.tone,
-        type: isPaid ? "deposit" : "locked",
+        amount: history.amount,
+        date: history.createdAt,
+        description: getPointHistoryDescription(history.type, isWithdrawal),
+        id: `history-${history.id}`,
+        title,
+        tone,
+        type,
       } satisfies WalletLedgerItem;
-    }),
-    ...withdrawalHistory,
-  ].sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
+    })
+    .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
 
   return (
     <section className="screen-stack detail-screen" aria-labelledby="wallet-title">
@@ -92,24 +102,30 @@ export default async function WalletPage() {
           <span>{ledgerItems.length}건</span>
         </div>
         <div className="ledger-list wallet-ledger-list">
-          {ledgerItems.map((item) => (
-            <article key={item.id}>
-              <div>
-                <span className={`status-dot ${item.tone}`} aria-hidden="true" />
+          {ledgerItems.length > 0 ? (
+            ledgerItems.map((item) => (
+              <article key={item.id}>
                 <div>
-                  <strong>{item.title}</strong>
-                  <p>
-                    {getLedgerTypeLabel(item.type)} · {formatKoreanDate(item.date)} ·{" "}
-                    {item.description}
-                  </p>
+                  <span className={`status-dot ${item.tone}`} aria-hidden="true" />
+                  <div>
+                    <strong>{item.title}</strong>
+                    <p>
+                      {getLedgerTypeLabel(item.type)} · {formatKoreanDate(item.date)} ·{" "}
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <strong className={item.amount < 0 ? "negative" : "positive"}>
-                {item.amount < 0 ? "-" : "+"}
-                {formatPoint(Math.abs(item.amount))}
-              </strong>
-            </article>
-          ))}
+                <strong className={item.amount < 0 ? "negative" : "positive"}>
+                  {item.amount < 0 ? "-" : "+"}
+                  {formatPoint(Math.abs(item.amount))}
+                </strong>
+              </article>
+            ))
+          ) : (
+            <div className="empty-ledger">
+              <p>거래 내역이 아직 없습니다.</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -134,5 +150,22 @@ function getLedgerTypeLabel(type: WalletLedgerItem["type"]) {
       return "출금";
     case "locked":
       return "잠김";
+  }
+}
+
+function getPointHistoryDescription(type: string, isWithdrawal: boolean) {
+  switch (type) {
+    case "CHARGE":
+      return "결제 충전";
+    case "WITHDRAW":
+      return "계좌 출금 신청";
+    case "LOCK":
+      return "캠페인 참여 예치";
+    case "RELEASE":
+      return "미션 완료 정산";
+    case "REFUND":
+      return "취소/반려 환불";
+    default:
+      return isWithdrawal ? "차감" : "적립";
   }
 }

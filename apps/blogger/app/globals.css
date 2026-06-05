@@ -961,6 +961,17 @@ dd {
   color: var(--ink);
 }
 
+.empty-ledger {
+  padding: 32px 16px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.empty-ledger p {
+  font-size: 14px;
+  font-weight: 850;
+}
+
 .status-dot {
   width: 9px;
   height: 9px;

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { getCampaignDetail } from "@pacto/api";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@pacto/utils";
 
 import { CampaignApplyAction } from "../../../_components/mock-actions";
+import { getBloggerSession } from "../../../_lib/session";
 
 type CampaignDetailPageProps = {
   params: Promise<{
@@ -18,7 +19,15 @@ type CampaignDetailPageProps = {
 
 export default async function CampaignDetailPage({ params }: CampaignDetailPageProps) {
   const { campaignId } = await params;
-  const campaign = await getCampaignDetail(Number(campaignId));
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  const campaign = await getCampaignDetail(Number(campaignId), session.accessToken, {
+    mockFallback: false,
+  }).catch(() => redirect("/login"));
 
   if (campaign == null) {
     notFound();
