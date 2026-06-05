@@ -97,19 +97,19 @@ apps/blogger/app/
 
 ## 4.1 라우트 목록
 
-| Route                                 | 화면          | 목적                  | 주요 역할                 |
-| ------------------------------------- | ------------- | --------------------- | ------------------------- |
-| `/dashboard/login`                    | 로그인        | B2B 사용자 로그인     | 비인증                    |
-| `/dashboard`                          | 대시보드 홈   | 운영 현황 요약        | Agency, Advertiser, Admin |
-| `/dashboard/campaigns`                | 캠페인 목록   | 캠페인 검색과 관리    | Agency, Admin             |
-| `/dashboard/campaigns/new`            | 캠페인 등록   | 신규 캠페인 생성      | Agency, Admin             |
-| `/dashboard/campaigns/:id`            | 캠페인 상세   | 캠페인 운영 상태 확인 | Agency, Admin             |
-| `/dashboard/campaigns/:id/applicants` | 지원자 관리   | 지원자 승인/반려      | Agency, Admin             |
-| `/dashboard/campaigns/:id/missions`   | 미션 검수     | 제출물 검수           | Agency, Admin             |
-| `/dashboard/escrow`                   | 정산/에스크로 | 정산 원장 확인        | Agency, Admin             |
-| `/dashboard/payments`                 | 결제          | 결제 내역 확인        | Advertiser, Admin         |
-| `/dashboard/reports`                  | 리포트        | 캠페인 성과 확인      | Agency, Advertiser, Admin |
-| `/dashboard/settings`                 | 설정          | 계정/조직 설정        | Agency Admin, Admin       |
+| Route                                  | 화면          | 목적                    | 주요 역할                 |
+| -------------------------------------- | ------------- | ----------------------- | ------------------------- |
+| `/dashboard/login`                     | 로그인        | B2B 사용자 로그인       | 비인증                    |
+| `/dashboard`                           | 대시보드 홈   | 운영 현황 요약          | Agency, Advertiser, Admin |
+| `/dashboard/campaigns`                 | 캠페인 목록   | 캠페인 검색과 관리      | Agency, Admin             |
+| `/dashboard/campaigns/new`             | 캠페인 등록   | 신규 캠페인 생성        | Agency, Admin             |
+| `/dashboard/campaigns/:id`             | 캠페인 상세   | 캠페인 운영 상태 확인   | Agency, Admin             |
+| `/dashboard/campaigns/:id/applicants`  | 지원자 관리   | 지원자 승인/반려        | Agency, Admin             |
+| `/dashboard/campaigns/:id/missions`    | 미션 검수     | 제출 URL 검수           | Agency, Admin             |
+| `/dashboard/campaigns/:id/settlements` | 정산/에스크로 | 캠페인별 정산 원장 확인 | Agency, Admin             |
+| `/dashboard/payments`                  | 결제          | 결제 내역 확인          | Advertiser, Admin         |
+| `/dashboard/reports`                   | 리포트        | 캠페인 성과 확인        | Agency, Advertiser, Admin |
+| `/dashboard/settings`                  | 설정          | 계정/조직 설정          | Agency Admin, Admin       |
 
 ## 4.2 권장 App Router 구조
 
@@ -132,8 +132,8 @@ apps/dashboard/app/
           page.tsx
         missions/
           page.tsx
-    escrow/
-      page.tsx
+        settlements/
+          page.tsx
     payments/
       page.tsx
     reports/
@@ -229,6 +229,7 @@ empty state: 데이터 없음
 8. /dashboard/campaigns/new
 9. /dashboard/campaigns/:id/applicants
 10. /dashboard/campaigns/:id/missions
-11. /advertiser/pay/:campaignId
-12. /advertiser/reports/:campaignId
+11. /dashboard/campaigns/:id/settlements
+12. /advertiser/pay/:campaignId
+13. /advertiser/reports/:campaignId
 ```

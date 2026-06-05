@@ -26,9 +26,9 @@ export function CampaignApplyAction({ campaignId, enabled }: CampaignApplyAction
   if (isApplied) {
     return (
       <div className="cta-stack">
-        <p>지원 요청을 기록했어요. 내 미션 화면에서 진행 상태를 확인해요.</p>
+        <p>신청이 접수됐어요. 미션 화면에서 승인 대기 상태를 확인할 수 있습니다.</p>
         <Link className="primary-button" href="/missions">
-          내 미션 확인하기
+          신청한 미션 확인
         </Link>
       </div>
     );
@@ -54,7 +54,7 @@ export function CampaignApplyAction({ campaignId, enabled }: CampaignApplyAction
         }}
         type="button"
       >
-        {isPending ? "지원 요청 중" : "캠페인 지원 요청하기"}
+        {isPending ? "신청 중" : "이 캠페인 신청하기"}
       </button>
     </div>
   );
@@ -83,7 +83,7 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
   if (isSubmitted) {
     return (
       <div className="cta-stack">
-        <p>리뷰 URL을 제출했어요. 검수 상태는 내 미션에서 확인할 수 있어요.</p>
+        <p>리뷰 URL을 제출했어요. 검수 상태는 내 미션에서 확인할 수 있습니다.</p>
         <Link className="primary-button" href="/missions">
           내 미션으로 돌아가기
         </Link>

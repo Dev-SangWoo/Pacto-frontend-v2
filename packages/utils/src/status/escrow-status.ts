@@ -8,9 +8,9 @@ type SettlementStatusView = {
 };
 
 const settlementStatusViewMap: Record<SettlementStatus, SettlementStatusView> = {
-  locked: { label: "예치 중", tone: "blue" },
-  paid: { label: "정산 완료", tone: "green" },
-  cancelled: { label: "취소됨", tone: "red" },
+  locked: { label: "잠김", tone: "blue" },
+  paid: { label: "입금 완료", tone: "green" },
+  cancelled: { label: "취소", tone: "red" },
 };
 
 export function mapEscrowStatus(status: EscrowStatusResponse): SettlementStatus {

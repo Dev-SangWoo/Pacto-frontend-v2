@@ -1,17 +1,48 @@
 import type { Campaign } from "@pacto/types";
 
-import type { MissionResponse } from "../adapters/mission-adapter";
-import { adaptCampaign } from "../adapters/campaign-adapter";
-import type { CampaignResponse } from "../adapters/campaign-adapter";
-import { adaptMission } from "../adapters/mission-adapter";
+import type { MissionActionResponse } from "../adapters/mission-adapter";
+import {
+  adaptCampaign,
+  adaptCreateCampaign,
+  mapCampaignStatus,
+} from "../adapters/campaign-adapter";
+import type {
+  CampaignResponse,
+  CampaignStatusResponse,
+  CreateCampaignResponse,
+} from "../adapters/campaign-adapter";
+import { adaptMissionAction } from "../adapters/mission-adapter";
 import { isMockFallbackDisabled } from "../client/env";
 import { apiRequest, unwrapCommonResponse, unwrapListResponse } from "../client/http-client";
+import type { CommonResponse } from "../client/http-client";
 import { mockCampaigns } from "../mocks/data";
 
-export async function getCampaigns(): Promise<Campaign[]> {
+export type GetCampaignsParams = {
+  page?: number;
+  size?: number;
+  status?: CampaignStatusResponse;
+};
+
+export type CreateCampaignPayload = {
+  deadline: string;
+  guidelines: string;
+  rewardPoint: number;
+  thumbnailUrl?: string;
+  title: string;
+  totalSlots: number;
+};
+
+export type UpdateCampaignStatusPayload = {
+  status: CampaignStatusResponse;
+};
+
+export async function getCampaigns(
+  params: GetCampaignsParams = {},
+  token?: string,
+): Promise<Campaign[]> {
   return withMockFallback(
     async () => {
-      const response = await apiRequest("/api/v1/campaigns");
+      const response = await apiRequest("/api/v1/campaigns", { query: params, token });
 
       return unwrapListResponse<CampaignResponse>(response).map(adaptCampaign);
     },
@@ -19,10 +50,16 @@ export async function getCampaigns(): Promise<Campaign[]> {
   );
 }
 
-export async function getCampaignDetail(campaignId: number): Promise<Campaign | undefined> {
+export async function getCampaignDetail(
+  campaignId: number,
+  token?: string,
+): Promise<Campaign | undefined> {
   return withMockFallback(
     async () => {
-      const response = await apiRequest<CampaignResponse>(`/api/v1/campaigns/${campaignId}`);
+      const response = await apiRequest<CommonResponse<CampaignResponse> | CampaignResponse>(
+        `/api/v1/campaigns/${campaignId}`,
+        { token },
+      );
 
       return adaptCampaign(unwrapCommonResponse<CampaignResponse>(response));
     },
@@ -34,13 +71,54 @@ export async function getCampaignDetail(campaignId: number): Promise<Campaign | 
   );
 }
 
-export async function acceptMission(campaignId: number, bloggerId?: number) {
-  const response = await apiRequest<MissionResponse>(`/api/v1/campaigns/${campaignId}/missions`, {
+export async function createCampaign(payload: CreateCampaignPayload, token?: string) {
+  const response = await apiRequest<
+    CommonResponse<CreateCampaignResponse> | CreateCampaignResponse
+  >("/api/v1/campaigns", {
+    body: payload,
     method: "POST",
-    query: { bloggerId },
+    token,
   });
 
-  return adaptMission(unwrapCommonResponse<MissionResponse>(response));
+  return adaptCreateCampaign(unwrapCommonResponse<CreateCampaignResponse>(response));
+}
+
+export async function updateCampaignStatus(
+  campaignId: number,
+  payload: UpdateCampaignStatusPayload,
+  token?: string,
+) {
+  const response = await apiRequest<CreateCampaignResponse | UpdateCampaignStatusPayload>(
+    `/api/v1/campaigns/${campaignId}/status`,
+    {
+      body: payload,
+      method: "PATCH",
+      token,
+    },
+  );
+  const result = unwrapCommonResponse<CreateCampaignResponse | UpdateCampaignStatusPayload>(
+    response,
+  );
+
+  return {
+    id:
+      "campaign_id" in result || "campaignId" in result
+        ? adaptCreateCampaign(result).id
+        : campaignId,
+    status: mapCampaignStatus(result.status),
+  };
+}
+
+export async function acceptMission(campaignId: number, token?: string) {
+  const response = await apiRequest<MissionActionResponse>(
+    `/api/v1/campaigns/${campaignId}/missions`,
+    {
+      method: "POST",
+      token,
+    },
+  );
+
+  return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
 }
 
 async function withMockFallback<T>(request: () => Promise<T>, fallback: () => T): Promise<T> {

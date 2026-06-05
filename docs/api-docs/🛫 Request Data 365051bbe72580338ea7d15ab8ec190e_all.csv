@@ -1,0 +1,4 @@
+﻿이름,날짜,상태,설명,타입
+Authorization,,시작 전,[Header] Bearer {JWT_TOKEN} (광고주 필수),String
+page,,시작 전,[Query] 페이지 번호 (기본값: 1),Number
+status,,시작 전,"[Query] 상태 필터 (선택: LOCKED, RELEASED, CANCELED) 미입력시 전체 조회",String

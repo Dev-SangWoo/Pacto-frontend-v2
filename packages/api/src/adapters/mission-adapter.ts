@@ -1,33 +1,75 @@
 import type { Mission, MissionStatus } from "@pacto/types";
 
-export type MissionResponse = Omit<Partial<Mission>, "status"> & {
+export type MissionStatusResponse =
+  | MissionStatus
+  | "APPROVED"
+  | "APPLICATION_REJECTED"
+  | "IN_PROGRESS"
+  | "NOT_STARTED"
+  | "PENDING"
+  | "REJECTED"
+  | "SUBMITTED";
+
+export type MissionResponse = {
+  approvalDueDate?: string;
+  bloggerId?: number;
+  campaign_id?: number;
+  campaignId?: number;
+  campaignTitle?: string;
+  created_at?: string;
+  dueDate?: string;
+  escrow_id?: number;
+  escrowId?: number;
+  id?: number;
+  mission_id?: number;
   missionId?: number;
-  status?:
-    | MissionStatus
-    | "APPROVED"
-    | "APPLICATION_REJECTED"
-    | "IN_PROGRESS"
-    | "NOT_STARTED"
-    | "PENDING"
-    | "REJECTED"
-    | "SUBMITTED";
+  reason?: string;
+  rewardPoint?: number;
+  settledAt?: string;
+  status?: MissionStatusResponse;
+  submitted_url?: string | null;
+  submittedUrl?: string | null;
+  thumbnailUrl?: string;
+  updated_at?: string;
+};
+
+export type MissionActionResponse = {
+  escrow_status?: "CANCELED" | "LOCKED" | "RELEASED";
+  mission_id?: number;
+  missionId?: number;
+  status?: MissionStatusResponse;
+  submitted_url?: string | null;
+  submittedUrl?: string | null;
 };
 
 export function adaptMission(response: MissionResponse): Mission {
+  const id = response.id ?? response.missionId ?? response.mission_id ?? 0;
+  const campaignId = response.campaignId ?? response.campaign_id ?? 0;
+
   return {
-    id: response.id ?? response.missionId ?? 0,
-    campaignId: response.campaignId ?? 0,
+    id,
+    campaignId,
     bloggerId: response.bloggerId ?? 0,
-    campaignTitle: response.campaignTitle ?? "미션",
-    brandName: response.brandName ?? "Pacto",
-    thumbnailUrl:
-      response.thumbnailUrl ?? getFallbackThumbnail(response.campaignId ?? response.missionId),
+    campaignTitle: response.campaignTitle ?? `캠페인 #${campaignId}`,
+    brandName: "Pacto",
+    thumbnailUrl: response.thumbnailUrl ?? getFallbackThumbnail(campaignId || id),
     rewardPoint: response.rewardPoint ?? 0,
-    dueDate: response.dueDate ?? new Date().toISOString(),
-    submittedUrl: response.submittedUrl,
+    approvalDueDate: response.approvalDueDate,
+    dueDate:
+      response.dueDate ?? response.updated_at ?? response.created_at ?? new Date().toISOString(),
+    settledAt: response.settledAt,
+    submittedUrl: response.submittedUrl ?? response.submitted_url ?? undefined,
     reason: response.reason,
     status: mapMissionStatus(response.status),
   };
+}
+
+export function adaptMissionAction(response: MissionActionResponse): Mission {
+  return adaptMission({
+    mission_id: response.mission_id ?? response.missionId,
+    status: response.status,
+    submitted_url: response.submitted_url ?? response.submittedUrl,
+  });
 }
 
 function getFallbackThumbnail(id?: number): string {
@@ -41,7 +83,7 @@ function getFallbackThumbnail(id?: number): string {
   return thumbnails[index] ?? thumbnails[0];
 }
 
-function mapMissionStatus(status: MissionResponse["status"]): MissionStatus {
+export function mapMissionStatus(status: MissionResponse["status"]): MissionStatus {
   switch (status) {
     case "PENDING":
     case "applied":

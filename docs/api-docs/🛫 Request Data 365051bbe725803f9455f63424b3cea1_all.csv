@@ -1,0 +1,4 @@
+﻿이름,날짜,상태,설명,타입
+Authorization,,시작 전,[Header] Bearer {JWT_TOKEN} (필수),String
+missonId,,시작 전,미션 고유 식별자,Number
+submitted_url,,시작 전,[Body] 제출할 블로그 URL (필수),String

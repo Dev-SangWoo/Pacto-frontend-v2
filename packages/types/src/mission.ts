@@ -15,7 +15,9 @@ export type Mission = {
   brandName: string;
   thumbnailUrl: string;
   rewardPoint: number;
+  approvalDueDate?: string;
   dueDate: string;
+  settledAt?: string;
   submittedUrl?: string;
   reason?: string;
   status: MissionStatus;

@@ -1,0 +1,2 @@
+﻿이름,날짜,상태,설명,타입
+Authorization,,시작 전,[Header] Bearer {JWT_TOKEN} (필수),String

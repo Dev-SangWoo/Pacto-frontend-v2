@@ -1,0 +1,4 @@
+﻿이름,날짜,상태,설명,타입
+data.mission_id,,시작 전,미션 고유 식별자,Number
+data.status,,시작 전,변경된 상태: APPROVED,String
+data.escrow_status,,시작 전,에스크로 상태: RELEASED,String

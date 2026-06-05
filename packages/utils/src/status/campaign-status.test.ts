@@ -11,7 +11,7 @@ describe("campaign status policy", () => {
     expect(canApplyToCampaign("full")).toBe(false);
   });
 
-  it("상태 배지 문구를 정책 문서 기준으로 반환한다", () => {
+  it("상태 배지 문구를 정책 기준으로 반환한다", () => {
     expect(getCampaignStatusView("open")).toEqual({ label: "모집 중", tone: "blue" });
   });
 });

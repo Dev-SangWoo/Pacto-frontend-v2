@@ -40,3 +40,14 @@ export async function setBloggerSession(session: BloggerSession) {
     cookieStore.set(ACCESS_TOKEN_COOKIE, session.accessToken, options);
   }
 }
+
+export async function clearBloggerSession() {
+  const cookieStore = await cookies();
+  const options = {
+    path: "/",
+  };
+
+  cookieStore.delete({ name: ACCESS_TOKEN_COOKIE, ...options });
+  cookieStore.delete({ name: BLOGGER_ID_COOKIE, ...options });
+  cookieStore.delete({ name: EMAIL_COOKIE, ...options });
+}

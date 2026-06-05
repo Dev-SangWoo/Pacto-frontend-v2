@@ -27,15 +27,16 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 }
 
 export async function signup(payload: SignupPayload): Promise<LoginResponse> {
-  const response = await apiRequest<CommonResponse<LoginResponse> | LoginResponse>(
-    "/api/v1/auth/signup",
-    {
-      body: payload,
-      method: "POST",
-    },
-  );
+  const response = await apiRequest<
+    CommonResponse<Partial<LoginResponse>> | Partial<LoginResponse>
+  >("/api/v1/auth/signup", {
+    body: payload,
+    method: "POST",
+  });
 
-  return unwrapCommonResponse<LoginResponse>(response);
+  const result = unwrapCommonResponse<Partial<LoginResponse>>(response);
+
+  return { accessToken: result.accessToken ?? "" };
 }
 
 export async function getMe(token?: string): Promise<User> {

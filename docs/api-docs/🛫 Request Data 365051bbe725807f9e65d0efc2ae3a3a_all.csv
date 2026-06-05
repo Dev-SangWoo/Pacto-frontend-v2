@@ -1,0 +1,7 @@
+﻿이름,날짜,상태,설명,타입
+title,,시작 전,[Body] 캠페인 제목 (필수),String
+Authorization,,시작 전,[Header] Bearer {JWT_TOKEN} (필수),String
+reward_point,,시작 전,"블로거 1인당 지급 포인트 ",Number
+deadline,,시작 전,[Body] 미션 마감 일시 (필수),String
+thumbnail_url,,시작 전,S3 썸네일 URL (선택),String
+guidelines,,시작 전,상세 이미지 URL 목록 (선택),Array

@@ -15,12 +15,12 @@ export async function acceptCampaignAction(campaignId: number): Promise<ActionRe
   try {
     const session = await getBloggerSession();
 
-    await acceptMission(campaignId, session.bloggerId);
+    await acceptMission(campaignId, session.accessToken);
     revalidatePath("/missions");
 
     return { ok: true };
   } catch {
-    return { message: "지원 요청에 실패했어요. 잠시 후 다시 시도해 주세요.", ok: false };
+    return { message: "지원 요청에 실패했어요. 모집 인원이 마감됐을 수 있어요.", ok: false };
   }
 }
 

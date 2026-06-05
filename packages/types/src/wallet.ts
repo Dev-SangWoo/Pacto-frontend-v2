@@ -14,3 +14,13 @@ export type Withdrawal = {
   remainingBalance: number;
   status: WithdrawalStatus;
 };
+
+export type PointHistoryType = "CHARGE" | "LOCK" | "RELEASE" | "REFUND" | "WITHDRAW";
+
+export type PointHistory = {
+  id: number;
+  type: PointHistoryType;
+  amount: number;
+  referenceId: number;
+  createdAt: string;
+};

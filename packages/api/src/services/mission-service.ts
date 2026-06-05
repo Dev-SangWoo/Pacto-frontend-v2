@@ -1,28 +1,35 @@
 import type { Mission } from "@pacto/types";
 
-import { adaptMission } from "../adapters/mission-adapter";
-import type { MissionResponse } from "../adapters/mission-adapter";
+import { adaptMission, adaptMissionAction } from "../adapters/mission-adapter";
+import type {
+  MissionActionResponse,
+  MissionResponse,
+  MissionStatusResponse,
+} from "../adapters/mission-adapter";
 import { isMockFallbackDisabled } from "../client/env";
 import { apiRequest, unwrapCommonResponse, unwrapListResponse } from "../client/http-client";
 import { mockMissions } from "../mocks/data";
 
 export type GetMyMissionsParams = {
-  bloggerId?: number;
-  status?: string;
+  status?: MissionStatusResponse;
 };
 
 export type SubmitMissionPayload = {
-  submittedUrl: string;
+  submittedUrl?: string;
+  submitted_url?: string;
 };
 
 export type CancelMissionPayload = {
   reason: string;
 };
 
-export async function getMyMissions(params: GetMyMissionsParams = {}): Promise<Mission[]> {
+export async function getMyMissions(
+  params: GetMyMissionsParams = {},
+  token?: string,
+): Promise<Mission[]> {
   return withMockFallback(
     async () => {
-      const response = await apiRequest("/api/v1/missions/me", { query: params });
+      const response = await apiRequest("/api/v1/missions/me", { query: params, token });
 
       return unwrapListResponse<MissionResponse>(response).map(adaptMission);
     },
@@ -33,8 +40,9 @@ export async function getMyMissions(params: GetMyMissionsParams = {}): Promise<M
 export async function getMissionDetail(
   missionId: number,
   params: GetMyMissionsParams = {},
+  token?: string,
 ): Promise<Mission | undefined> {
-  const missions = await getMyMissions(params);
+  const missions = await getMyMissions(params, token);
 
   return missions.find((item) => item.id === missionId);
 }
@@ -44,22 +52,25 @@ export async function submitMission(
   payload: SubmitMissionPayload,
   token?: string,
 ): Promise<Mission> {
-  const response = await apiRequest<MissionResponse>(`/api/v1/missions/${missionId}/submit`, {
-    body: payload,
+  const response = await apiRequest<MissionActionResponse>(`/api/v1/missions/${missionId}/submit`, {
+    body: { submitted_url: payload.submitted_url ?? payload.submittedUrl },
     method: "PATCH",
     token,
   });
 
-  return adaptMission(unwrapCommonResponse<MissionResponse>(response));
+  return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
 }
 
 export async function approveMission(missionId: number, token?: string): Promise<Mission> {
-  const response = await apiRequest<MissionResponse>(`/api/v1/missions/${missionId}/approve`, {
-    method: "PATCH",
-    token,
-  });
+  const response = await apiRequest<MissionActionResponse>(
+    `/api/v1/missions/${missionId}/approve`,
+    {
+      method: "PATCH",
+      token,
+    },
+  );
 
-  return adaptMission(unwrapCommonResponse<MissionResponse>(response));
+  return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
 }
 
 export async function cancelMission(
@@ -67,13 +78,13 @@ export async function cancelMission(
   payload: CancelMissionPayload,
   token?: string,
 ): Promise<Mission> {
-  const response = await apiRequest<MissionResponse>(`/api/v1/missions/${missionId}/cancel`, {
+  const response = await apiRequest<MissionActionResponse>(`/api/v1/missions/${missionId}/cancel`, {
     body: payload,
     method: "PATCH",
     token,
   });
 
-  return adaptMission(unwrapCommonResponse<MissionResponse>(response));
+  return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
 }
 
 async function withMockFallback<T>(request: () => Promise<T>, fallback: () => T): Promise<T> {

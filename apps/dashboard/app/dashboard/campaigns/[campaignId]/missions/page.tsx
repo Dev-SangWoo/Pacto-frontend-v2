@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getCampaignDetail, getMyMissions } from "@pacto/api";
 import { formatKoreanDate, getMissionStatusView } from "@pacto/utils";
 
+import { CampaignStepProgress } from "../_components/campaign-step-progress";
+
 type MissionReviewPageProps = {
   params: Promise<{
     campaignId: string;
@@ -21,11 +23,14 @@ export default async function MissionReviewPage({ params }: MissionReviewPagePro
 
   return (
     <>
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">{campaign.title}</p>
-          <h1>미션 검수</h1>
+      <header className="campaign-page-header">
+        <div className="topbar">
+          <div>
+            <p className="eyebrow">{campaign.title}</p>
+            <h1>미션 검수</h1>
+          </div>
         </div>
+        <CampaignStepProgress activeStep="missions" campaignId={campaign.id} />
       </header>
 
       <section className="panel">

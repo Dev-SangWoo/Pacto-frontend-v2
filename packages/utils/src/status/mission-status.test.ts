@@ -8,19 +8,23 @@ import {
 } from "./mission-status";
 
 describe("mission status policy", () => {
-  it("in_progress 미션은 제출 가능 상태로 판단한다", () => {
+  it("in_progress 미션은 제출 가능한 상태로 판단한다", () => {
     expect(canSubmitMission("in_progress")).toBe(true);
   });
 
-  it("submitted 미션은 검수 중 상태로 표시한다", () => {
+  it("submitted 미션은 제출 완료 상태로 표시한다", () => {
     expect(getMissionStatusView("submitted")).toEqual({ label: "제출 완료", tone: "grey" });
   });
 
-  it("applied 미션은 대행사 승인 대기 상태로 표시한다", () => {
-    expect(getMissionStatusView("applied")).toEqual({ label: "대기 중", tone: "grey" });
+  it("applied 미션은 신청 완료 상태로 표시한다", () => {
+    expect(getMissionStatusView("applied")).toEqual({ label: "신청 완료", tone: "grey" });
   });
 
-  it("지원 단계에 사용하는 상태를 공통 정책으로 제공한다", () => {
+  it("approved 미션은 정산 완료 상태로 표시한다", () => {
+    expect(getMissionStatusView("approved")).toEqual({ label: "정산 완료", tone: "green" });
+  });
+
+  it("신청 단계에서 사용하는 상태를 공통 정책으로 제공한다", () => {
     expect(isApplicationMission("applied")).toBe(true);
     expect(isApplicationMission("in_progress")).toBe(false);
   });
@@ -28,22 +32,22 @@ describe("mission status policy", () => {
   it("미션 단계 프로그레스 순서를 반환한다", () => {
     expect(missionProgressSteps.map((step) => step.label)).toEqual([
       "신청",
-      "대기",
-      "승인/반려",
-      "제출 중",
-      "정산 완료",
+      "승인",
+      "반려",
+      "제출",
+      "정산",
     ]);
   });
 
-  it("신청 단계는 미션 화면 목록에 포함하지 않는다", () => {
-    expect(missionProgressSteps[0]?.statuses).toEqual([]);
+  it("승인 단계에는 승인받고 수행 중인 미션 상태를 포함한다", () => {
+    const waitingStep = missionProgressSteps.find((step) => step.key === "waiting");
+
+    expect(waitingStep?.statuses).toEqual(["not_started", "in_progress"]);
   });
 
-  it("승인된 미션은 제출 단계로 넘기고 반려된 지원은 승인/반려 단계에 남긴다", () => {
+  it("반려 단계에는 신청 반려와 미션 반려 상태를 포함한다", () => {
     const decisionStep = missionProgressSteps.find((step) => step.key === "decision");
-    const submissionStep = missionProgressSteps.find((step) => step.key === "submission");
 
-    expect(decisionStep?.statuses).toEqual(["application_rejected"]);
-    expect(submissionStep?.statuses).toContain("not_started");
+    expect(decisionStep?.statuses).toEqual(["application_rejected", "rejected"]);
   });
 });

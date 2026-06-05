@@ -1,0 +1,3 @@
+﻿이름,날짜,상태,설명,타입
+data.campaign_id,,시작 전,생성된 캠페인 고유 식별자,Number
+data.status,,시작 전,초기 상태: RECRUITING,String

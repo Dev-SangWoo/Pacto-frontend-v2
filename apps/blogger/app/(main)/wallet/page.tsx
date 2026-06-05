@@ -1,64 +1,138 @@
-import { getMyWallet } from "@pacto/api";
-import { formatKoreanDate, formatPoint } from "@pacto/utils";
+import { getCampaigns, getMyEscrows, getMyWallet } from "@pacto/api";
+import { formatKoreanDate, formatPoint, getSettlementStatusView } from "@pacto/utils";
+
+import { getBloggerSession } from "../../_lib/session";
+
+type WalletLedgerItem = {
+  amount: number;
+  date: string;
+  description: string;
+  id: string;
+  title: string;
+  tone: "blue" | "green" | "grey" | "red";
+  type: "deposit" | "withdrawal" | "locked";
+};
+
+const withdrawalHistory: WalletLedgerItem[] = [
+  {
+    amount: -30000,
+    date: "2026-05-24T14:20:00",
+    description: "국민은행 1234로 출금",
+    id: "withdrawal-20260524",
+    title: "출금 완료",
+    tone: "grey",
+    type: "withdrawal",
+  },
+  {
+    amount: -20000,
+    date: "2026-05-18T11:00:00",
+    description: "카카오뱅크 9876으로 출금",
+    id: "withdrawal-20260518",
+    title: "출금 완료",
+    tone: "grey",
+    type: "withdrawal",
+  },
+];
 
 export default async function WalletPage() {
-  const wallet = await getMyWallet();
+  const session = await getBloggerSession();
+  const [wallet, escrows, campaigns] = await Promise.all([
+    getMyWallet(session.accessToken),
+    getMyEscrows(),
+    getCampaigns(),
+  ]);
+  const campaignTitleById = new Map(campaigns.map((campaign) => [campaign.id, campaign.title]));
+  const ledgerItems: WalletLedgerItem[] = [
+    ...escrows.map((escrow) => {
+      const statusView = getSettlementStatusView(escrow.status);
+      const campaignTitle =
+        campaignTitleById.get(escrow.campaignId) ?? `캠페인 #${escrow.campaignId}`;
+      const isPaid = escrow.status === "paid";
+
+      return {
+        amount: escrow.amount,
+        date: escrow.createdAt,
+        description: isPaid ? "정산 입금" : statusView.label,
+        id: `escrow-${escrow.id}`,
+        title: campaignTitle,
+        tone: statusView.tone,
+        type: isPaid ? "deposit" : "locked",
+      } satisfies WalletLedgerItem;
+    }),
+    ...withdrawalHistory,
+  ].sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
 
   return (
     <section className="screen-stack detail-screen" aria-labelledby="wallet-title">
-      <div className="page-heading">
-        <h1 id="wallet-title">지갑</h1>
-      </div>
-
-      <section className="wallet-hero" aria-label="출금 가능 금액">
-        <span>출금 가능</span>
-        <strong>{formatPoint(wallet.availableBalance)}</strong>
-        <p>{formatKoreanDate(wallet.updatedAt)} 업데이트</p>
+      <section className="wallet-brief">
+        <p className="section-label">내 지갑</p>
+        <h1 id="wallet-title">성과 정산</h1>
+        <p>{formatKoreanDate(wallet.updatedAt)} 기준</p>
       </section>
 
-      <section className="info-list" aria-label="지갑 상세">
-        <div>
-          <span>잠긴 금액</span>
+      <section className="wallet-balance-grid" aria-label="지갑 잔액">
+        <article className="wallet-balance-card primary">
+          <span>출금할 수 있는 돈</span>
+          <strong>{formatPoint(wallet.availableBalance)}</strong>
+          <p>정산이 끝나 바로 출금 가능한 금액</p>
+        </article>
+        <article className="wallet-balance-card">
+          <span>잠겨있는 돈</span>
           <strong>{formatPoint(wallet.lockedBalance)}</strong>
-        </div>
-        <div>
-          <span>누적 수익</span>
-          <strong>{formatPoint(wallet.totalEarned)}</strong>
-        </div>
+          <p>검수 또는 정산 대기 중인 금액</p>
+        </article>
       </section>
 
-      <section className="content-section" aria-labelledby="wallet-helper-title">
-        <h2 id="wallet-helper-title">잠긴 금액이란?</h2>
-        <p>미션 검수 또는 정산 확인을 기다리는 금액이에요. 승인 후 출금 가능 금액으로 이동해요.</p>
-      </section>
-
-      <section className="flow-steps compact" aria-label="정산 흐름">
-        <div>
-          <span>1</span>
-          <strong>미션 제출</strong>
-          <p>리뷰 URL을 제출해요.</p>
+      <section className="section-block" aria-labelledby="ledger-title">
+        <div className="section-head">
+          <div>
+            <p className="section-label">입금 · 출금 내역</p>
+            <h2 id="ledger-title">거래 내역</h2>
+          </div>
+          <span>{ledgerItems.length}건</span>
         </div>
-        <div>
-          <span>2</span>
-          <strong>검수 진행</strong>
-          <p>잠긴 금액으로 보여요.</p>
-        </div>
-        <div>
-          <span>3</span>
-          <strong>출금 신청</strong>
-          <p>승인 후 신청해요.</p>
+        <div className="ledger-list wallet-ledger-list">
+          {ledgerItems.map((item) => (
+            <article key={item.id}>
+              <div>
+                <span className={`status-dot ${item.tone}`} aria-hidden="true" />
+                <div>
+                  <strong>{item.title}</strong>
+                  <p>
+                    {getLedgerTypeLabel(item.type)} · {formatKoreanDate(item.date)} ·{" "}
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+              <strong className={item.amount < 0 ? "negative" : "positive"}>
+                {item.amount < 0 ? "-" : "+"}
+                {formatPoint(Math.abs(item.amount))}
+              </strong>
+            </article>
+          ))}
         </div>
       </section>
 
       <div className="fixed-cta">
         <a
-          className={`primary-button cta-link ${wallet.availableBalance === 0 ? "disabled" : ""}`}
-          href="/withdrawals"
           aria-disabled={wallet.availableBalance === 0}
+          className={`primary-button ${wallet.availableBalance === 0 ? "disabled" : ""}`}
+          href="/withdrawals"
         >
-          출금 신청 화면으로 가기
+          출금 신청하기
         </a>
       </div>
     </section>
   );
+}
+
+function getLedgerTypeLabel(type: WalletLedgerItem["type"]) {
+  switch (type) {
+    case "deposit":
+      return "입금";
+    case "withdrawal":
+      return "출금";
+    case "locked":
+      return "잠김";
+  }
 }

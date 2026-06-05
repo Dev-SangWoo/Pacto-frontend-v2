@@ -57,12 +57,11 @@ Dashboard는 하나의 프론트엔드 앱으로 만들고, 로그인한 사용�
 ```txt
 대시보드
 캠페인
-지원자
-미션 검수
-정산
 리포트
 설정
 ```
+
+지원자, 미션 검수, 정산은 전역 메뉴가 아니라 캠페인 상세 안의 운영 단계로 접근한다.
 
 `Agency Operator`는 설정 메뉴를 보지 않는다.
 
@@ -100,18 +99,18 @@ Dashboard는 하나의 프론트엔드 앱으로 만들고, 로그인한 사용�
 
 ## 6. 라우트 접근 규칙
 
-| Route                                 | Blogger | Agency | Advertiser | Pacto Admin |
-| ------------------------------------- | ------- | ------ | ---------- | ----------- |
-| `/blogger/*`                          | 가능    | 불가   | 불가       | 불가        |
-| `/dashboard`                          | 불가    | 가능   | 가능       | 가능        |
-| `/dashboard/campaigns`                | 불가    | 가능   | 제한       | 가능        |
-| `/dashboard/campaigns/new`            | 불가    | 가능   | 불가       | 가능        |
-| `/dashboard/campaigns/:id/applicants` | 불가    | 가능   | 불가       | 가능        |
-| `/dashboard/campaigns/:id/missions`   | 불가    | 가능   | 제한       | 가능        |
-| `/dashboard/escrow`                   | 불가    | 가능   | 제한       | 가능        |
-| `/dashboard/payments`                 | 불가    | 제한   | 가능       | 가능        |
-| `/dashboard/reports`                  | 불가    | 가능   | 가능       | 가능        |
-| `/dashboard/settings`                 | 불가    | 제한   | 불가       | 가능        |
+| Route                                  | Blogger | Agency | Advertiser | Pacto Admin |
+| -------------------------------------- | ------- | ------ | ---------- | ----------- |
+| `/blogger/*`                           | 가능    | 불가   | 불가       | 불가        |
+| `/dashboard`                           | 불가    | 가능   | 가능       | 가능        |
+| `/dashboard/campaigns`                 | 불가    | 가능   | 제한       | 가능        |
+| `/dashboard/campaigns/new`             | 불가    | 가능   | 불가       | 가능        |
+| `/dashboard/campaigns/:id/applicants`  | 불가    | 가능   | 불가       | 가능        |
+| `/dashboard/campaigns/:id/missions`    | 불가    | 가능   | 제한       | 가능        |
+| `/dashboard/campaigns/:id/settlements` | 불가    | 가능   | 제한       | 가능        |
+| `/dashboard/payments`                  | 불가    | 제한   | 가능       | 가능        |
+| `/dashboard/reports`                   | 불가    | 가능   | 가능       | 가능        |
+| `/dashboard/settings`                  | 불가    | 제한   | 불가       | 가능        |
 
 ---
 
