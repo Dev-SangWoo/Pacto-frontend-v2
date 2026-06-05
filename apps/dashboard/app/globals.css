@@ -163,6 +163,30 @@ td span {
   align-items: flex-start;
 }
 
+.dashboard-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wallet-summary-pill {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: var(--grey-100);
+  padding: 0 16px;
+  color: var(--grey-700);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.wallet-summary-pill strong {
+  color: var(--grey-900);
+}
+
 .topbar-copy {
   margin-top: 8px;
   color: var(--grey-600);
@@ -877,6 +901,66 @@ td strong {
 .form-error.inline-error {
   margin-right: auto;
   align-self: center;
+}
+
+.charge-panel {
+  overflow: visible;
+}
+
+.charge-body {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.charge-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.charge-options button {
+  min-height: 42px;
+  border: 1px solid var(--grey-200);
+  border-radius: 8px;
+  color: var(--grey-700);
+  background: var(--white);
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.charge-options button.active {
+  border-color: var(--blue-500);
+  color: var(--blue-500);
+  background: var(--blue-50);
+}
+
+.charge-input {
+  display: grid;
+  gap: 8px;
+}
+
+.charge-input span {
+  color: var(--grey-700);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.charge-input input {
+  width: 100%;
+  border: 1px solid var(--grey-200);
+  border-radius: 8px;
+  padding: 13px 14px;
+  color: var(--grey-900);
+  background: var(--white);
+  font-size: 15px;
+  outline: none;
+}
+
+.charge-input input:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.12);
 }
 
 .skeleton-block {

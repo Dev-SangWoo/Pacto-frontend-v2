@@ -135,13 +135,14 @@ export const handlers = [
   }),
 
   http.patch(`${API_BASE_URL}/api/v1/missions/:missionId/submit`, async ({ params, request }) => {
-    const body = (await request.json()) as { submitted_url?: string };
+    const body = (await request.json()) as { submittedUrl?: string; submitted_url?: string };
+    const url = body.submittedUrl ?? body.submitted_url;
 
     return HttpResponse.json({
       success: true,
       data: {
         mission_id: Number(params.missionId),
-        submitted_url: body.submitted_url,
+        submitted_url: url,
         status: "SUBMITTED",
       },
     });

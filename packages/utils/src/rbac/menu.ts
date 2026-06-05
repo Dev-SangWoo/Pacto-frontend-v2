@@ -8,6 +8,7 @@ export type DashboardMenuItem = {
 const agencyMenus: DashboardMenuItem[] = [
   { href: "/dashboard", label: "대시보드" },
   { href: "/dashboard/campaigns", label: "캠페인" },
+  { href: "/dashboard/payments", label: "결제" },
   { href: "/dashboard/reports", label: "리포트" },
   { href: "/dashboard/settings", label: "설정" },
 ];

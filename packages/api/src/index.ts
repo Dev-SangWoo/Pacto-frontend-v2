@@ -1,6 +1,9 @@
 export {
   acceptMission,
+  approveAllApplicants,
+  approveApplicant,
   createCampaign,
+  getApplicants,
   getCampaignDetail,
   getCampaigns,
   updateCampaignStatus,

@@ -24,9 +24,9 @@ export async function createCampaignAction(
   const totalSlots = Number(formData.get("totalSlots"));
   const deadline = String(formData.get("deadline") ?? "").trim();
   const thumbnailUrl = String(formData.get("thumbnailUrl") ?? "").trim();
-  const guidelines = String(formData.get("guidelines") ?? "").trim();
+  const guidelineItems = parseGuidelines(String(formData.get("guidelines") ?? ""));
 
-  if (title.length === 0 || guidelines.length === 0 || deadline.length === 0) {
+  if (title.length === 0 || guidelineItems.length === 0 || deadline.length === 0) {
     return { message: "캠페인명, 마감일, 미션 가이드를 입력해 주세요." };
   }
 
@@ -47,8 +47,8 @@ export async function createCampaignAction(
   try {
     await createCampaign(
       {
-        deadline: deadlineDate.toISOString(),
-        guidelines,
+        deadline: toLocalDateTime(deadlineDate),
+        guidelines: JSON.stringify(guidelineItems),
         rewardPoint,
         thumbnailUrl: thumbnailUrl.length > 0 ? thumbnailUrl : undefined,
         title,
@@ -56,9 +56,44 @@ export async function createCampaignAction(
       },
       session.accessToken,
     );
-  } catch {
-    return { message: "캠페인 등록에 실패했어요. 입력값과 로그인 상태를 확인해 주세요." };
+  } catch (error) {
+    return { message: getCreateCampaignErrorMessage(error) };
   }
 
   redirect("/dashboard/campaigns");
+}
+
+function parseGuidelines(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+function toLocalDateTime(date: Date) {
+  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 19);
+}
+
+function getCreateCampaignErrorMessage(error: unknown) {
+  if (isApiErrorLike(error) && error.message.length > 0) {
+    return error.message;
+  }
+
+  if (error instanceof Error && error.message.length > 0) {
+    return error.message;
+  }
+
+  return "캠페인 등록에 실패했어요. 입력값과 로그인 상태를 확인해 주세요.";
+}
+
+function isApiErrorLike(error: unknown): error is { message: string; statusCode: number } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    "statusCode" in error &&
+    typeof (error as { message?: unknown }).message === "string" &&
+    typeof (error as { statusCode?: unknown }).statusCode === "number"
+  );
 }

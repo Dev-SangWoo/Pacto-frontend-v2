@@ -1,4 +1,4 @@
-import type { Campaign } from "@pacto/types";
+import type { Applicant, Campaign } from "@pacto/types";
 
 import type { MissionActionResponse } from "../adapters/mission-adapter";
 import {
@@ -23,6 +23,10 @@ export type GetCampaignsParams = {
   status?: CampaignStatusResponse;
 };
 
+type MockFallbackOptions = {
+  mockFallback?: boolean;
+};
+
 export type CreateCampaignPayload = {
   deadline: string;
   guidelines: string;
@@ -39,6 +43,7 @@ export type UpdateCampaignStatusPayload = {
 export async function getCampaigns(
   params: GetCampaignsParams = {},
   token?: string,
+  options: MockFallbackOptions = {},
 ): Promise<Campaign[]> {
   return withMockFallback(
     async () => {
@@ -47,12 +52,14 @@ export async function getCampaigns(
       return unwrapListResponse<CampaignResponse>(response).map(adaptCampaign);
     },
     () => mockCampaigns.map(adaptCampaign),
+    options,
   );
 }
 
 export async function getCampaignDetail(
   campaignId: number,
   token?: string,
+  options: MockFallbackOptions = {},
 ): Promise<Campaign | undefined> {
   return withMockFallback(
     async () => {
@@ -68,6 +75,7 @@ export async function getCampaignDetail(
 
       return campaign == null ? undefined : adaptCampaign(campaign);
     },
+    options,
   );
 }
 
@@ -121,11 +129,73 @@ export async function acceptMission(campaignId: number, token?: string) {
   return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
 }
 
-async function withMockFallback<T>(request: () => Promise<T>, fallback: () => T): Promise<T> {
+export async function getApplicants(
+  campaignId: number,
+  token?: string,
+  options: MockFallbackOptions = {},
+): Promise<Applicant[]> {
+  return withMockFallback(
+    async () => {
+      const response = await apiRequest(`/api/v1/campaigns/${campaignId}/applicants`, { token });
+      return unwrapListResponse<Applicant>(response);
+    },
+    () => [
+      {
+        id: 1,
+        name: "김하린",
+        blogUrl: "blog.naver.com/harin",
+        status: "pending",
+        fitScore: "높음",
+        appliedAt: new Date().toISOString(),
+      },
+      {
+        id: 2,
+        name: "이도윤",
+        blogUrl: "blog.naver.com/doyoon",
+        status: "approved",
+        fitScore: "보통",
+        appliedAt: new Date().toISOString(),
+      },
+      {
+        id: 3,
+        name: "박서아",
+        blogUrl: "blog.naver.com/seoa",
+        status: "pending",
+        fitScore: "낮음",
+        appliedAt: new Date().toISOString(),
+      },
+    ],
+    options,
+  );
+}
+
+export async function approveApplicant(
+  campaignId: number,
+  applicantId: number,
+  token?: string,
+): Promise<void> {
+  await apiRequest(`/api/v1/campaigns/${campaignId}/applicants/${applicantId}/approve`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function approveAllApplicants(campaignId: number, token?: string): Promise<void> {
+  await apiRequest(`/api/v1/campaigns/${campaignId}/applicants/approve-all`, {
+    method: "POST",
+    token,
+  });
+}
+
+async function withMockFallback<T>(
+  request: () => Promise<T>,
+  fallback: () => T,
+  options: MockFallbackOptions = {},
+): Promise<T> {
   try {
     return await request();
   } catch (error) {
-    if (isMockFallbackDisabled()) {
+    if (options.mockFallback === false || isMockFallbackDisabled()) {
       throw error;
     }
 

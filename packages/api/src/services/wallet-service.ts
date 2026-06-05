@@ -6,10 +6,8 @@ import type {
   WalletResponse,
   WithdrawalResponse,
 } from "../adapters/wallet-adapter";
-import { isMockFallbackDisabled } from "../client/env";
 import { apiRequest, unwrapCommonResponse, unwrapListResponse } from "../client/http-client";
 import type { CommonResponse } from "../client/http-client";
-import { mockWallet } from "../mocks/data";
 
 export type GetPointHistoriesParams = {
   page?: number;
@@ -23,26 +21,14 @@ export type WithdrawPayload = {
 };
 
 export async function getMyWallet(token?: string): Promise<Wallet> {
-  return withMockFallback(
-    async () => {
-      const response = await apiRequest<CommonResponse<WalletResponse> | WalletResponse>(
-        "/api/v1/wallets/me",
-        {
-          token,
-        },
-      );
-
-      return adaptWallet(unwrapCommonResponse<WalletResponse>(response));
+  const response = await apiRequest<CommonResponse<WalletResponse> | WalletResponse>(
+    "/api/v1/wallets/me",
+    {
+      token,
     },
-    () =>
-      adaptWallet({
-        walletId: mockWallet.id,
-        balance: mockWallet.availableBalance,
-        lockedBalance: mockWallet.lockedBalance,
-        totalEarned: mockWallet.totalEarned,
-        updatedAt: mockWallet.updatedAt,
-      }),
   );
+
+  return adaptWallet(unwrapCommonResponse<WalletResponse>(response));
 }
 
 export async function getMyPointHistories(
@@ -51,6 +37,7 @@ export async function getMyPointHistories(
 ): Promise<PointHistory[]> {
   const response = await apiRequest("/api/v1/wallets/me/histories", { query: params, token });
 
+  // If unwrapListResponse fails or returns empty, it will return an empty array []
   return unwrapListResponse<PointHistoryResponse>(response).map(adaptPointHistory);
 }
 
@@ -65,16 +52,4 @@ export async function requestWithdraw(payload: WithdrawPayload, token?: string) 
   );
 
   return adaptWithdrawal(unwrapCommonResponse<WithdrawalResponse>(response));
-}
-
-async function withMockFallback<T>(request: () => Promise<T>, fallback: () => T): Promise<T> {
-  try {
-    return await request();
-  } catch (error) {
-    if (isMockFallbackDisabled()) {
-      throw error;
-    }
-
-    return fallback();
-  }
 }

@@ -53,7 +53,7 @@ export async function submitMission(
   token?: string,
 ): Promise<Mission> {
   const response = await apiRequest<MissionActionResponse>(`/api/v1/missions/${missionId}/submit`, {
-    body: { submitted_url: payload.submitted_url ?? payload.submittedUrl },
+    body: { submittedUrl: payload.submittedUrl ?? payload.submitted_url },
     method: "PATCH",
     token,
   });
