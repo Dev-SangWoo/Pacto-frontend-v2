@@ -23,9 +23,14 @@ export type CancelMissionPayload = {
   reason: string;
 };
 
+type MockFallbackOptions = {
+  mockFallback?: boolean;
+};
+
 export async function getMyMissions(
   params: GetMyMissionsParams = {},
   token?: string,
+  options: MockFallbackOptions = {},
 ): Promise<Mission[]> {
   return withMockFallback(
     async () => {
@@ -34,6 +39,7 @@ export async function getMyMissions(
       return unwrapListResponse<MissionResponse>(response).map(adaptMission);
     },
     () => mockMissions.map(adaptMission),
+    options,
   );
 }
 
@@ -41,8 +47,9 @@ export async function getMissionDetail(
   missionId: number,
   params: GetMyMissionsParams = {},
   token?: string,
+  options: MockFallbackOptions = {},
 ): Promise<Mission | undefined> {
-  const missions = await getMyMissions(params, token);
+  const missions = await getMyMissions(params, token, options);
 
   return missions.find((item) => item.id === missionId);
 }
@@ -75,7 +82,7 @@ export async function approveMission(missionId: number, token?: string): Promise
 
 export async function cancelMission(
   missionId: number,
-  payload: CancelMissionPayload,
+  payload?: CancelMissionPayload,
   token?: string,
 ): Promise<Mission> {
   const response = await apiRequest<MissionActionResponse>(`/api/v1/missions/${missionId}/cancel`, {
@@ -87,14 +94,30 @@ export async function cancelMission(
   return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
 }
 
-async function withMockFallback<T>(request: () => Promise<T>, fallback: () => T): Promise<T> {
+export async function rejectMission(missionId: number, token?: string): Promise<Mission> {
+  const response = await apiRequest<MissionActionResponse>(`/api/v1/missions/${missionId}/reject`, {
+    method: "PATCH",
+    token,
+  });
+
+  return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
+}
+
+async function withMockFallback<T>(
+  request: () => Promise<T>,
+  fallback: () => T | Promise<T>,
+  options: MockFallbackOptions = {},
+): Promise<T> {
   try {
     return await request();
   } catch (error) {
-    if (isMockFallbackDisabled()) {
+    const isForced = options.mockFallback === true;
+    const isDisabled = options.mockFallback === false || isMockFallbackDisabled();
+
+    if (!isForced && isDisabled) {
       throw error;
     }
 
-    return fallback();
+    return await fallback();
   }
 }

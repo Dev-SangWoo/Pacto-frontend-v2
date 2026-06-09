@@ -8,8 +8,8 @@ import { WithdrawPanel } from "./_components/withdraw-panel";
 export default async function PaymentsPage() {
   const session = await getDashboardSession();
   const [wallet, histories] = await Promise.all([
-    getMyWallet(session.accessToken),
-    getMyPointHistories({ page: 1, size: 10 }, session.accessToken).catch(() => []),
+    getMyWallet(session.accessToken, { mockFallback: true }),
+    getMyPointHistories({ page: 1, size: 10 }, session.accessToken, { mockFallback: true }),
   ]);
 
   return (
