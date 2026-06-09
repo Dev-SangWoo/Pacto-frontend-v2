@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 
 import type { Applicant } from "@pacto/types";
 
+import {
+  approveApplicantAction,
+  rejectApplicantAction,
+} from "../../../../../_actions/campaign-actions";
+
 type ApplicantListProps = {
   campaignId: number;
   initialApplicants: Applicant[];
@@ -14,20 +19,30 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
   const [applicants, setApplicants] = useState<Applicant[]>(initialApplicants);
   const router = useRouter();
 
-  const handleApprove = (applicantId: number) => {
-    setApplicants((prev) =>
-      prev.map((applicant) =>
-        applicant.id === applicantId ? { ...applicant, status: "approved" } : applicant,
-      ),
-    );
+  const handleApprove = async (applicantId: number) => {
+    const result = await approveApplicantAction(campaignId, applicantId);
+    if (result.ok) {
+      setApplicants((prev) =>
+        prev.map((applicant) =>
+          applicant.id === applicantId ? { ...applicant, status: "approved" } : applicant,
+        ),
+      );
+    } else {
+      alert(result.message);
+    }
   };
 
-  const handleReject = (applicantId: number) => {
-    setApplicants((prev) =>
-      prev.map((applicant) =>
-        applicant.id === applicantId ? { ...applicant, status: "rejected" } : applicant,
-      ),
-    );
+  const handleReject = async (applicantId: number) => {
+    const result = await rejectApplicantAction(campaignId, applicantId);
+    if (result.ok) {
+      setApplicants((prev) =>
+        prev.map((applicant) =>
+          applicant.id === applicantId ? { ...applicant, status: "rejected" } : applicant,
+        ),
+      );
+    } else {
+      alert(result.message);
+    }
   };
 
   const handleApproveAll = () => {

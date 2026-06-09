@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { getCampaignDetail } from "@pacto/api";
-import type { Campaign, EscrowLedger } from "@pacto/types";
+import { getCampaignDetail, getCampaignMissions } from "@pacto/api";
+import type { EscrowLedger, Mission, SettlementStatus } from "@pacto/types";
 import { formatKoreanDate, formatPoint, getSettlementStatusView } from "@pacto/utils";
 
 import { getDashboardSession } from "../../../../_lib/session";
@@ -22,7 +22,17 @@ export default async function CampaignSettlementsPage({ params }: SettlementsPag
     notFound();
   }
 
-  const campaignEscrows = buildMockEscrows(campaign);
+  const missions = await getCampaignMissions(Number(campaignId), session.accessToken);
+  const campaignEscrows: EscrowLedger[] = missions.map((mission) => ({
+    id: mission.id,
+    campaignId: mission.campaignId,
+    campaignTitle: mission.campaignTitle,
+    bloggerName: mission.brandName,
+    amount: mission.rewardPoint,
+    status: mapMissionToSettlementStatus(mission.status),
+    createdAt: mission.dueDate, // Use dueDate as a proxy if createdAt is not available
+  }));
+
   const settlementReadyAmount = campaignEscrows
     .filter((escrow) => escrow.status === "locked")
     .reduce((sum, escrow) => sum + escrow.amount, 0);
@@ -103,34 +113,16 @@ export default async function CampaignSettlementsPage({ params }: SettlementsPag
   );
 }
 
-function buildMockEscrows(campaign: Campaign): EscrowLedger[] {
-  return [
-    {
-      id: campaign.id * 1000 + 1,
-      campaignId: campaign.id,
-      campaignTitle: campaign.title,
-      bloggerName: "감성리뷰어 하루",
-      amount: campaign.rewardPoint,
-      status: "locked",
-      createdAt: "2026-06-05T11:00:00",
-    },
-    {
-      id: campaign.id * 1000 + 2,
-      campaignId: campaign.id,
-      campaignTitle: campaign.title,
-      bloggerName: "라이프로그 수아",
-      amount: campaign.rewardPoint,
-      status: "paid",
-      createdAt: "2026-06-04T14:30:00",
-    },
-    {
-      id: campaign.id * 1000 + 3,
-      campaignId: campaign.id,
-      campaignTitle: campaign.title,
-      bloggerName: "맛집기록 민",
-      amount: campaign.rewardPoint,
-      status: "locked",
-      createdAt: "2026-06-03T09:15:00",
-    },
-  ];
+function mapMissionToSettlementStatus(status: Mission["status"]): SettlementStatus {
+  switch (status) {
+    case "approved":
+      return "paid";
+    case "rejected":
+    case "application_rejected":
+      return "cancelled";
+    default:
+      return "locked";
+  }
 }
+
+// buildMockEscrows removed as it is no longer used

@@ -5,35 +5,53 @@ import { useState } from "react";
 import type { Mission } from "@pacto/types";
 import { formatKoreanDate, getMissionStatusView } from "@pacto/utils";
 
+import {
+  approveMissionAction,
+  rejectMissionAction,
+} from "../../../../../_actions/campaign-actions";
+
 type MissionReviewListProps = {
   campaignId: number;
   initialMissions: Mission[];
 };
 
-export function MissionReviewList({
-  campaignId: _campaignId,
-  initialMissions,
-}: MissionReviewListProps) {
+export function MissionReviewList({ campaignId, initialMissions }: MissionReviewListProps) {
   const [missions, setMissions] = useState<Mission[]>(initialMissions);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleApprove = (missionId: number) => {
+  const handleApprove = async (missionId: number) => {
+    if (!confirm("이 미션을 승인하시겠습니까?")) return;
+
     setIsLoading(true);
-    setMissions((prev) =>
-      prev.map((mission) =>
-        mission.id === missionId ? { ...mission, status: "approved" } : mission,
-      ),
-    );
+    const result = await approveMissionAction(campaignId, missionId);
+
+    if (result.ok) {
+      setMissions((prev) =>
+        prev.map((mission) =>
+          mission.id === missionId ? { ...mission, status: "approved" } : mission,
+        ),
+      );
+    } else {
+      alert(result.message);
+    }
     setIsLoading(false);
   };
 
-  const handleReject = (missionId: number) => {
+  const handleReject = async (missionId: number) => {
+    if (!confirm("이 미션을 반려하시겠습니까?")) return;
+
     setIsLoading(true);
-    setMissions((prev) =>
-      prev.map((mission) =>
-        mission.id === missionId ? { ...mission, status: "rejected" } : mission,
-      ),
-    );
+    const result = await rejectMissionAction(campaignId, missionId);
+
+    if (result.ok) {
+      setMissions((prev) =>
+        prev.map((mission) =>
+          mission.id === missionId ? { ...mission, status: "rejected" } : mission,
+        ),
+      );
+    } else {
+      alert(result.message);
+    }
     setIsLoading(false);
   };
 
@@ -65,23 +83,25 @@ export function MissionReviewList({
                 </div>
                 <div className="action-row">
                   {mission.status === "submitted" ? (
-                    <button
-                      className="small-button"
-                      disabled={isLoading}
-                      onClick={() => handleApprove(mission.id)}
-                      type="button"
-                    >
-                      승인
-                    </button>
+                    <>
+                      <button
+                        className="small-button"
+                        disabled={isLoading}
+                        onClick={() => handleApprove(mission.id)}
+                        type="button"
+                      >
+                        승인
+                      </button>
+                      <button
+                        className="small-button muted"
+                        disabled={isLoading}
+                        onClick={() => handleReject(mission.id)}
+                        type="button"
+                      >
+                        반려
+                      </button>
+                    </>
                   ) : null}
-                  <button
-                    className="small-button muted"
-                    disabled={isLoading}
-                    onClick={() => handleReject(mission.id)}
-                    type="button"
-                  >
-                    반려
-                  </button>
                 </div>
               </article>
             );

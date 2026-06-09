@@ -1,6 +1,5 @@
-import type { Applicant, Campaign } from "@pacto/types";
+import type { Applicant, Campaign, Mission } from "@pacto/types";
 
-import type { MissionActionResponse } from "../adapters/mission-adapter";
 import {
   adaptCampaign,
   adaptCreateCampaign,
@@ -11,7 +10,10 @@ import type {
   CampaignStatusResponse,
   CreateCampaignResponse,
 } from "../adapters/campaign-adapter";
-import { adaptMissionAction } from "../adapters/mission-adapter";
+import { adaptMission, adaptMissionAction } from "../adapters/mission-adapter";
+import type { MissionActionResponse, MissionResponse } from "../adapters/mission-adapter";
+import { adaptApplication } from "../adapters/application-adapter";
+import type { ApplicationResponse } from "../adapters/application-adapter";
 import { isMockFallbackDisabled } from "../client/env";
 import { apiRequest, unwrapCommonResponse, unwrapListResponse } from "../client/http-client";
 import type { CommonResponse } from "../client/http-client";
@@ -29,7 +31,7 @@ type MockFallbackOptions = {
 
 export type CreateCampaignPayload = {
   deadline: string;
-  guidelines: string;
+  guidelines: unknown;
   rewardPoint: number;
   thumbnailUrl?: string;
   title: string;
@@ -80,10 +82,16 @@ export async function getCampaignDetail(
 }
 
 export async function createCampaign(payload: CreateCampaignPayload, token?: string) {
+  const guidelines =
+    typeof payload.guidelines === "string" ? { content: payload.guidelines } : payload.guidelines;
+
   const response = await apiRequest<
     CommonResponse<CreateCampaignResponse> | CreateCampaignResponse
   >("/api/v1/campaigns", {
-    body: payload,
+    body: {
+      ...payload,
+      guidelines,
+    },
     method: "POST",
     token,
   });
@@ -117,16 +125,13 @@ export async function updateCampaignStatus(
   };
 }
 
-export async function acceptMission(campaignId: number, token?: string) {
-  const response = await apiRequest<MissionActionResponse>(
-    `/api/v1/campaigns/${campaignId}/missions`,
-    {
-      method: "POST",
-      token,
-    },
-  );
-
-  return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
+export async function acceptMission(campaignId: number, token?: string): Promise<void> {
+  // Now this is 'Applying' to a campaign
+  await apiRequest("/api/v1/applications", {
+    body: { campaignId },
+    method: "POST",
+    token,
+  });
 }
 
 export async function getApplicants(
@@ -136,35 +141,44 @@ export async function getApplicants(
 ): Promise<Applicant[]> {
   return withMockFallback(
     async () => {
-      const response = await apiRequest(`/api/v1/campaigns/${campaignId}/applicants`, { token });
-      return unwrapListResponse<Applicant>(response);
+      const response = await apiRequest(`/api/v1/applications/campaign/${campaignId}`, { token });
+      return unwrapListResponse<ApplicationResponse>(response).map(adaptApplication);
     },
-    () => [
-      {
-        id: 1,
-        name: "김하린",
-        blogUrl: "blog.naver.com/harin",
-        status: "pending",
-        fitScore: "높음",
-        appliedAt: new Date().toISOString(),
-      },
-      {
-        id: 2,
-        name: "이도윤",
-        blogUrl: "blog.naver.com/doyoon",
-        status: "approved",
-        fitScore: "보통",
-        appliedAt: new Date().toISOString(),
-      },
-      {
-        id: 3,
-        name: "박서아",
-        blogUrl: "blog.naver.com/seoa",
-        status: "pending",
-        fitScore: "낮음",
-        appliedAt: new Date().toISOString(),
-      },
-    ],
+    () => mockCampaigns.find((c) => c.id === campaignId)?.applicants?.map(adaptApplication) ?? [],
+    options,
+  );
+}
+
+export async function getCampaignMissions(
+  campaignId: number,
+  token?: string,
+  options: MockFallbackOptions = {},
+): Promise<Mission[]> {
+  return withMockFallback(
+    async () => {
+      const response = await apiRequest(`/api/v1/campaigns/${campaignId}/missions`, { token });
+      return unwrapListResponse<MissionResponse>(response).map(adaptMission);
+    },
+    async () => {
+      try {
+        const applicants = await getApplicants(campaignId, token, options);
+        return applicants
+          .filter((a) => a.status === "approved")
+          .map((a) => ({
+            id: a.id,
+            campaignId: campaignId,
+            bloggerId: 0,
+            campaignTitle: "캠페인 미션",
+            brandName: a.name,
+            thumbnailUrl: "/campaigns/seongsu-brunch-cafe.png",
+            rewardPoint: 0,
+            dueDate: a.appliedAt,
+            status: "submitted" as const, // Default to submitted for testing review flow
+          }));
+      } catch {
+        return [];
+      }
+    },
     options,
   );
 }
@@ -173,32 +187,50 @@ export async function approveApplicant(
   campaignId: number,
   applicantId: number,
   token?: string,
+): Promise<Mission> {
+  // In the new API, we use applicationId (which is applicantId here)
+  const response = await apiRequest<MissionActionResponse>(
+    `/api/v1/applications/${applicantId}/accept`,
+    {
+      method: "PATCH",
+      token,
+    },
+  );
+
+  return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
+}
+
+export async function rejectApplicant(
+  campaignId: number,
+  applicantId: number,
+  token?: string,
 ): Promise<void> {
-  await apiRequest(`/api/v1/campaigns/${campaignId}/applicants/${applicantId}/approve`, {
-    method: "POST",
+  await apiRequest(`/api/v1/applications/${applicantId}/reject`, {
+    method: "PATCH",
     token,
   });
 }
 
-export async function approveAllApplicants(campaignId: number, token?: string): Promise<void> {
-  await apiRequest(`/api/v1/campaigns/${campaignId}/applicants/approve-all`, {
-    method: "POST",
-    token,
-  });
+export async function approveAllApplicants(_campaignId: number, _token?: string): Promise<void> {
+  // Not implemented in backend yet, but we could loop or just throw
+  console.warn("approveAllApplicants is not supported by the backend yet.");
 }
 
 async function withMockFallback<T>(
   request: () => Promise<T>,
-  fallback: () => T,
+  fallback: () => T | Promise<T>,
   options: MockFallbackOptions = {},
 ): Promise<T> {
   try {
     return await request();
   } catch (error) {
-    if (options.mockFallback === false || isMockFallbackDisabled()) {
+    const isForced = options.mockFallback === true;
+    const isDisabled = options.mockFallback === false || isMockFallbackDisabled();
+
+    if (!isForced && isDisabled) {
       throw error;
     }
 
-    return fallback();
+    return await fallback();
   }
 }

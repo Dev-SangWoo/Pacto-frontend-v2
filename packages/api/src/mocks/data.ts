@@ -139,3 +139,29 @@ export const mockEscrows: EscrowLedger[] = [
     createdAt: "2026-05-27T10:00:00",
   },
 ];
+
+import type { PointHistory } from "@pacto/types";
+
+export const mockPointHistories: PointHistory[] = [
+  {
+    id: 1,
+    type: "CHARGE",
+    amount: 100000,
+    referenceId: 101,
+    createdAt: "2026-06-05T10:00:00",
+  },
+  {
+    id: 2,
+    type: "LOCK",
+    amount: -50000,
+    referenceId: 1,
+    createdAt: "2026-06-06T11:00:00",
+  },
+  {
+    id: 3,
+    type: "RELEASE",
+    amount: 40000,
+    referenceId: 2,
+    createdAt: "2026-06-07T14:00:00",
+  },
+];

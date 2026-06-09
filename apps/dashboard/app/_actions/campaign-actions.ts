@@ -1,6 +1,13 @@
 "use server";
 
-import { createCampaign } from "@pacto/api";
+import {
+  approveApplicant,
+  approveMission,
+  createCampaign,
+  rejectApplicant,
+  rejectMission,
+} from "@pacto/api";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getDashboardSession } from "../_lib/session";
@@ -8,6 +15,54 @@ import { getDashboardSession } from "../_lib/session";
 export type CampaignCreateState = {
   message?: string;
 };
+
+export async function approveApplicantAction(campaignId: number, applicantId: number) {
+  const session = await getDashboardSession();
+
+  try {
+    await approveApplicant(campaignId, applicantId, session.accessToken);
+    revalidatePath(`/dashboard/campaigns/${campaignId}/applicants`);
+    return { ok: true };
+  } catch {
+    return { message: "지원자 승인에 실패했어요.", ok: false };
+  }
+}
+
+export async function rejectApplicantAction(campaignId: number, applicantId: number) {
+  const session = await getDashboardSession();
+
+  try {
+    await rejectApplicant(campaignId, applicantId, session.accessToken);
+    revalidatePath(`/dashboard/campaigns/${campaignId}/applicants`);
+    return { ok: true };
+  } catch {
+    return { message: "지원자 반려에 실패했어요.", ok: false };
+  }
+}
+
+export async function approveMissionAction(campaignId: number, missionId: number) {
+  const session = await getDashboardSession();
+
+  try {
+    await approveMission(missionId, session.accessToken);
+    revalidatePath(`/dashboard/campaigns/${campaignId}/missions`);
+    return { ok: true };
+  } catch {
+    return { message: "미션 승인에 실패했어요.", ok: false };
+  }
+}
+
+export async function rejectMissionAction(campaignId: number, missionId: number) {
+  const session = await getDashboardSession();
+
+  try {
+    await rejectMission(missionId, session.accessToken);
+    revalidatePath(`/dashboard/campaigns/${campaignId}/missions`);
+    return { ok: true };
+  } catch {
+    return { message: "미션 반려에 실패했어요.", ok: false };
+  }
+}
 
 export async function createCampaignAction(
   _previousState: CampaignCreateState,
@@ -48,7 +103,7 @@ export async function createCampaignAction(
     await createCampaign(
       {
         deadline: toLocalDateTime(deadlineDate),
-        guidelines: JSON.stringify(guidelineItems),
+        guidelines: { items: guidelineItems },
         rewardPoint,
         thumbnailUrl: thumbnailUrl.length > 0 ? thumbnailUrl : undefined,
         title,

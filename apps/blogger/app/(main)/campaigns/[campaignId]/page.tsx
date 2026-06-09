@@ -25,9 +25,9 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
     redirect("/login");
   }
 
-  const campaign = await getCampaignDetail(Number(campaignId), session.accessToken, {
-    mockFallback: false,
-  }).catch(() => redirect("/login"));
+  const campaign = await getCampaignDetail(Number(campaignId), session.accessToken).catch(() =>
+    redirect("/login"),
+  );
 
   if (campaign == null) {
     notFound();
