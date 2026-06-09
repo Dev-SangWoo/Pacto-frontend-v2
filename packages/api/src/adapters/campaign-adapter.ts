@@ -80,12 +80,22 @@ export function adaptCreateCampaign(
   };
 }
 
-function normalizeGuidelines(guidelines?: string | string[]): string {
+function normalizeGuidelines(guidelines?: unknown): string {
   if (Array.isArray(guidelines)) {
     return guidelines.join("\n");
   }
 
-  return guidelines ?? "캠페인 가이드를 확인해 주세요.";
+  if (typeof guidelines === "object" && guidelines !== null) {
+    if ("items" in guidelines && Array.isArray(guidelines.items)) {
+      return guidelines.items.join("\n");
+    }
+    if ("content" in guidelines && typeof guidelines.content === "string") {
+      return guidelines.content;
+    }
+    return JSON.stringify(guidelines);
+  }
+
+  return typeof guidelines === "string" ? guidelines : "캠페인 가이드를 확인해 주세요.";
 }
 
 function getFallbackThumbnail(id?: number): string {
