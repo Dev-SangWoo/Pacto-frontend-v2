@@ -1,11 +1,16 @@
-import { getMyMissions } from "@pacto/api";
+import { getMyApplicationsAsMissions, getMyMissions } from "@pacto/api";
 
 import { MissionBoard } from "../../_components/mission-board";
 import { getBloggerSession } from "../../_lib/session";
 
 export default async function MissionsPage() {
   const session = await getBloggerSession();
-  const missions = await getMyMissions({}, session.accessToken);
+  const [missions, applications] = await Promise.all([
+    getMyMissions({}, session.accessToken, { mockFallback: true }),
+    getMyApplicationsAsMissions(session.accessToken, { mockFallback: true }),
+  ]);
+
+  const allMissions = [...applications, ...missions];
 
   return (
     <section className="screen-stack" aria-labelledby="missions-title">
@@ -14,7 +19,7 @@ export default async function MissionsPage() {
         <h1 id="missions-title">미션</h1>
       </section>
 
-      <MissionBoard missions={missions} />
+      <MissionBoard missions={allMissions} />
     </section>
   );
 }

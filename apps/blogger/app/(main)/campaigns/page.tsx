@@ -11,9 +11,7 @@ export default async function CampaignsPage() {
     redirect("/login");
   }
 
-  const campaigns = await getCampaigns({}, session.accessToken, { mockFallback: false }).catch(() =>
-    redirect("/login"),
-  );
+  const campaigns = await getCampaigns({}, session.accessToken);
 
   return <CampaignExplorer campaigns={campaigns} />;
 }
