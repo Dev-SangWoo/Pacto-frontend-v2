@@ -2,13 +2,19 @@ import { ApiError } from "./api-error";
 import { getServerAccessToken } from "./auth-token";
 import { getApiEnv } from "./env";
 
-const DEFAULT_API_BASE_URL = "http://localhost:8080";
+const DEFAULT_API_BASE_URL = "";
 
 type HttpMethod = "GET" | "POST" | "PATCH";
+
+interface NextFetchRequestConfig {
+  revalidate?: number | false;
+  tags?: string[];
+}
 
 type ApiRequestOptions = {
   body?: unknown;
   method?: HttpMethod;
+  next?: NextFetchRequestConfig;
   query?: Record<string, number | string | undefined>;
   token?: string;
 };
@@ -29,8 +35,16 @@ export function getApiBaseUrl(): string {
 }
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  const { body, method = "GET", query, token = getServerAccessToken() } = options;
-  const url = new URL(`${getApiBaseUrl()}${path}`);
+  const { body, method = "GET", next, query, token = getServerAccessToken() } = options;
+  const baseUrl = getApiBaseUrl();
+
+  if (!baseUrl && !path.startsWith("http")) {
+    throw new Error(
+      "API Base URL이 설정되지 않았습니다. 환경 변수(PACTO_API_BASE_URL)를 확인해주세요.",
+    );
+  }
+
+  const url = new URL(`${baseUrl}${path}`);
 
   Object.entries(query ?? {}).forEach(([key, value]) => {
     if (value != null) {
@@ -53,7 +67,11 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     cache: "no-store",
     headers,
     method,
-  });
+    next: {
+      revalidate: 0,
+      ...next,
+    },
+  } as RequestInit & { next?: NextFetchRequestConfig });
 
   const payload = await parseResponseBody(response);
 
