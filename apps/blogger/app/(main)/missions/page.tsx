@@ -3,6 +3,8 @@ import { getMyApplicationsAsMissions, getMyMissions } from "@pacto/api";
 import { MissionBoard } from "../../_components/mission-board";
 import { getBloggerSession } from "../../_lib/session";
 
+export const dynamic = "force-dynamic";
+
 export default async function MissionsPage() {
   const session = await getBloggerSession();
   const [missions, applications] = await Promise.all([
