@@ -1,4 +1,4 @@
-import type { Applicant, Campaign, Mission } from "@pacto/types";
+import type { Applicant, ApplicationResponse, Campaign, Mission } from "@pacto/types";
 
 import {
   adaptCampaign,
@@ -13,7 +13,6 @@ import type {
 import { adaptMission, adaptMissionAction } from "../adapters/mission-adapter";
 import type { MissionActionResponse, MissionResponse } from "../adapters/mission-adapter";
 import { adaptApplication } from "../adapters/application-adapter";
-import type { ApplicationResponse } from "../adapters/application-adapter";
 import { isMockFallbackDisabled } from "../client/env";
 import { apiRequest, unwrapCommonResponse, unwrapListResponse } from "../client/http-client";
 import type { CommonResponse } from "../client/http-client";
