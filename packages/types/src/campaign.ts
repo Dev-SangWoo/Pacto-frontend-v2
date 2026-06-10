@@ -1,3 +1,5 @@
+import type { ApplicationResponse } from "./application";
+
 export type CampaignStatus = "draft" | "open" | "full" | "closed" | "completed" | "cancelled";
 
 export type Campaign = {
@@ -15,4 +17,5 @@ export type Campaign = {
   guidelines: string;
   deadline: string;
   status: CampaignStatus;
+  applicants?: ApplicationResponse[];
 };

@@ -1,7 +1,6 @@
-import type { Applicant, Mission } from "@pacto/types";
+import type { Applicant, ApplicationResponse, Mission } from "@pacto/types";
 
 import { adaptApplication, adaptApplicationToMission } from "../adapters/application-adapter";
-import type { ApplicationResponse } from "../adapters/application-adapter";
 import { adaptMissionAction } from "../adapters/mission-adapter";
 import type { MissionActionResponse } from "../adapters/mission-adapter";
 import { isMockFallbackDisabled } from "../client/env";

@@ -1,16 +1,11 @@
-import type { Applicant, ApplicantStatus, Mission, MissionStatus } from "@pacto/types";
-
-export type ApplicationStatusResponse = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
-
-export type ApplicationResponse = {
-  applicationId: number;
-  campaignId: number;
-  bloggerId: number;
-  bloggerEmail?: string; // Optional for list responses
-  status: ApplicationStatusResponse;
-  createdAt: string;
-  updatedAt: string;
-};
+import type {
+  Applicant,
+  ApplicantStatus,
+  ApplicationResponse,
+  ApplicationStatusResponse,
+  Mission,
+  MissionStatus,
+} from "@pacto/types";
 
 export function adaptApplication(response: ApplicationResponse): Applicant {
   return {
