@@ -26,7 +26,7 @@ export async function getMyEscrows(
       const response = await apiRequest("/api/v1/escrows", { query: params, token });
       return unwrapListResponse<EscrowLedgerResponse>(response).map(adaptEscrowLedger);
     },
-    () => mockEscrows.map(adaptEscrowLedger),
+    () => mockEscrows,
     options,
   );
 }
@@ -44,7 +44,7 @@ export async function getCampaignEscrows(
 
       return allEscrows.filter((escrow) => escrow.campaignId === campaignId);
     },
-    () => mockEscrows.map(adaptEscrowLedger).filter((escrow) => escrow.campaignId === campaignId),
+    () => mockEscrows.filter((escrow) => escrow.campaignId === campaignId),
     options,
   );
 }
