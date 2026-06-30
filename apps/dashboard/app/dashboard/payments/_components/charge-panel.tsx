@@ -2,10 +2,11 @@
 
 import { useMemo, useState, useTransition } from "react";
 
-import { prepareChargeAction, verifyChargeAction } from "../../../_actions/payment-actions";
+import { checkChargeStatusAction, prepareChargeAction } from "../../../_actions/payment-actions";
 
 type ChargePanelProps = {
   buyerEmail?: string;
+  buyerUserId?: number;
 };
 
 type PortOneResponse = {
@@ -27,7 +28,7 @@ const chargeOptions = [50000, 100000, 300000];
 const portOneStoreId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
 const portOneChannelKey = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY;
 
-export function ChargePanel({ buyerEmail }: ChargePanelProps) {
+export function ChargePanel({ buyerEmail, buyerUserId }: ChargePanelProps) {
   const [amount, setAmount] = useState(100000);
   const [message, setMessage] = useState<string>();
   const [isPending, startTransition] = useTransition();
@@ -77,9 +78,8 @@ export function ChargePanel({ buyerEmail }: ChargePanelProps) {
           channelKey: portOneChannelKey,
           currency: "CURRENCY_KRW",
           customer: {
-            email: buyerEmail ?? "test@pacto.io",
-            fullName: "테스트 유저",
-            phoneNumber: "010-0000-0000",
+            email: getPortOneCustomerEmail(buyerEmail, buyerUserId),
+            fullName: getPortOneCustomerName(buyerUserId),
           },
           orderName: "Pacto 지갑 충전",
           payMethod: "CARD", // 만약 토스페이 전용 채널이라면 "EASY_PAY"로 변경이 필요할 수 있습니다.
@@ -98,9 +98,15 @@ export function ChargePanel({ buyerEmail }: ChargePanelProps) {
           return;
         }
 
-        const verified = await verifyChargeAction(response.paymentId, response.paymentId);
+        if (prepared.paymentId == null) {
+          setMessage("결제 요청 번호를 확인하지 못했어요. 결제 내역을 확인해 주세요.");
+          return;
+        }
 
-        setMessage(verified.ok ? "충전 결제가 완료됐어요." : verified.message);
+        setMessage("결제 완료를 확인하는 중이에요.");
+        const settled = await waitForChargeSettlement(prepared.paymentId);
+
+        setMessage(settled.ok ? "충전 결제가 완료됐어요." : settled.message);
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "결제 중 오류가 발생했어요.");
       }
@@ -184,4 +190,33 @@ function loadPortOneScript() {
     });
     document.body.appendChild(script);
   });
+}
+
+function getPortOneCustomerEmail(email?: string, userId?: number) {
+  if (email != null && email.trim().length > 0) {
+    return email.trim();
+  }
+
+  return userId != null ? `user-${userId}@pacto.local` : "unknown-user@pacto.local";
+}
+
+function getPortOneCustomerName(userId?: number) {
+  return userId != null ? `Pacto User #${userId}` : "Pacto User";
+}
+
+async function waitForChargeSettlement(paymentId: number) {
+  const maxAttempts = 8;
+  const intervalMs = 1500;
+  let latestResult = await checkChargeStatusAction(paymentId);
+
+  for (let attempt = 1; attempt < maxAttempts && latestResult.status === "READY"; attempt += 1) {
+    await delay(intervalMs);
+    latestResult = await checkChargeStatusAction(paymentId);
+  }
+
+  return latestResult;
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }

@@ -1,6 +1,6 @@
 "use server";
 
-import { getMe, login } from "@pacto/api";
+import { ApiError, getMe, login } from "@pacto/api";
 import { redirect } from "next/navigation";
 
 import { clearDashboardSession, setDashboardSession } from "../_lib/session";
@@ -8,6 +8,10 @@ import { clearDashboardSession, setDashboardSession } from "../_lib/session";
 export type DashboardLoginState = {
   message?: string;
 };
+
+function getApiErrorMessage(error: unknown, fallbackMessage: string): string {
+  return error instanceof ApiError ? error.message : fallbackMessage;
+}
 
 export async function loginAction(
   _previousState: DashboardLoginState,
@@ -21,16 +25,27 @@ export async function loginAction(
   }
 
   try {
-    const result = await login({ email, password });
-    const user = await getMe(result.accessToken).catch(() => undefined);
+    const result = await login({ email, password, role: "ADVERTISER" });
+    console.log("[loginAction] Login Success. Token length:", result.accessToken.length);
+
+    const user = await getMe(result.accessToken);
+
+    console.log("[loginAction] User Data:", user);
+
+    if (user.role !== "ADVERTISER") {
+      return { message: "광고주 계정으로 로그인해 주세요." };
+    }
 
     await setDashboardSession({
       accessToken: result.accessToken,
-      email: user?.email ?? email,
-      userId: user?.id,
+      email: user.email ?? email,
+      role: user.role,
+      userId: user.id,
     });
-  } catch {
-    return { message: "로그인에 실패했어요. 이메일과 비밀번호를 확인해 주세요." };
+  } catch (error) {
+    return {
+      message: getApiErrorMessage(error, "로그인에 실패했어요. 이메일과 비밀번호를 확인해 주세요."),
+    };
   }
 
   redirect("/dashboard");

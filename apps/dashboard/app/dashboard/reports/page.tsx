@@ -24,7 +24,7 @@ export default async function ReportsPage() {
         <article className="summary-card">
           <p>운영 캠페인</p>
           <strong>{campaigns.length}건</strong>
-          <span>mock-first 데이터</span>
+          <span>전체 캠페인 기준</span>
         </article>
         <article className="summary-card">
           <p>승인 블로거</p>

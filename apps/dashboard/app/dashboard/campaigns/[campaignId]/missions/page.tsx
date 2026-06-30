@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getCampaignDetail, getCampaignMissions } from "@pacto/api";
 
 import { getDashboardSession } from "../../../../_lib/session";
+import { isOwnedCampaign } from "../../_lib/campaign-ownership";
 import { CampaignStepProgress } from "../_components/campaign-step-progress";
 import { MissionReviewList } from "./_components/mission-review-list";
 
@@ -17,7 +18,7 @@ export default async function MissionReviewPage({ params }: MissionReviewPagePro
   const session = await getDashboardSession();
   const campaign = await getCampaignDetail(Number(campaignId), session.accessToken);
 
-  if (campaign == null) {
+  if (campaign == null || !(await isOwnedCampaign(campaign, session))) {
     notFound();
   }
 
