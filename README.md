@@ -43,7 +43,7 @@ MVP는 다음 흐름을 끝까지 시연 가능하게 만드는 것을 목표로
 -> 블로거 출금 신청
 ```
 
-상세 MVP 범위는 [프론트엔드 UI/UX 계획](./pacto-frontend-ui-plan.md)의 `7. MVP 우선순위`와 `8. 8주 프론트엔드 개발 계획`을 기준으로 합니다.
+상세 MVP 범위는 [프론트엔드 UI/UX 계획](./docs/pacto-frontend-ui-plan.md)의 `7. MVP 우선순위`와 `8. 8주 프론트엔드 개발 계획`을 기준으로 합니다.
 
 ---
 
@@ -59,18 +59,18 @@ MVP는 다음 흐름을 끝까지 시연 가능하게 만드는 것을 목표로
 
 ## 문서
 
-| 문서                                                 | 설명                          |
-| ---------------------------------------------------- | ----------------------------- |
-| [프론트엔드 UI/UX 계획](./pacto-frontend-ui-plan.md) | 전체 MVP 프론트 전략          |
-| [UI/UX 상세 설계](./docs/ui-ux/README.md)            | 화면 설계 허브 문서           |
-| [Route Map](./docs/ui-ux/route-map.md)               | 앱별 라우트와 App Router 구조 |
-| [Component Spec](./docs/ui-ux/component-spec.md)     | 공통/도메인 컴포넌트 설계     |
-| [RBAC Policy](./docs/ui-ux/rbac-policy.md)           | 역할 기반 접근 제어 정책      |
-| [Status Policy](./docs/ui-ux/status-policy.md)       | 상태값과 UI 표시 규칙         |
-| [API Strategy](./docs/ui-ux/api-strategy.md)         | Swagger 기준 API 연동 전략    |
-| [Decision Log](./docs/decision-log.md)               | 주요 의사결정 기록            |
-| [Git Convention](./docs/git-convention.md)           | 브랜치와 작업 흐름 규칙       |
-| [Commit Convention](./docs/commit-convention.md)     | 커밋 메시지 규칙              |
+| 문서                                                      | 설명                          |
+| --------------------------------------------------------- | ----------------------------- |
+| [프론트엔드 UI/UX 계획](./docs/pacto-frontend-ui-plan.md) | 전체 MVP 프론트 전략          |
+| [UI/UX 상세 설계](./docs/ui-ux/README.md)                 | 화면 설계 허브 문서           |
+| [Route Map](./docs/ui-ux/route-map.md)                    | 앱별 라우트와 App Router 구조 |
+| [Component Spec](./docs/ui-ux/component-spec.md)          | 공통/도메인 컴포넌트 설계     |
+| [RBAC Policy](./docs/ui-ux/rbac-policy.md)                | 역할 기반 접근 제어 정책      |
+| [Status Policy](./docs/ui-ux/status-policy.md)            | 상태값과 UI 표시 규칙         |
+| [API Strategy](./docs/ui-ux/api-strategy.md)              | Swagger 기준 API 연동 전략    |
+| [Decision Log](./docs/decision-log.md)                    | 주요 의사결정 기록            |
+| [Git Convention](./docs/git-convention.md)                | 브랜치와 작업 흐름 규칙       |
+| [Commit Convention](./docs/commit-convention.md)          | 커밋 메시지 규칙              |
 
 ---
 
