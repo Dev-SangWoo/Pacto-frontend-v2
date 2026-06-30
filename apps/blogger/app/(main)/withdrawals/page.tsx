@@ -1,12 +1,19 @@
 import { getMyWallet } from "@pacto/api";
 import { formatPoint } from "@pacto/utils";
+import { redirect } from "next/navigation";
 
+import { redirectOnAuthError } from "../../_lib/auth-error";
 import { getBloggerSession } from "../../_lib/session";
 import { WithdrawalForm } from "./_components/withdrawal-form";
 
 export default async function WithdrawalsPage() {
   const session = await getBloggerSession();
-  const wallet = await getMyWallet(session.accessToken);
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  const wallet = await getMyWallet(session.accessToken).catch(redirectOnAuthError);
 
   return (
     <section className="screen-stack detail-screen" aria-labelledby="withdrawals-title">

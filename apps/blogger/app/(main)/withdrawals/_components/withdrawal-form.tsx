@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { requestWithdraw } from "@pacto/api";
+import { ApiError, requestWithdraw } from "@pacto/api";
 import { formatPoint } from "@pacto/utils";
 
 type WithdrawalFormProps = {
@@ -45,6 +45,11 @@ export function WithdrawalForm({ accessToken, availableBalance }: WithdrawalForm
       router.push("/wallet");
       router.refresh();
     } catch (error) {
+      if (error instanceof ApiError && (error.statusCode === 401 || error.statusCode === 403)) {
+        router.push("/logout?reason=session-expired");
+        return;
+      }
+
       console.error("출금 실패:", error);
       alert("출금 신청 중 오류가 발생했습니다. 잔액을 확인해 주세요.");
     } finally {

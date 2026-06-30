@@ -1,6 +1,6 @@
 "use server";
 
-import { getMe, login, signup } from "@pacto/api";
+import { ApiError, getMe, login, signup } from "@pacto/api";
 import { redirect } from "next/navigation";
 
 import { clearBloggerSession, setBloggerSession } from "../_lib/session";
@@ -14,6 +14,10 @@ const TEST_EMAIL = "testtest@gmail.com";
 const TEST_PASSWORD = "1234";
 const TEST_BLOGGER_ID = 1;
 
+function getApiErrorMessage(error: unknown, fallbackMessage: string): string {
+  return error instanceof ApiError ? error.message : fallbackMessage;
+}
+
 async function saveAuthenticatedSession(accessToken: string, email: string) {
   const user = await getMe(accessToken);
 
@@ -26,33 +30,39 @@ async function saveAuthenticatedSession(accessToken: string, email: string) {
 
 export async function loginAction(email: string, password: string): Promise<AuthActionResult> {
   try {
-    const result = await login({ email, password });
+    const result = await login({ email, password, role: "BLOGGER" });
 
     await saveAuthenticatedSession(result.accessToken, email);
 
     return { ok: true };
-  } catch {
+  } catch (error) {
     if (email === TEST_EMAIL && password === TEST_PASSWORD) {
       await setBloggerSession({ bloggerId: TEST_BLOGGER_ID, email });
 
       return { ok: true };
     }
 
-    return { message: "로그인에 실패했어요. 이메일과 비밀번호를 확인해 주세요.", ok: false };
+    return {
+      message: getApiErrorMessage(error, "로그인에 실패했어요. 이메일과 비밀번호를 확인해 주세요."),
+      ok: false,
+    };
   }
 }
 
 export async function signupAction(email: string, password: string): Promise<AuthActionResult> {
   try {
-    const result = await signup({ email, password });
+    const result = await signup({ email, password, role: "BLOGGER" });
 
     if (result.accessToken.length > 0) {
       await saveAuthenticatedSession(result.accessToken, email);
     }
 
     return { ok: true };
-  } catch {
-    return { message: "회원가입에 실패했어요. 잠시 후 다시 시도해 주세요.", ok: false };
+  } catch (error) {
+    return {
+      message: getApiErrorMessage(error, "회원가입에 실패했어요. 잠시 후 다시 시도해 주세요."),
+      ok: false,
+    };
   }
 }
 

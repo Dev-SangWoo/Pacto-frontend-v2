@@ -8,7 +8,11 @@ import { loginAction, signupAction } from "../_actions/auth-actions";
 
 type AuthMode = "login" | "signup";
 
-export function LoginEntry() {
+type LoginEntryProps = {
+  sessionMessage?: string;
+};
+
+export function LoginEntry({ sessionMessage }: LoginEntryProps) {
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -45,8 +49,7 @@ export function LoginEntry() {
     <section className="auth-studio" aria-labelledby="login-title">
       <div className={`auth-intro ${authMode == null ? "is-visible" : "is-hidden"}`}>
         <div className="identity-mark" aria-hidden="true">
-          <img src="/brand/patco-logo.webp" alt="" />
-          <span>Patco</span>
+          <img src="/brand/logo-bg-rm-cropped.png" alt="" />
         </div>
         <h1 id="login-title" className="visually-hidden">
           Patco 안전한 블로그 캠페인
@@ -55,6 +58,9 @@ export function LoginEntry() {
           <ShieldCheck aria-hidden="true" size={18} />
           <span>안전한 블로그 캠페인</span>
         </div>
+        {sessionMessage != null ? (
+          <p className="form-error auth-session-message">{sessionMessage}</p>
+        ) : null}
         <div className="auth-entry-actions" aria-label="계정 시작">
           <button className="primary-button" onClick={() => openAuth("login")} type="button">
             로그인

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bell, House, Target, UserCircle, WalletCards } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ArrowLeft, Bell, House, Target, UserCircle, WalletCards } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 const navItems: Array<{
@@ -16,6 +16,42 @@ const navItems: Array<{
   { href: "/profile", icon: UserCircle, label: "내 정보" },
 ];
 
+const rootPaths = new Set(navItems.map((item) => item.href));
+
+export function AppHeaderStart() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const parentHref = getParentHref(pathname);
+  const isRootPath = rootPaths.has(pathname);
+
+  if (!isRootPath) {
+    return (
+      <button
+        className="app-back-button"
+        onClick={() => {
+          if (window.history.length > 1) {
+            router.back();
+            return;
+          }
+
+          router.push(parentHref);
+        }}
+        type="button"
+      >
+        <ArrowLeft aria-hidden="true" size={24} strokeWidth={2.25} />
+      </button>
+    );
+  }
+
+  return (
+    <Link className="app-brand" href="/campaigns" aria-label="Pacto 홈">
+      <span className="app-brand-mark" aria-hidden="true">
+        <img src="/brand/logo-bg-rm-cropped.png" alt="" />
+      </span>
+    </Link>
+  );
+}
+
 export function TopActions() {
   return (
     <div className="top-actions">
@@ -27,6 +63,22 @@ export function TopActions() {
       </Link>
     </div>
   );
+}
+
+function getParentHref(pathname: string) {
+  if (pathname.startsWith("/campaigns/")) {
+    return "/campaigns";
+  }
+
+  if (pathname.startsWith("/missions/")) {
+    return "/missions";
+  }
+
+  if (pathname.startsWith("/withdrawals")) {
+    return "/wallet";
+  }
+
+  return "/campaigns";
 }
 
 export function BottomNav() {

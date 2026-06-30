@@ -5,32 +5,75 @@ import Link from "next/link";
 import { useState } from "react";
 
 import type { Campaign } from "@pacto/types";
-import { formatKoreanDate, formatPoint, getCampaignStatusView } from "@pacto/utils";
+import {
+  formatDeadlineDday,
+  formatKoreanDate,
+  formatPoint,
+  getCampaignStatusView,
+} from "@pacto/utils";
 
 type CampaignExplorerProps = {
   campaigns: Campaign[];
+  loadErrorMessage?: string;
 };
 
 type ViewMode = "grid" | "list";
+type CampaignCategory = "전체" | "맛집" | "뷰티" | "운동" | "마감 임박";
 
-const interestTabs = ["전체", "맛집", "뷰티", "운동", "마감 임박"];
+const interestTabs: CampaignCategory[] = ["전체", "맛집", "뷰티", "운동", "마감 임박"];
 
-export function CampaignExplorer({ campaigns }: CampaignExplorerProps) {
+export function CampaignExplorer({ campaigns, loadErrorMessage }: CampaignExplorerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [selectedCategory, setSelectedCategory] = useState<CampaignCategory>("전체");
   const [isNoticeVisible, setIsNoticeVisible] = useState(true);
+  const filteredCampaigns = campaigns.filter((campaign) =>
+    matchesCategory(campaign, selectedCategory),
+  );
+  const closingSoonCount = campaigns.filter((campaign) =>
+    matchesCategory(campaign, "마감 임박"),
+  ).length;
+  const averageReward =
+    campaigns.length === 0
+      ? 0
+      : Math.round(
+          campaigns.reduce((sum, campaign) => sum + campaign.rewardPoint, 0) / campaigns.length,
+        );
 
   return (
     <section className="screen-stack" aria-labelledby="campaigns-title">
-      <section className="campaign-brief">
+      <section className="creator-hero campaign-discovery-hero">
         <div>
           <p className="section-label">캠페인 찾기</p>
-          <h1 id="campaigns-title">캠페인</h1>
+          <h1 className="campaign-hero-title" id="campaigns-title">
+            이번엔 어떤 캠페인에
+            <span>참여할까요?</span>
+          </h1>
+          <p>보상, 일정, 남은 자리를 보고 가볍게 골라보세요.</p>
+        </div>
+        <div className="hero-reward-strip" aria-label="캠페인 요약">
+          <article>
+            <span>모집 중</span>
+            <strong>{campaigns.length}개</strong>
+          </article>
+          <article>
+            <span>평균 보상</span>
+            <strong>{formatPoint(averageReward)}</strong>
+          </article>
+          <article>
+            <span>마감 임박</span>
+            <strong>{closingSoonCount}개</strong>
+          </article>
         </div>
       </section>
 
       <div className="interest-tabs" aria-label="관심사 필터">
-        {interestTabs.map((tab, index) => (
-          <button className={index === 0 ? "active" : undefined} type="button" key={tab}>
+        {interestTabs.map((tab) => (
+          <button
+            className={selectedCategory === tab ? "active" : undefined}
+            onClick={() => setSelectedCategory(tab)}
+            type="button"
+            key={tab}
+          >
             {tab}
           </button>
         ))}
@@ -64,16 +107,28 @@ export function CampaignExplorer({ campaigns }: CampaignExplorerProps) {
           </div>
         </div>
 
-        <div className={`campaign-feed ${viewMode === "list" ? "list-view" : "grid-view"}`}>
-          {campaigns.map((campaign) => (
-            <CampaignCard campaign={campaign} key={campaign.id} viewMode={viewMode} />
-          ))}
-        </div>
+        {loadErrorMessage != null ? (
+          <div className="empty-state compact">
+            <strong>캠페인 목록을 불러올 수 없어요.</strong>
+            <p>{loadErrorMessage}</p>
+          </div>
+        ) : (
+          <div className={`campaign-feed ${viewMode === "list" ? "list-view" : "grid-view"}`}>
+            {filteredCampaigns.map((campaign) => (
+              <CampaignCard campaign={campaign} key={campaign.id} viewMode={viewMode} />
+            ))}
+            {filteredCampaigns.length === 0 ? (
+              <div className="empty-state compact">
+                <p>선택한 카테고리에 맞는 캠페인이 없어요.</p>
+              </div>
+            ) : null}
+          </div>
+        )}
       </section>
 
       {isNoticeVisible ? (
         <div className="campaign-floating-notice" role="status">
-          <p>조건과 보상을 비교하고 나에게 맞는 캠페인을 신청해 보세요.</p>
+          <p>보상이 높은 캠페인보다 일정에 맞게 제출할 수 있는 캠페인을 먼저 고르면 좋아요.</p>
           <button aria-label="안내 닫기" onClick={() => setIsNoticeVisible(false)} type="button">
             <X aria-hidden="true" size={16} />
           </button>
@@ -81,6 +136,28 @@ export function CampaignExplorer({ campaigns }: CampaignExplorerProps) {
       ) : null}
     </section>
   );
+}
+
+function matchesCategory(campaign: Campaign, category: CampaignCategory) {
+  if (category === "전체") {
+    return true;
+  }
+
+  if (category === "마감 임박") {
+    const deadlineMs = new Date(campaign.deadline).getTime();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+    return Number.isFinite(deadlineMs) && deadlineMs - Date.now() <= sevenDaysMs;
+  }
+
+  const haystack = `${campaign.title} ${campaign.guidelines}`.toLowerCase();
+  const keywords: Record<Exclude<CampaignCategory, "전체" | "마감 임박">, string[]> = {
+    맛집: ["맛집", "식당", "카페", "브런치", "디저트", "푸드", "음식"],
+    뷰티: ["뷰티", "네일", "헤어", "피부", "화장품", "미용"],
+    운동: ["운동", "헬스", "피트니스", "요가", "필라테스", "스포츠"],
+  };
+
+  return keywords[category].some((keyword) => haystack.includes(keyword));
 }
 
 type CampaignCardProps = {
@@ -114,7 +191,10 @@ function CampaignCard({ campaign, viewMode }: CampaignCardProps) {
           </div>
           <div>
             <dt>마감</dt>
-            <dd>{formatKoreanDate(campaign.deadline)}</dd>
+            <dd>
+              {formatKoreanDate(campaign.deadline)}
+              <em>{formatDeadlineDday(campaign.deadline)}</em>
+            </dd>
           </div>
         </dl>
         {viewMode === "list" ? <span className="ticket-action">조건 보고 신청하기</span> : null}

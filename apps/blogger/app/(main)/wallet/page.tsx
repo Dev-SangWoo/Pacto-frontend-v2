@@ -1,18 +1,11 @@
-import { getMyPointHistories, getMyWallet } from "@pacto/api";
-import { formatKoreanDate, formatPoint } from "@pacto/utils";
+import { getCampaignDetail, getMyMissions, getMyPointHistories, getMyWallet } from "@pacto/api";
+import type { Campaign, Mission } from "@pacto/types";
 import { redirect } from "next/navigation";
 
+import { WalletLedger, type WalletLedgerItem } from "../../_components/wallet-ledger";
+import { WalletSummary } from "../../_components/wallet-summary";
+import { fallbackOnNonAuthError, redirectOnAuthError } from "../../_lib/auth-error";
 import { getBloggerSession } from "../../_lib/session";
-
-type WalletLedgerItem = {
-  amount: number;
-  date: string;
-  description: string;
-  id: string;
-  title: string;
-  tone: "blue" | "green" | "grey" | "red";
-  type: "deposit" | "withdrawal" | "locked";
-};
 
 export default async function WalletPage() {
   const session = await getBloggerSession();
@@ -22,76 +15,110 @@ export default async function WalletPage() {
   }
 
   const [wallet, pointHistories] = await Promise.all([
-    getMyWallet(session.accessToken).catch(() => redirect("/login")),
-    getMyPointHistories({}, session.accessToken).catch(() => []),
+    getMyWallet(session.accessToken).catch(redirectOnAuthError),
+    getMyPointHistories({}, session.accessToken).catch((error: unknown) =>
+      fallbackOnNonAuthError(error, []),
+    ),
   ]);
-  const ledgerItems = pointHistories
-    .map((history) => {
-      const isWithdrawal = history.amount < 0;
-      let title = "포인트 변동";
-      let tone: WalletLedgerItem["tone"] = isWithdrawal ? "red" : "green";
-      let type: WalletLedgerItem["type"] = isWithdrawal ? "withdrawal" : "deposit";
-
-      switch (history.type) {
-        case "CHARGE":
-          title = "포인트 충전";
-          tone = "green";
-          type = "deposit";
-          break;
-        case "WITHDRAW":
-          title = "출금 신청";
-          tone = "red";
-          type = "withdrawal";
-          break;
-        case "LOCK":
-          title = "에스크로 잠금";
-          tone = "red";
-          type = "locked";
-          break;
-        case "RELEASE":
-          title = "정산 입금";
-          tone = "green";
-          type = "deposit";
-          break;
-        case "REFUND":
-          title = "환불 입금";
-          tone = "green";
-          type = "deposit";
-          break;
-      }
+  const missions = await getMyMissions({}, session.accessToken).catch((error: unknown) =>
+    fallbackOnNonAuthError(error, []),
+  );
+  const campaignMap = await getCampaignMap(missions, session.accessToken);
+  const missionByEscrowId = new Map(missions.map((mission) => [mission.escrowId, mission]));
+  const pendingMissionItems = missions
+    .filter((mission) => mission.status === "in_progress" || mission.status === "submitted")
+    .map((mission) => {
+      const campaign = campaignMap.get(mission.campaignId);
 
       return {
-        amount: history.amount,
-        date: history.createdAt,
-        description: getPointHistoryDescription(history.type, isWithdrawal),
-        id: `history-${history.id}`,
-        title,
-        tone,
-        type,
+        amount: mission.rewardPoint,
+        campaignId: mission.campaignId,
+        category: "locked",
+        date: mission.dueDate,
+        detail: mission.status === "submitted" ? "광고주 검수 대기" : "리뷰 등록 대기",
+        headline: campaign?.title ?? mission.campaignTitle,
+        id: `mission-${mission.id}`,
+        tone: mission.status === "submitted" ? "blue" : "grey",
+        type: "locked",
       } satisfies WalletLedgerItem;
-    })
-    .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
+    });
+  const historyLedgerItems = pointHistories.map((history) => {
+    const mission = missionByEscrowId.get(history.referenceId);
+    const campaign = mission == null ? undefined : campaignMap.get(mission.campaignId);
+    const isWithdrawal = history.amount < 0;
+    let category: WalletLedgerItem["category"] = "charge";
+    let detail = isWithdrawal ? "차감" : "적립";
+    let headline = "포인트 변동";
+    let tone: WalletLedgerItem["tone"] = isWithdrawal ? "red" : "green";
+    let type: WalletLedgerItem["type"] = isWithdrawal ? "withdrawal" : "deposit";
+    const campaignTitle = campaign?.title ?? mission?.campaignTitle;
+
+    switch (history.type) {
+      case "CHARGE":
+        category = "charge";
+        detail = "결제 충전";
+        headline = "포인트 충전";
+        tone = "green";
+        type = "deposit";
+        break;
+      case "WITHDRAW":
+        category = "withdrawal";
+        detail = "계좌 출금 신청";
+        headline = "출금 신청";
+        tone = "red";
+        type = "withdrawal";
+        break;
+      case "LOCK":
+        category = "locked";
+        detail = "에스크로 잠금";
+        headline = campaignTitle ?? `광고주 에스크로 #${history.referenceId}`;
+        tone = "red";
+        type = "locked";
+        break;
+      case "RELEASE":
+        category = "settlement";
+        detail = "미션 정산";
+        headline = campaignTitle ?? `미션 정산 #${history.referenceId}`;
+        tone = "green";
+        type = "deposit";
+        break;
+      case "REFUND":
+        category = "refund";
+        detail = "취소/반려 환불";
+        headline = campaignTitle ?? `환불 #${history.referenceId}`;
+        tone = "green";
+        type = "deposit";
+        break;
+    }
+
+    return {
+      amount: history.amount,
+      campaignId: mission?.campaignId,
+      category,
+      date: history.createdAt,
+      detail,
+      headline,
+      id: `history-${history.id}`,
+      tone,
+      type,
+    } satisfies WalletLedgerItem;
+  });
+  const ledgerItems = [...pendingMissionItems, ...historyLedgerItems].sort(
+    (left, right) => new Date(right.date).getTime() - new Date(left.date).getTime(),
+  );
+  const latestSettlement = ledgerItems.find((item) => item.category === "settlement");
+  const lockedItems = ledgerItems.filter((item) => item.category === "locked");
+  const pendingMissionAmount = pendingMissionItems.reduce((sum, item) => sum + item.amount, 0);
 
   return (
     <section className="screen-stack detail-screen" aria-labelledby="wallet-title">
-      <section className="wallet-brief">
-        <p className="section-label">내 지갑</p>
-        <h1 id="wallet-title">성과 정산</h1>
-        <p>{formatKoreanDate(wallet.updatedAt)} 기준</p>
-      </section>
-
-      <section className="wallet-balance-grid" aria-label="지갑 잔액">
-        <article className="wallet-balance-card primary">
-          <span>출금할 수 있는 돈</span>
-          <strong>{formatPoint(wallet.availableBalance)}</strong>
-          <p>정산이 끝나 바로 출금 가능한 금액</p>
-        </article>
-        <article className="wallet-balance-card">
-          <span>잠겨있는 돈</span>
-          <strong>{formatPoint(wallet.lockedBalance)}</strong>
-          <p>검수 또는 정산 대기 중인 금액</p>
-        </article>
-      </section>
+      <WalletSummary
+        availableBalance={wallet.availableBalance}
+        latestSettlement={latestSettlement}
+        lockedBalance={wallet.lockedBalance + pendingMissionAmount}
+        lockedItems={lockedItems}
+        updatedAt={wallet.updatedAt}
+      />
 
       <section className="section-block" aria-labelledby="ledger-title">
         <div className="section-head">
@@ -101,32 +128,7 @@ export default async function WalletPage() {
           </div>
           <span>{ledgerItems.length}건</span>
         </div>
-        <div className="ledger-list wallet-ledger-list">
-          {ledgerItems.length > 0 ? (
-            ledgerItems.map((item) => (
-              <article key={item.id}>
-                <div>
-                  <span className={`status-dot ${item.tone}`} aria-hidden="true" />
-                  <div>
-                    <strong>{item.title}</strong>
-                    <p>
-                      {getLedgerTypeLabel(item.type)} · {formatKoreanDate(item.date)} ·{" "}
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-                <strong className={item.amount < 0 ? "negative" : "positive"}>
-                  {item.amount < 0 ? "-" : "+"}
-                  {formatPoint(Math.abs(item.amount))}
-                </strong>
-              </article>
-            ))
-          ) : (
-            <div className="empty-ledger">
-              <p>거래 내역이 아직 없습니다.</p>
-            </div>
-          )}
-        </div>
+        <WalletLedger items={ledgerItems} />
       </section>
 
       <div className="fixed-cta">
@@ -142,30 +144,17 @@ export default async function WalletPage() {
   );
 }
 
-function getLedgerTypeLabel(type: WalletLedgerItem["type"]) {
-  switch (type) {
-    case "deposit":
-      return "입금";
-    case "withdrawal":
-      return "출금";
-    case "locked":
-      return "잠김";
-  }
-}
+async function getCampaignMap(missions: Mission[], token?: string): Promise<Map<number, Campaign>> {
+  const campaignIds = Array.from(
+    new Set(missions.map((mission) => mission.campaignId).filter((id) => id > 0)),
+  );
+  const campaigns = await Promise.all(
+    campaignIds.map((campaignId) => getCampaignDetail(campaignId, token).catch(() => undefined)),
+  );
 
-function getPointHistoryDescription(type: string, isWithdrawal: boolean) {
-  switch (type) {
-    case "CHARGE":
-      return "결제 충전";
-    case "WITHDRAW":
-      return "계좌 출금 신청";
-    case "LOCK":
-      return "캠페인 참여 예치";
-    case "RELEASE":
-      return "미션 완료 정산";
-    case "REFUND":
-      return "취소/반려 환불";
-    default:
-      return isWithdrawal ? "차감" : "적립";
-  }
+  return new Map(
+    campaigns
+      .filter((campaign): campaign is Campaign => campaign != null)
+      .map((campaign) => [campaign.id, campaign]),
+  );
 }
