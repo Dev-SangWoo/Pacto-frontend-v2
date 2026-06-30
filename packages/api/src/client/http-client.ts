@@ -62,6 +62,8 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
+  console.log(`[apiRequest] ${method} ${url.toString()} (Has Token: ${!!token})`);
+
   const response = await fetch(url, {
     body: body == null ? undefined : JSON.stringify(body),
     cache: "no-store",
@@ -76,6 +78,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const payload = await parseResponseBody(response);
 
   if (!response.ok) {
+    console.error(`[apiRequest] Error ${response.status}:`, payload);
     throw toApiError(response.status, payload);
   }
 

@@ -2,7 +2,6 @@ export type Wallet = {
   id: number;
   availableBalance: number;
   lockedBalance: number;
-  totalEarned: number;
   updatedAt: string;
 };
 

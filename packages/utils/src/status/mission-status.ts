@@ -6,47 +6,45 @@ type MissionStatusView = {
 };
 
 export type MissionProgressStep = {
-  key: "application" | "waiting" | "decision" | "submission" | "settlement";
+  key: "progress" | "submission" | "settlement" | "rejection" | "cancellation";
   label: string;
   statuses: MissionStatus[];
 };
 
 export const missionProgressSteps: MissionProgressStep[] = [
   {
-    key: "application",
-    label: "신청",
-    statuses: ["applied"],
-  },
-  {
-    key: "waiting",
-    label: "승인",
-    statuses: ["not_started", "in_progress"],
-  },
-  {
-    key: "decision",
-    label: "반려",
-    statuses: ["application_rejected", "rejected"],
+    key: "progress",
+    label: "\uc9c4\ud589",
+    statuses: ["in_progress"],
   },
   {
     key: "submission",
-    label: "제출",
+    label: "\uc81c\ucd9c",
     statuses: ["submitted"],
   },
   {
     key: "settlement",
-    label: "정산",
+    label: "\uc815\uc0b0",
     statuses: ["approved"],
+  },
+  {
+    key: "rejection",
+    label: "\ubc18\ub824",
+    statuses: ["rejected"],
+  },
+  {
+    key: "cancellation",
+    label: "\ucde8\uc18c",
+    statuses: ["cancelled"],
   },
 ];
 
 const missionStatusViewMap: Record<MissionStatus, MissionStatusView> = {
-  applied: { label: "신청 완료", tone: "grey" },
-  application_rejected: { label: "신청 반려", tone: "red" },
-  not_started: { label: "승인 완료", tone: "blue" },
-  in_progress: { label: "진행 중", tone: "blue" },
-  submitted: { label: "제출 완료", tone: "grey" },
-  approved: { label: "정산 완료", tone: "green" },
-  rejected: { label: "미션 반려", tone: "red" },
+  in_progress: { label: "리뷰 작성 중", tone: "blue" },
+  submitted: { label: "검수 대기", tone: "grey" },
+  approved: { label: "\uc815\uc0b0 \uc644\ub8cc", tone: "green" },
+  rejected: { label: "\ubbf8\uc158 \ubc18\ub824", tone: "red" },
+  cancelled: { label: "\ubbf8\uc158 \ucde8\uc18c", tone: "red" },
 };
 
 export function getMissionStatusView(status: MissionStatus): MissionStatusView {
@@ -55,8 +53,4 @@ export function getMissionStatusView(status: MissionStatus): MissionStatusView {
 
 export function canSubmitMission(status: MissionStatus): boolean {
   return status === "in_progress";
-}
-
-export function isApplicationMission(status: MissionStatus): boolean {
-  return status === "applied" || status === "application_rejected";
 }

@@ -19,8 +19,11 @@ export type CampaignResponse = {
   campaign_id?: number;
   campaignId?: number;
   deadline?: string;
-  guidelines?: string | string[];
+  guidelines?: unknown;
   id?: number;
+  advertiserName?: string;
+  brandName?: string;
+  companyName?: string;
   recruitCount?: number;
   remaining_slots?: number;
   remainingSlots?: number;
@@ -56,7 +59,11 @@ export function adaptCampaign(response: CampaignResponse): Campaign {
   return {
     id,
     advertiserId: response.advertiserId ?? response.advertiser_id ?? 0,
-    brandName: "Pacto",
+    brandName:
+      response.brandName ??
+      response.companyName ??
+      response.advertiserName ??
+      `광고주 #${response.advertiserId ?? response.advertiser_id ?? 0}`,
     title: response.title ?? "캠페인",
     thumbnailUrl: response.thumbnailUrl ?? response.thumbnail_url ?? getFallbackThumbnail(id),
     rewardPoint: response.rewardPoint ?? response.reward_point ?? 0,
@@ -86,6 +93,10 @@ function normalizeGuidelines(guidelines?: unknown): string {
   }
 
   if (typeof guidelines === "object" && guidelines !== null) {
+    if (isTiptapGuidelines(guidelines)) {
+      const text = extractTiptapText(guidelines.content.content);
+      return text.length > 0 ? text : "캠페인 가이드를 확인해 주세요.";
+    }
     if ("items" in guidelines && Array.isArray(guidelines.items)) {
       return guidelines.items.join("\n");
     }
@@ -96,6 +107,55 @@ function normalizeGuidelines(guidelines?: unknown): string {
   }
 
   return typeof guidelines === "string" ? guidelines : "캠페인 가이드를 확인해 주세요.";
+}
+
+function isTiptapGuidelines(value: object): value is {
+  content: { content?: unknown[]; type?: string };
+  editor: "tiptap";
+} {
+  return (
+    "editor" in value &&
+    "content" in value &&
+    (value as { editor?: unknown }).editor === "tiptap" &&
+    typeof (value as { content?: unknown }).content === "object" &&
+    (value as { content?: unknown }).content !== null
+  );
+}
+
+function extractTiptapText(nodes: unknown[] = []): string {
+  return nodes
+    .map(extractTiptapNodeText)
+    .filter((text) => text.length > 0)
+    .join("\n");
+}
+
+function extractTiptapNodeText(node: unknown): string {
+  if (typeof node !== "object" || node === null) {
+    return "";
+  }
+
+  if ("text" in node && typeof node.text === "string") {
+    return node.text;
+  }
+
+  if ("type" in node && node.type === "image") {
+    const attrs = "attrs" in node ? node.attrs : undefined;
+    const alt =
+      typeof attrs === "object" && attrs !== null && "alt" in attrs && typeof attrs.alt === "string"
+        ? attrs.alt
+        : "가이드 이미지";
+
+    return `[이미지] ${alt}`;
+  }
+
+  if ("content" in node && Array.isArray(node.content)) {
+    return node.content
+      .map(extractTiptapNodeText)
+      .filter((text) => text.length > 0)
+      .join(" ");
+  }
+
+  return "";
 }
 
 function getFallbackThumbnail(id?: number): string {

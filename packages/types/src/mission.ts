@@ -1,16 +1,10 @@
-export type MissionStatus =
-  | "applied"
-  | "application_rejected"
-  | "not_started"
-  | "in_progress"
-  | "submitted"
-  | "approved"
-  | "rejected";
+export type MissionStatus = "in_progress" | "submitted" | "approved" | "rejected" | "cancelled";
 
 export type Mission = {
   id: number;
   campaignId: number;
   bloggerId: number;
+  escrowId: number;
   campaignTitle: string;
   brandName: string;
   thumbnailUrl: string;

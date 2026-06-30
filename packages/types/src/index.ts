@@ -10,5 +10,8 @@ export type {
 } from "./wallet";
 export type { EscrowLedger, SettlementStatus } from "./escrow";
 export type { Payment, PaymentStatus } from "./payment";
-export type { Applicant, ApplicantStatus } from "./applicant";
-export type { ApplicationResponse, ApplicationStatusResponse } from "./application";
+export type {
+  ApplicationResponse,
+  ApplicationStatusResponse,
+  CampaignApplicant,
+} from "./application";

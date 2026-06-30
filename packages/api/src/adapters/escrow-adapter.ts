@@ -16,9 +16,11 @@ export type EscrowLedgerResponse = {
 };
 
 export function adaptEscrowLedger(response: EscrowLedgerResponse): EscrowLedger {
+  const campaignId = response.campaignId ?? response.campaign_id ?? 0;
+
   return {
     id: response.escrowId ?? response.escrow_id ?? 0,
-    campaignId: response.campaignId ?? response.campaign_id ?? 0,
+    campaignId,
     campaignTitle: response.campaignTitle,
     bloggerName: response.bloggerName,
     amount: response.amount,
