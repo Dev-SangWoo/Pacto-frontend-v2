@@ -1,3 +1,0 @@
-﻿이름,날짜,상태,설명,타입
-data.campaign_id,,시작 전,캠페인 고유 식별자,Number
-data.status,,시작 전,변경된 캠페인 상태,String

@@ -1,4 +1,0 @@
-﻿이름,타입,설명,날짜,상태
-Authorization,String,[Header] Bearer {JWT_TOKEN} (필수),,시작 전
-missionId,Number,미션 고유 식별자,,시작 전
-reason,String,[Body] 취소 사유 — DEADLINE_EXCEEDED / BLOGGER_REQUEST / ADVERTISER_REJECT (필수),,시작 전

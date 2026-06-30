@@ -1,7 +1,0 @@
-﻿이름,타입,설명,날짜,상태
-success,Boolean,요청 성공 여부,,시작 전
-message,String,응답 메시지,,시작 전
-data.withdrawId,Number,출금 요청 고유 식별자,,시작 전
-data.requestedAmount,Number,요청한 출금 금액,,시작 전
-data.remainingBalance,Number,출금 요청 후 남은 지갑 잔액,,시작 전
-data.status,String,출금 진행 상태 (PENDING: 대기중),,시작 전

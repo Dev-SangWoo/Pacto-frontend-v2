@@ -1,7 +1,0 @@
-﻿이름,날짜,상태,설명,타입
-message,,시작 전,응답 메시지,String
-data.walletId,,시작 전,지갑 고유 식별자,Number
-success,,시작 전,요청 성공 여부,Boolean
-data.balance,,시작 전,출금/사용 가능한 실제 잔액,Number
-data.lockedBalance,,시작 전,캠페인 수락으로 에스크로에 묶인 잔액,Number
-data.updatedAt,,시작 전,마지막 잔액 변동 일시,String

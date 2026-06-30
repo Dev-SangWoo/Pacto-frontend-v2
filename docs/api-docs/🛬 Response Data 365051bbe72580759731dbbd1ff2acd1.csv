@@ -1,4 +1,0 @@
-﻿이름,타입,설명,날짜,상태
-data.mission_id,Number,미션 고유 식별자,,시작 전
-data.status,String,변경된 상태: REJECTED,,시작 전
-data.escrow_status,String,에스크로 상태: CANCELED,,시작 전
