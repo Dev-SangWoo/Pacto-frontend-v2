@@ -6,8 +6,12 @@ import { getDashboardSession } from "../_lib/session";
 export default async function LoginPage() {
   const session = await getDashboardSession();
 
-  if (session.accessToken != null) {
+  if (session.accessToken != null && session.role === "ADVERTISER") {
     redirect("/dashboard");
+  }
+
+  if (session.accessToken != null) {
+    redirect("/logout");
   }
 
   return (

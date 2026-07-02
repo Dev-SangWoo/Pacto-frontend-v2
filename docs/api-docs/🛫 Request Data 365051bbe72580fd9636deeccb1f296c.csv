@@ -1,4 +1,0 @@
-﻿이름,타입,설명,날짜,상태
-status,String,[Query] RECRUITING · IN_PROGRESS · COMPLETEDD (선택),,시작 전
-page,Number,[Query] 페이지 번호 (기본값 0),,시작 전
-size,Number,[Query] 페이지 크기 (기본값 20),,시작 전

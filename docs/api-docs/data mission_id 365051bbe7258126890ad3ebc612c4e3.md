@@ -1,5 +1,0 @@
-# data.mission_id
-
-상태: 시작 전
-설명: 미션 고유 식별자
-타입: Number

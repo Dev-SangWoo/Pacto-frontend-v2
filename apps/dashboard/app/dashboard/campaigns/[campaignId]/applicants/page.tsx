@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getApplicants, getCampaignDetail } from "@pacto/api";
 
 import { getDashboardSession } from "../../../../_lib/session";
+import { isOwnedCampaign } from "../../_lib/campaign-ownership";
 import { CampaignStepProgress } from "../_components/campaign-step-progress";
 import { ApplicantList } from "./_components/applicant-list";
 
@@ -19,7 +20,7 @@ export default async function ApplicantsPage({ params }: ApplicantsPageProps) {
   const session = await getDashboardSession();
   const campaign = await getCampaignDetail(Number(campaignId), session.accessToken);
 
-  if (campaign == null) {
+  if (campaign == null || !(await isOwnedCampaign(campaign, session))) {
     notFound();
   }
 

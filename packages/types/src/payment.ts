@@ -1,4 +1,4 @@
-export type PaymentStatus = "READY" | "PAID" | "FAILED" | "CANCELLED";
+export type PaymentStatus = "READY" | "PAID" | "FAILED" | "CANCELED";
 
 export type Payment = {
   id: number;

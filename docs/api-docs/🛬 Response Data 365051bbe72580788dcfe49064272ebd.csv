@@ -1,3 +1,0 @@
-﻿이름,타입,설명,날짜,상태
-data.mission_id,Number,미션 고유 식별자,,시작 전
-data.status,String,변경된 미션 상태 (SUBMITTED),,시작 전

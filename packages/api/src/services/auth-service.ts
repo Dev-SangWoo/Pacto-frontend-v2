@@ -8,11 +8,10 @@ import type { CommonResponse } from "../client/http-client";
 export type LoginPayload = {
   email: string;
   password: string;
+  role: User["role"];
 };
 
-export type SignupPayload = LoginPayload & {
-  role?: User["role"];
-};
+export type SignupPayload = LoginPayload;
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const response = await apiRequest<CommonResponse<LoginResponse> | LoginResponse>(

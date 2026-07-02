@@ -6,9 +6,7 @@ import type {
   MissionResponse,
   MissionStatusResponse,
 } from "../adapters/mission-adapter";
-import { isMockFallbackDisabled } from "../client/env";
 import { apiRequest, unwrapCommonResponse, unwrapListResponse } from "../client/http-client";
-import { mockMissions } from "../mocks/data";
 
 export type GetMyMissionsParams = {
   status?: MissionStatusResponse;
@@ -23,33 +21,21 @@ export type CancelMissionPayload = {
   reason: string;
 };
 
-type MockFallbackOptions = {
-  mockFallback?: boolean;
-};
-
 export async function getMyMissions(
   params: GetMyMissionsParams = {},
   token?: string,
-  options: MockFallbackOptions = {},
 ): Promise<Mission[]> {
-  return withMockFallback(
-    async () => {
-      const response = await apiRequest("/api/v1/missions/me", { query: params, token });
+  const response = await apiRequest("/api/v1/missions/me", { query: params, token });
 
-      return unwrapListResponse<MissionResponse>(response).map(adaptMission);
-    },
-    () => mockMissions.map(adaptMission),
-    options,
-  );
+  return unwrapListResponse<MissionResponse>(response).map(adaptMission);
 }
 
 export async function getMissionDetail(
   missionId: number,
   params: GetMyMissionsParams = {},
   token?: string,
-  options: MockFallbackOptions = {},
 ): Promise<Mission | undefined> {
-  const missions = await getMyMissions(params, token, options);
+  const missions = await getMyMissions(params, token);
 
   return missions.find((item) => item.id === missionId);
 }
@@ -101,23 +87,4 @@ export async function rejectMission(missionId: number, token?: string): Promise<
   });
 
   return adaptMissionAction(unwrapCommonResponse<MissionActionResponse>(response));
-}
-
-async function withMockFallback<T>(
-  request: () => Promise<T>,
-  fallback: () => T | Promise<T>,
-  options: MockFallbackOptions = {},
-): Promise<T> {
-  try {
-    return await request();
-  } catch (error) {
-    const isForced = options.mockFallback === true;
-    const isDisabled = options.mockFallback === false || isMockFallbackDisabled();
-
-    if (!isForced && isDisabled) {
-      throw error;
-    }
-
-    return await fallback();
-  }
 }

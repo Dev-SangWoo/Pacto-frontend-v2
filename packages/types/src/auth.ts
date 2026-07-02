@@ -1,9 +1,4 @@
-export type UserRole =
-  | "BLOGGER"
-  | "AGENCY_ADMIN"
-  | "AGENCY_OPERATOR"
-  | "ADVERTISER"
-  | "PACTO_ADMIN";
+export type UserRole = "BLOGGER" | "ADVERTISER";
 
 export type User = {
   id: number;

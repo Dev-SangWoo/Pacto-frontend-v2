@@ -9,3 +9,14 @@ export type ApplicationResponse = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type CampaignApplicant = {
+  applicationId: number;
+  campaignId?: number;
+  bloggerId: number;
+  bloggerEmail?: string;
+  bloggerName: string;
+  blogUrl?: string;
+  status: ApplicationStatusResponse;
+  appliedAt: string;
+};

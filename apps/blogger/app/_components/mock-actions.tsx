@@ -1,36 +1,46 @@
 "use client";
 
+import type { ApplicationStatusResponse } from "@pacto/types";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
 import { acceptCampaignAction, submitMissionAction } from "../_actions/blogger-actions";
 
 type CampaignApplyActionProps = {
+  applicationStatus?: ApplicationStatusResponse;
   campaignId: number;
   enabled: boolean;
 };
 
-export function CampaignApplyAction({ campaignId, enabled }: CampaignApplyActionProps) {
-  const [isApplied, setIsApplied] = useState(false);
+export function CampaignApplyAction({
+  applicationStatus,
+  campaignId,
+  enabled,
+}: CampaignApplyActionProps) {
+  const [currentStatus, setCurrentStatus] = useState<ApplicationStatusResponse | undefined>(
+    applicationStatus,
+  );
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
+
+  if (currentStatus != null) {
+    return (
+      <div className="cta-stack">
+        <button className="primary-button weak-button" disabled type="button">
+          {getApplicationCtaLabel(currentStatus)}
+        </button>
+        <Link className="text-link-button" href="/missions">
+          내 미션에서 상태 확인
+        </Link>
+      </div>
+    );
+  }
 
   if (!enabled) {
     return (
       <Link className="primary-button weak-button" href="/campaigns">
         다른 캠페인 보기
       </Link>
-    );
-  }
-
-  if (isApplied) {
-    return (
-      <div className="cta-stack">
-        <p>신청이 접수됐어요. 미션 화면에서 승인 대기 상태를 확인할 수 있어요.</p>
-        <Link className="primary-button" href="/missions">
-          신청한 미션 확인
-        </Link>
-      </div>
     );
   }
 
@@ -46,7 +56,7 @@ export function CampaignApplyAction({ campaignId, enabled }: CampaignApplyAction
             const result = await acceptCampaignAction(campaignId);
 
             if (result.ok) {
-              setIsApplied(true);
+              setCurrentStatus("PENDING");
             } else {
               setErrorMessage(result.message);
             }
@@ -54,7 +64,7 @@ export function CampaignApplyAction({ campaignId, enabled }: CampaignApplyAction
         }}
         type="button"
       >
-        {isPending ? "신청 중" : "이 캠페인 신청하기"}
+        {isPending ? "신청 중..." : "캠페인 신청하기"}
       </button>
     </div>
   );
@@ -83,7 +93,7 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
   if (isSubmitted) {
     return (
       <div className="cta-stack">
-        <p>리뷰 URL을 제출했어요. 검수 상태는 미션에서 확인할 수 있어요.</p>
+        <p>리뷰 URL을 제출했어요. 미션 목록에서 검토 상태를 확인할 수 있어요.</p>
         <Link className="primary-button" href="/missions">
           내 미션으로 돌아가기
         </Link>
@@ -126,8 +136,21 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
         disabled={trimmedUrl.length === 0 || isPending}
         type="submit"
       >
-        {isPending ? "제출 중" : "리뷰 URL 제출하기"}
+        {isPending ? "제출 중..." : "리뷰 URL 제출하기"}
       </button>
     </form>
   );
+}
+
+function getApplicationCtaLabel(status: ApplicationStatusResponse) {
+  switch (status) {
+    case "PENDING":
+      return "신청 완료";
+    case "ACCEPTED":
+      return "승인 완료";
+    case "REJECTED":
+      return "신청 반려";
+    case "CANCELLED":
+      return "신청 취소";
+  }
 }

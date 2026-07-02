@@ -1,4 +1,0 @@
-﻿이름,타입,설명,날짜,상태
-Authorization,String,[Header] Bearer {JWT_TOKEN} (필수),,시작 전
-campaignId,Number,[Path] 캠페인 고유 식별자 (필수),,시작 전
-status,String,"IN_PROGRESS · COMPLETED ",,시작 전

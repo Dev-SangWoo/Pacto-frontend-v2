@@ -1,6 +1,8 @@
 "use server";
 
-import { preparePayment, verifyPayment } from "@pacto/api";
+import { getPayment, preparePayment } from "@pacto/api";
+import type { PaymentStatus } from "@pacto/types";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getDashboardSession } from "../_lib/session";
@@ -11,6 +13,12 @@ export type PrepareChargeResult = {
   message?: string;
   ok: boolean;
   paymentId?: number;
+};
+
+export type ChargeStatusResult = {
+  message?: string;
+  ok: boolean;
+  status?: PaymentStatus;
 };
 
 export async function prepareChargeAction(amount: number): Promise<PrepareChargeResult> {
@@ -42,17 +50,6 @@ export async function prepareChargeAction(amount: number): Promise<PrepareCharge
   } catch (error) {
     console.error("prepareChargeAction - Error Details:", error);
 
-    // [임시] 백엔드 미구현 상태에서 프론트엔드 결제창 테스트를 위한 Mock 데이터 반환
-    if (process.env.NODE_ENV === "development") {
-      console.warn("⚠️ 백엔드 API 호출 실패로 임시 Mock 데이터를 사용합니다.");
-      return {
-        amount: amount,
-        merchantUid: `test_merchant_${Date.now()}`,
-        ok: true,
-        paymentId: 0,
-      };
-    }
-
     return {
       message: "결제 준비에 실패했어요. 계정 권한과 로그인 상태를 확인해 주세요.",
       ok: false,
@@ -60,7 +57,7 @@ export async function prepareChargeAction(amount: number): Promise<PrepareCharge
   }
 }
 
-export async function verifyChargeAction(impUid: string, merchantUid: string) {
+export async function checkChargeStatusAction(paymentId: number): Promise<ChargeStatusResult> {
   const session = await getDashboardSession();
 
   if (session.accessToken == null) {
@@ -68,10 +65,24 @@ export async function verifyChargeAction(impUid: string, merchantUid: string) {
   }
 
   try {
-    await verifyPayment({ impUid, merchantUid }, session.accessToken);
+    const payment = await getPayment(paymentId, session.accessToken);
 
-    return { ok: true };
+    if (payment.status === "PAID") {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/payments");
+      return { ok: true, status: payment.status };
+    }
+
+    if (payment.status === "FAILED" || payment.status === "CANCELED") {
+      return {
+        message: "결제가 완료되지 않았어요. 결제 내역을 확인해 주세요.",
+        ok: false,
+        status: payment.status,
+      };
+    }
+
+    return { message: "결제 완료를 확인하는 중이에요.", ok: false, status: payment.status };
   } catch {
-    return { message: "결제 검증에 실패했어요. 결제 내역을 확인해 주세요.", ok: false };
+    return { message: "결제 상태를 확인하지 못했어요. 잠시 후 다시 확인해 주세요.", ok: false };
   }
 }

@@ -3,10 +3,8 @@ import type { Mission, MissionStatus } from "@pacto/types";
 export type MissionStatusResponse =
   | MissionStatus
   | "APPROVED"
-  | "APPLICATION_REJECTED"
+  | "CANCELLED"
   | "IN_PROGRESS"
-  | "NOT_STARTED"
-  | "PENDING"
   | "REJECTED"
   | "SUBMITTED";
 
@@ -50,8 +48,9 @@ export function adaptMission(response: MissionResponse): Mission {
     id,
     campaignId,
     bloggerId: response.bloggerId ?? 0,
+    escrowId: response.escrowId ?? response.escrow_id ?? 0,
     campaignTitle: response.campaignTitle ?? `캠페인 #${campaignId}`,
-    brandName: "Pacto",
+    brandName: `광고주 #${campaignId}`,
     thumbnailUrl: response.thumbnailUrl ?? getFallbackThumbnail(campaignId || id),
     rewardPoint: response.rewardPoint ?? 0,
     approvalDueDate: response.approvalDueDate,
@@ -85,15 +84,6 @@ function getFallbackThumbnail(id?: number): string {
 
 export function mapMissionStatus(status: MissionResponse["status"]): MissionStatus {
   switch (status) {
-    case "PENDING":
-    case "applied":
-      return "applied";
-    case "APPLICATION_REJECTED":
-    case "application_rejected":
-      return "application_rejected";
-    case "NOT_STARTED":
-    case "not_started":
-      return "not_started";
     case "IN_PROGRESS":
     case "in_progress":
       return "in_progress";
@@ -106,6 +96,9 @@ export function mapMissionStatus(status: MissionResponse["status"]): MissionStat
     case "REJECTED":
     case "rejected":
       return "rejected";
+    case "CANCELLED":
+    case "cancelled":
+      return "cancelled";
     default:
       return "in_progress";
   }

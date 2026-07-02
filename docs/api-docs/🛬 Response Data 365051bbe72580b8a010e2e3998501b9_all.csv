@@ -1,9 +1,0 @@
-﻿이름,날짜,상태,설명,타입
-data.status,,시작 전,RECRUITING · IN_PROGRESS · COMPLETED,String
-data.guidelines,,시작 전,상세 이미지 URL 목록 (JSONB),Array
-data.deadline,,시작 전,미션 마감 일시,Timestamp
-data.title,,시작 전,캠페인 제목,String
-data.campaign_id,,시작 전,캠페인 고유 식별자,Number
-data.reward_point,,시작 전,블로거 1인당 지급 포인트,Number
-data.advertiser_id,,시작 전,광고주 고유 식별자,Number
-data.thumbnail_url,,시작 전,S3 썸네일 이미지 URL,String

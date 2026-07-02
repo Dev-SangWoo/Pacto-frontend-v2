@@ -10,7 +10,7 @@ export default function NewCampaignPage() {
         </div>
       </header>
 
-      <section className="panel form-panel">
+      <section className="panel campaign-create-panel">
         <div className="panel-heading">
           <div>
             <h2>기본 정보</h2>

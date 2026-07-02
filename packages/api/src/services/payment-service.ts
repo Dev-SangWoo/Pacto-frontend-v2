@@ -9,33 +9,12 @@ export type PreparePaymentPayload = {
   amount: number;
 };
 
-export type VerifyPaymentPayload = {
-  impUid: string;
-  merchantUid: string;
-};
-
 export async function preparePayment(
   payload: PreparePaymentPayload,
   token?: string,
 ): Promise<Payment> {
   const response = await apiRequest<CommonResponse<PaymentResponse> | PaymentResponse>(
     "/api/v1/payments",
-    {
-      body: payload,
-      method: "POST",
-      token,
-    },
-  );
-
-  return adaptPayment(unwrapCommonResponse<PaymentResponse>(response));
-}
-
-export async function verifyPayment(
-  payload: VerifyPaymentPayload,
-  token?: string,
-): Promise<Payment> {
-  const response = await apiRequest<CommonResponse<PaymentResponse> | PaymentResponse>(
-    "/api/v1/payments/verify",
     {
       body: payload,
       method: "POST",

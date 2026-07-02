@@ -17,18 +17,21 @@ export default async function AdvertiserPayPage({ params }: AdvertiserPayPagePro
     notFound();
   }
 
-  const depositAmount = campaign.rewardPoint * campaign.recruitCount;
+  const maxBudget = campaign.rewardPoint * campaign.recruitCount;
 
   return (
     <main className="advertiser-shell">
       <section className="advertiser-card" aria-labelledby="pay-title">
-        <p className="eyebrow">Pacto escrow payment</p>
+        <p className="eyebrow">Pacto campaign budget</p>
         <h1 id="pay-title">{campaign.title}</h1>
-        <p>{campaign.brandName} 캠페인의 블로거 보상 예산을 에스크로로 예치합니다.</p>
+        <p>
+          현재 백엔드는 캠페인 생성 시 전체 예산을 바로 잠그지 않습니다. 지원자를 승인할 때 1명분
+          보상액이 광고주 지갑에서 에스크로로 잠깁니다.
+        </p>
 
         <div className="pay-amount">
-          <span>예치할 금액</span>
-          <strong>{formatPoint(depositAmount)}</strong>
+          <span>예상 최대 예산</span>
+          <strong>{formatPoint(maxBudget)}</strong>
         </div>
 
         <div className="info-list compact-list">
@@ -37,14 +40,14 @@ export default async function AdvertiserPayPage({ params }: AdvertiserPayPagePro
             <strong>{campaign.recruitCount}명</strong>
           </div>
           <div>
-            <span>1인 보상</span>
+            <span>1명 보상</span>
             <strong>{formatPoint(campaign.rewardPoint)}</strong>
           </div>
         </div>
 
-        <button className="primary-button wide" type="button">
-          결제 진행하기
-        </button>
+        <a className="primary-button wide" href={`/dashboard/campaigns/${campaign.id}/applicants`}>
+          지원자 승인으로 이동
+        </a>
       </section>
     </main>
   );

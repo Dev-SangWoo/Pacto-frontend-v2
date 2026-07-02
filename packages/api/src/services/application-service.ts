@@ -1,17 +1,12 @@
-import type { Applicant, ApplicationResponse, Mission } from "@pacto/types";
+import type { ApplicationResponse, CampaignApplicant, Mission } from "@pacto/types";
 
-import { adaptApplication, adaptApplicationToMission } from "../adapters/application-adapter";
+import { adaptApplication } from "../adapters/application-adapter";
 import { adaptMissionAction } from "../adapters/mission-adapter";
 import type { MissionActionResponse } from "../adapters/mission-adapter";
-import { isMockFallbackDisabled } from "../client/env";
 import { apiRequest, unwrapCommonResponse, unwrapListResponse } from "../client/http-client";
 
 export type ApplyPayload = {
   campaignId: number;
-};
-
-type MockFallbackOptions = {
-  mockFallback?: boolean;
 };
 
 export async function applyToCampaign(payload: ApplyPayload, token?: string): Promise<void> {
@@ -22,39 +17,31 @@ export async function applyToCampaign(payload: ApplyPayload, token?: string): Pr
   });
 }
 
-export async function getApplicants(campaignId: number, token?: string): Promise<Applicant[]> {
+export async function getApplicants(
+  campaignId: number,
+  token?: string,
+): Promise<CampaignApplicant[]> {
   const response = await apiRequest(`/api/v1/applications/campaign/${campaignId}`, { token });
   return unwrapListResponse<ApplicationResponse>(response).map(adaptApplication);
 }
 
-export async function getMyApplications(
-  token?: string,
-  options: MockFallbackOptions = {},
-): Promise<Applicant[]> {
-  return withMockFallback(
-    async () => {
-      const response = await apiRequest("/api/v1/applications/me", { token });
-      return unwrapListResponse<ApplicationResponse>(response).map(adaptApplication);
-    },
-    () => [],
-    options,
-  );
+export async function getMyApplications(token?: string): Promise<CampaignApplicant[]> {
+  const response = await apiRequest("/api/v1/applications/me", { token });
+  return unwrapListResponse<ApplicationResponse>(response).map(adaptApplication);
 }
 
-export async function getMyApplicationsAsMissions(
+export async function getMyApplicationResponses(token?: string): Promise<ApplicationResponse[]> {
+  const response = await apiRequest("/api/v1/applications/me", { token });
+  return unwrapListResponse<ApplicationResponse>(response);
+}
+
+export async function getMyApplicationByCampaign(
+  campaignId: number,
   token?: string,
-  options: MockFallbackOptions = {},
-): Promise<Mission[]> {
-  return withMockFallback(
-    async () => {
-      const response = await apiRequest("/api/v1/applications/me", { token });
-      // Filter out ACCEPTED applications because they already exist as Missions
-      return unwrapListResponse<ApplicationResponse>(response)
-        .filter((app) => app.status !== "ACCEPTED")
-        .map(adaptApplicationToMission);
-    },
-    () => [],
-    options,
+): Promise<ApplicationResponse | undefined> {
+  const response = await apiRequest("/api/v1/applications/me", { token });
+  return unwrapListResponse<ApplicationResponse>(response).find(
+    (application) => application.campaignId === campaignId,
   );
 }
 
@@ -82,23 +69,4 @@ export async function cancelApplication(applicationId: number, token?: string): 
     method: "PATCH",
     token,
   });
-}
-
-async function withMockFallback<T>(
-  request: () => Promise<T>,
-  fallback: () => T | Promise<T>,
-  options: MockFallbackOptions = {},
-): Promise<T> {
-  try {
-    return await request();
-  } catch (error) {
-    const isForced = options.mockFallback === true;
-    const isDisabled = options.mockFallback === false || isMockFallbackDisabled();
-
-    if (!isForced && isDisabled) {
-      throw error;
-    }
-
-    return await fallback();
-  }
 }
