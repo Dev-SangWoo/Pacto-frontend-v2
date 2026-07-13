@@ -1,10 +1,10 @@
 import { getCampaignDetail, getMyMissions, getMyPointHistories, getMyWallet } from "@pacto/api";
-import type { Campaign, Mission } from "@pacto/types";
+import type { Campaign, Mission, PointHistory, Wallet } from "@pacto/types";
 import { redirect } from "next/navigation";
 
 import { WalletLedger, type WalletLedgerItem } from "../../_components/wallet-ledger";
 import { WalletSummary } from "../../_components/wallet-summary";
-import { fallbackOnNonAuthError, redirectOnAuthError } from "../../_lib/auth-error";
+import { fallbackOnNonAuthError } from "../../_lib/auth-error";
 import { getBloggerSession } from "../../_lib/session";
 
 export default async function WalletPage() {
@@ -14,14 +14,22 @@ export default async function WalletPage() {
     redirect("/login");
   }
 
+  const fallbackWallet: Wallet = {
+    availableBalance: 0,
+    id: 0,
+    lockedBalance: 0,
+    updatedAt: new Date().toISOString(),
+  };
   const [wallet, pointHistories] = await Promise.all([
-    getMyWallet(session.accessToken).catch(redirectOnAuthError),
+    getMyWallet(session.accessToken).catch((error: unknown) =>
+      fallbackOnNonAuthError(error, fallbackWallet),
+    ),
     getMyPointHistories({}, session.accessToken).catch((error: unknown) =>
-      fallbackOnNonAuthError(error, []),
+      fallbackOnNonAuthError<PointHistory[]>(error, []),
     ),
   ]);
   const missions = await getMyMissions({}, session.accessToken).catch((error: unknown) =>
-    fallbackOnNonAuthError(error, []),
+    fallbackOnNonAuthError<Mission[]>(error, []),
   );
   const campaignMap = await getCampaignMap(missions, session.accessToken);
   const missionByEscrowId = new Map(missions.map((mission) => [mission.escrowId, mission]));

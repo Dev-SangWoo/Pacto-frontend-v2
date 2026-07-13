@@ -1,4 +1,5 @@
 import { getCampaigns } from "@pacto/api";
+import type { Campaign } from "@pacto/types";
 import { redirect } from "next/navigation";
 
 import { CampaignExplorer } from "../../_components/campaign-explorer";
@@ -12,7 +13,10 @@ export default async function CampaignsPage() {
   }
 
   const campaignResult = await getCampaigns({ page: 0, size: 100, sort: "campaignId,desc" }).then(
-    (campaigns) => ({ campaigns, errorMessage: undefined }),
+    (campaigns) => ({
+      campaigns: campaigns.filter(isCurrentlyApplicableCampaign),
+      errorMessage: undefined,
+    }),
     (error: unknown) => ({
       campaigns: [],
       errorMessage: getCampaignLoadErrorMessage(error),
@@ -25,6 +29,28 @@ export default async function CampaignsPage() {
       loadErrorMessage={campaignResult.errorMessage}
     />
   );
+}
+
+function isCurrentlyApplicableCampaign(campaign: Campaign) {
+  const remainingSlots =
+    campaign.remainingSlots ?? Math.max(campaign.recruitCount - campaign.approvedCount, 0);
+
+  return campaign.status === "open" && remainingSlots > 0 && !isPastDeadline(campaign.deadline);
+}
+
+function isPastDeadline(value: string) {
+  const deadline = new Date(value);
+
+  if (Number.isNaN(deadline.getTime())) {
+    return true;
+  }
+
+  const today = startOfLocalDay(new Date());
+  return startOfLocalDay(deadline).getTime() < today.getTime();
+}
+
+function startOfLocalDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function getCampaignLoadErrorMessage(error: unknown) {

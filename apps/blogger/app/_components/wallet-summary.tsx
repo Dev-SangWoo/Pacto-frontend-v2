@@ -35,13 +35,13 @@ export function WalletSummary({
     <section className="wallet-hero" aria-labelledby="wallet-title">
       <div className="wallet-brief">
         <p className="section-label">내 지갑</p>
-        <h1 id="wallet-title">출금 가능 잔액</h1>
+        <h1 id="wallet-title">출금 가능한 보상</h1>
         <strong>{formatPoint(availableBalance)}</strong>
-        <p>{formatKoreanDate(updatedAt)} 기준으로 바로 출금할 수 있는 금액이에요.</p>
+        <p>{formatKoreanDate(updatedAt)} 기준으로 바로 출금 신청할 수 있는 금액이에요.</p>
       </div>
       <div className="wallet-hero-meta" aria-label="지갑 요약">
         <button type="button" onClick={() => setIsLockedModalOpen(true)}>
-          보류 중 <strong>{formatPoint(lockedBalance)}</strong>
+          보류 중<strong>{formatPoint(lockedBalance)}</strong>
           <em>검수 또는 정산 처리 중인 금액</em>
         </button>
         {latestSettlement?.campaignId == null ? (
@@ -49,7 +49,7 @@ export function WalletSummary({
             최근 정산 <strong>{latestSettlement?.headline ?? "아직 없음"}</strong>
             <em>
               {latestSettlement == null
-                ? "완료된 정산이 생기면 표시돼요."
+                ? "완료된 정산이 생기면 여기에서 확인할 수 있어요."
                 : latestSettlement.detail}
             </em>
           </span>

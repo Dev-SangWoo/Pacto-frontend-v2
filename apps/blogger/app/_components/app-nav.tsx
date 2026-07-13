@@ -9,9 +9,10 @@ const navItems: Array<{
   href: string;
   icon: LucideIcon;
   label: string;
+  notify?: boolean;
 }> = [
   { href: "/campaigns", icon: House, label: "홈" },
-  { href: "/missions", icon: Target, label: "미션" },
+  { href: "/missions", icon: Target, label: "미션", notify: true },
   { href: "/wallet", icon: WalletCards, label: "지갑" },
   { href: "/profile", icon: UserCircle, label: "내 정보" },
 ];
@@ -27,6 +28,7 @@ export function AppHeaderStart() {
   if (!isRootPath) {
     return (
       <button
+        aria-label="이전 화면으로 이동"
         className="app-back-button"
         onClick={() => {
           if (window.history.length > 1) {
@@ -55,8 +57,9 @@ export function AppHeaderStart() {
 export function TopActions() {
   return (
     <div className="top-actions">
-      <button className="icon-button" type="button" aria-label="알림 열기">
+      <button className="icon-button notification-button" type="button" aria-label="알림 열기">
         <Bell aria-hidden="true" size={21} strokeWidth={2.25} />
+        <span aria-hidden="true" />
       </button>
       <Link className="icon-button profile" href="/profile" aria-label="내 정보">
         <UserCircle aria-hidden="true" size={23} strokeWidth={2.25} />
@@ -97,7 +100,10 @@ export function BottomNav() {
             href={item.href}
             key={item.href}
           >
-            <Icon aria-hidden="true" size={21} strokeWidth={2.25} />
+            <span className="bottom-nav-icon">
+              <Icon aria-hidden="true" size={21} strokeWidth={2.25} />
+              {item.notify ? <span className="nav-dot" aria-hidden="true" /> : null}
+            </span>
             <span>{item.label}</span>
           </Link>
         );

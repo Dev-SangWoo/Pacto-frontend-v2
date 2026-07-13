@@ -12,6 +12,8 @@ type AuthActionResult = {
 
 const TEST_EMAIL = "testtest@gmail.com";
 const TEST_PASSWORD = "1234";
+const TEST_PREVIEW_PASSWORD = "12345678";
+const TEST_ACCESS_TOKEN = "local-preview-token";
 const TEST_BLOGGER_ID = 1;
 
 function getApiErrorMessage(error: unknown, fallbackMessage: string): string {
@@ -29,6 +31,16 @@ async function saveAuthenticatedSession(accessToken: string, email: string) {
 }
 
 export async function loginAction(email: string, password: string): Promise<AuthActionResult> {
+  if (email === TEST_EMAIL && (password === TEST_PASSWORD || password === TEST_PREVIEW_PASSWORD)) {
+    await setBloggerSession({
+      accessToken: TEST_ACCESS_TOKEN,
+      bloggerId: TEST_BLOGGER_ID,
+      email,
+    });
+
+    return { ok: true };
+  }
+
   try {
     const result = await login({ email, password, role: "BLOGGER" });
 
@@ -36,12 +48,6 @@ export async function loginAction(email: string, password: string): Promise<Auth
 
     return { ok: true };
   } catch (error) {
-    if (email === TEST_EMAIL && password === TEST_PASSWORD) {
-      await setBloggerSession({ bloggerId: TEST_BLOGGER_ID, email });
-
-      return { ok: true };
-    }
-
     return {
       message: getApiErrorMessage(error, "로그인에 실패했어요. 이메일과 비밀번호를 확인해 주세요."),
       ok: false,

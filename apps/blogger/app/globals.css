@@ -2,23 +2,27 @@
 
 :root {
   color-scheme: light;
-  --ink: #172033;
-  --ink-soft: #3d475b;
-  --muted: #6f7a8e;
-  --line: #e3e8ef;
+  --ink: #101318;
+  --ink-soft: #2f3a4a;
+  --muted: #667085;
+  --line: #dbe4ef;
   --surface: #ffffff;
-  --surface-soft: #f6f8fb;
-  --canvas: #eef3f7;
-  --blue: #2563eb;
-  --blue-soft: #e8f0ff;
-  --green: #008f5a;
-  --green-soft: #e7f7ef;
-  --amber: #b86b00;
-  --amber-soft: #fff4dc;
-  --red: #e5484d;
-  --red-soft: #fff0f1;
-  --violet: #6d5dfc;
-  --violet-soft: #f0efff;
+  --surface-soft: #f2f5f8;
+  --canvas: #eef4fb;
+  --blue: #145cff;
+  --blue-2: #1f7bff;
+  --sky: #28b8ff;
+  --blue-soft: #e8f2ff;
+  --green: #00a661;
+  --green-soft: #e8f8f0;
+  --amber: #f59e0b;
+  --amber-soft: #fff7e6;
+  --red: #f04452;
+  --red-soft: #fff0f0;
+  --violet: #5964e8;
+  --violet-soft: #eef0ff;
+  --pacto-gradient: linear-gradient(135deg, #145cff 0%, #1f7bff 48%, #28b8ff 100%);
+  --pacto-shadow: 0 16px 38px rgba(16, 19, 24, 0.08);
   --shell-width: 430px;
   --bottom-nav-height: 64px;
   --bottom-nav-gap: 14px;
@@ -36,7 +40,9 @@ body {
 
 body {
   margin: 0;
-  background: var(--canvas);
+  background:
+    radial-gradient(circle at 50% -10%, rgba(40, 184, 255, 0.18), transparent 32%),
+    linear-gradient(180deg, #f7fbff 0%, var(--canvas) 42%, #e9f0f7 100%);
   color: var(--ink);
   font-family:
     "Pretendard Variable",
@@ -91,7 +97,8 @@ dd {
   width: min(100%, var(--shell-width));
   min-height: 100vh;
   margin: 0 auto;
-  background: #fbfcfe;
+  background: #fbfdff;
+  box-shadow: 0 0 0 1px rgba(219, 228, 239, 0.7);
 }
 
 .app-top {
@@ -103,8 +110,8 @@ dd {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  border-bottom: 1px solid rgba(227, 232, 239, 0.86);
-  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(219, 228, 239, 0.84);
+  background: rgba(255, 255, 255, 0.88);
   padding: 11px 18px 11px 13px;
   backdrop-filter: blur(14px);
 }
@@ -194,6 +201,7 @@ dd {
 }
 
 .icon-button {
+  position: relative;
   display: grid;
   width: 38px;
   height: 38px;
@@ -202,12 +210,36 @@ dd {
   border-radius: 8px;
   color: var(--ink-soft);
   background: transparent;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
 .icon-button.profile {
-  border-color: var(--line);
+  border-color: rgba(20, 92, 255, 0.16);
+  color: var(--blue);
+  background: rgba(232, 242, 255, 0.78);
+}
+
+.icon-button:hover,
+.icon-button:focus-visible {
+  border-color: rgba(20, 92, 255, 0.2);
   color: var(--blue);
   background: var(--blue-soft);
+  transform: translateY(-1px);
+}
+
+.notification-button > span {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--surface);
+  border-radius: 999px;
+  background: var(--amber);
 }
 
 .screen-content {
@@ -242,11 +274,11 @@ dd {
 .mission-home-hero {
   position: relative;
   gap: 16px;
-  border-color: rgba(37, 99, 235, 0.18);
+  border-color: rgba(20, 92, 255, 0.16);
   background:
-    linear-gradient(145deg, rgba(232, 240, 255, 0.98), rgba(255, 255, 255, 0.94) 62%),
+    linear-gradient(145deg, rgba(232, 242, 255, 0.98), rgba(255, 255, 255, 0.94) 62%),
     var(--surface);
-  box-shadow: 0 18px 38px rgba(23, 32, 51, 0.08);
+  box-shadow: var(--pacto-shadow);
 }
 
 .campaign-discovery-hero::after,
@@ -327,10 +359,11 @@ dd {
   display: grid;
   gap: 5px;
   min-width: 0;
-  border: 1px solid rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(20, 92, 255, 0.12);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.74);
+  background: rgba(255, 255, 255, 0.78);
   padding: 11px 10px;
+  box-shadow: 0 10px 24px rgba(16, 19, 24, 0.04);
 }
 
 .hero-reward-strip span {
@@ -344,7 +377,7 @@ dd {
 
 .hero-reward-strip strong {
   overflow-wrap: anywhere;
-  color: var(--ink);
+  color: var(--blue);
   font-size: 15px;
   font-weight: 950;
   line-height: 1.2;
@@ -478,13 +511,13 @@ dd {
   overflow: hidden;
   display: grid;
   gap: 16px;
-  border: 1px solid rgba(37, 99, 235, 0.16);
+  border: 1px solid rgba(20, 92, 255, 0.16);
   border-radius: 8px;
   background:
-    linear-gradient(145deg, rgba(232, 240, 255, 0.96), rgba(255, 255, 255, 0.96) 64%),
+    linear-gradient(145deg, rgba(232, 242, 255, 0.96), rgba(255, 255, 255, 0.96) 64%),
     var(--surface);
   padding: 20px;
-  box-shadow: 0 18px 38px rgba(23, 32, 51, 0.08);
+  box-shadow: var(--pacto-shadow);
 }
 
 .wallet-hero::after {
@@ -517,7 +550,9 @@ dd {
 }
 
 .wallet-brief > strong {
-  color: var(--blue);
+  background: var(--pacto-gradient);
+  background-clip: text;
+  color: transparent;
   font-size: 42px;
   font-weight: 950;
   line-height: 1;
@@ -543,7 +578,7 @@ dd {
   display: grid;
   gap: 5px;
   min-width: 0;
-  border: 1px solid rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(20, 92, 255, 0.12);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.68);
   padding: 11px;
@@ -566,8 +601,8 @@ dd {
 .wallet-hero-meta a:focus-visible,
 .wallet-hero-meta button:hover,
 .wallet-hero-meta button:focus-visible {
-  border-color: rgba(37, 99, 235, 0.2);
-  background: rgba(232, 240, 255, 0.78);
+  border-color: rgba(20, 92, 255, 0.22);
+  background: rgba(232, 242, 255, 0.82);
 }
 
 .wallet-hero-meta strong {
@@ -808,9 +843,10 @@ dd {
 }
 
 .interest-tabs button.active {
-  border-color: rgba(37, 99, 235, 0.2);
+  border-color: rgba(20, 92, 255, 0.22);
   color: var(--blue);
-  background: var(--blue-soft);
+  background: linear-gradient(180deg, #f7fbff, var(--blue-soft));
+  box-shadow: 0 10px 22px rgba(20, 92, 255, 0.08);
 }
 
 .section-block,
@@ -906,7 +942,18 @@ dd {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
-  box-shadow: 0 12px 30px rgba(23, 32, 51, 0.06);
+  box-shadow: 0 12px 30px rgba(16, 19, 24, 0.06);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.campaign-ticket:hover,
+.campaign-ticket:focus-visible {
+  border-color: rgba(20, 92, 255, 0.22);
+  box-shadow: 0 18px 38px rgba(16, 19, 24, 0.1);
+  transform: translateY(-1px);
 }
 
 .campaign-feed.list-view .campaign-ticket {
@@ -917,7 +964,8 @@ dd {
 
 .ticket-media {
   aspect-ratio: 16 / 10;
-  background: var(--surface-soft);
+  background:
+    linear-gradient(135deg, rgba(20, 92, 255, 0.12), rgba(40, 184, 255, 0.16)), var(--surface-soft);
 }
 
 .campaign-feed.list-view .ticket-media {
@@ -957,7 +1005,15 @@ dd {
   gap: 12px;
 }
 
+.ticket-badges {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
 .ticket-topline strong {
+  flex: 0 0 auto;
   color: var(--blue);
   font-size: 16px;
   font-weight: 950;
@@ -967,6 +1023,10 @@ dd {
   align-items: flex-start;
   flex-direction: column;
   gap: 6px;
+}
+
+.campaign-feed.grid-view .ticket-badges {
+  flex-wrap: wrap;
 }
 
 .campaign-feed.grid-view .ticket-topline strong {
@@ -1038,8 +1098,11 @@ dd {
 .mission-facts div {
   display: grid;
   gap: 4px;
+  min-width: 0;
+  min-height: 62px;
+  align-content: center;
   border-radius: 8px;
-  background: var(--surface-soft);
+  background: linear-gradient(180deg, #f8fbff, var(--surface-soft));
   padding: 10px;
 }
 
@@ -1060,11 +1123,14 @@ dd {
   font-size: 13px;
   font-weight: 900;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .ticket-facts dd em,
 .mission-command em {
   display: inline-flex;
+  min-height: 21px;
+  align-items: center;
   margin-left: 6px;
   border-radius: 999px;
   background: rgba(17, 24, 39, 0.08);
@@ -1102,7 +1168,7 @@ dd {
   z-index: 18;
   width: min(calc(100% - 32px), calc(var(--shell-width) - 32px));
   margin: 0 auto;
-  border: 1px solid rgba(37, 99, 235, 0.14);
+  border: 1px solid rgba(20, 92, 255, 0.18);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.94);
   display: grid;
@@ -1114,7 +1180,7 @@ dd {
   font-size: 12px;
   font-weight: 800;
   line-height: 1.45;
-  box-shadow: 0 14px 30px rgba(23, 32, 51, 0.1);
+  box-shadow: 0 18px 38px rgba(16, 19, 24, 0.12);
   backdrop-filter: blur(14px);
 }
 
@@ -1157,7 +1223,7 @@ dd {
   place-items: center;
   border-radius: 8px;
   color: var(--surface);
-  background: var(--ink);
+  background: var(--pacto-gradient);
   font-size: 14px;
   font-weight: 900;
 }
@@ -1170,10 +1236,12 @@ dd {
 .mission-journey-panel {
   display: grid;
   gap: 10px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(20, 92, 255, 0.14);
   border-radius: 8px;
-  background: var(--surface);
+  background:
+    linear-gradient(180deg, rgba(232, 242, 255, 0.52), rgba(255, 255, 255, 0.95)), var(--surface);
   padding: 14px;
+  box-shadow: 0 14px 30px rgba(16, 19, 24, 0.06);
 }
 
 .mission-journey-panel > div:first-child {
@@ -1181,28 +1249,18 @@ dd {
   gap: 3px;
 }
 
-.mission-journey-panel strong {
+.mission-journey-panel h2 {
   color: var(--ink);
-  font-size: 15px;
-  font-weight: 950;
-}
-
-.mission-journey-actions {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-.mission-journey-actions a {
-  display: grid;
-  min-height: 40px;
-  place-items: center;
-  border: 1px solid rgba(37, 99, 235, 0.12);
-  border-radius: 8px;
-  background: rgba(232, 240, 255, 0.58);
-  color: var(--blue);
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 900;
-  white-space: nowrap;
+  line-height: 1.25;
+}
+
+.mission-journey-panel strong {
+  color: var(--ink-soft);
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.45;
 }
 
 .mission-status-summary {
@@ -1247,70 +1305,99 @@ dd {
   min-width: 0;
 }
 
-.journey-strip {
-  position: relative;
+.mission-status-flow {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
   gap: 0;
-  padding: 4px 0 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.journey-strip::before {
-  position: absolute;
-  top: 25px;
-  right: 10%;
-  left: 10%;
-  height: 1px;
-  background: rgba(148, 163, 184, 0.34);
-  content: "";
-}
-
-.journey-strip button {
-  position: relative;
-  z-index: 1;
+.mission-status-flow li {
   display: grid;
   min-width: 0;
-  min-height: 62px;
-  justify-items: center;
-  align-content: start;
+  min-height: 66px;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
   gap: 7px;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-family: inherit;
-  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%);
+  margin-left: -11px;
+  background: var(--surface-soft);
+  padding: 10px 17px 10px 21px;
 }
 
-.journey-strip button.active {
-  color: var(--blue);
+.mission-status-flow li:first-child {
+  margin-left: 0;
+  border-radius: 8px 0 0 8px;
+  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%);
+  padding-left: 12px;
 }
 
-.journey-strip span {
-  order: 2;
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1.2;
-  text-align: center;
+.mission-status-flow li:last-child {
+  border-radius: 0 8px 8px 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 15px 50%);
 }
 
-.journey-strip strong {
+.mission-status-flow li > span {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 24px;
+  height: 24px;
   place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.32);
   border-radius: 999px;
   background: var(--surface);
-  color: var(--ink);
-  font-size: 15px;
+  color: var(--muted);
+  font-size: 11px;
   font-weight: 950;
-  line-height: 1;
-  box-shadow: 0 6px 16px rgba(23, 32, 51, 0.06);
 }
 
-.journey-strip button.active strong {
-  border-color: rgba(37, 99, 235, 0.24);
+.mission-status-flow li div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mission-status-flow strong {
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-status-flow em {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 750;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-status-flow li.completed {
+  background: var(--green-soft);
+}
+
+.mission-status-flow li.completed > span {
+  color: var(--surface);
+  background: var(--green);
+}
+
+.mission-status-flow li.active {
   background: var(--blue-soft);
+}
+
+.mission-status-flow li.active > span {
+  color: var(--surface);
+  background: var(--blue);
+}
+
+.mission-status-flow li.active strong,
+.mission-status-flow li.active em {
   color: var(--blue);
 }
 
@@ -1323,6 +1410,18 @@ dd {
   border-radius: 8px;
   background: var(--surface);
   padding: 10px;
+  box-shadow: 0 10px 24px rgba(16, 19, 24, 0.05);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.mission-card:hover,
+.mission-card:focus-visible {
+  border-color: rgba(20, 92, 255, 0.2);
+  box-shadow: 0 16px 34px rgba(16, 19, 24, 0.08);
+  transform: translateY(-1px);
 }
 
 .mission-card > div {
@@ -1555,12 +1654,13 @@ dd {
 
 .info-list strong,
 .ledger-list strong {
+  min-width: 0;
   color: var(--ink);
   font-size: 14px;
   font-weight: 900;
   line-height: 1.4;
   text-align: right;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .ledger-list article > div {
@@ -1703,9 +1803,26 @@ dd {
   line-height: 1;
 }
 
+.dday-badge {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.08);
+  padding: 6px 9px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .status-badge.blue {
   color: var(--blue);
   background: var(--blue-soft);
+}
+
+.status-badge.amber {
+  color: #9a5a00;
+  background: var(--amber-soft);
 }
 
 .status-badge.green {
@@ -1731,8 +1848,8 @@ dd {
   z-index: 20;
   width: min(100%, var(--shell-width));
   margin: 0 auto;
-  border-top: 1px solid rgba(227, 232, 239, 0.9);
-  background: rgba(251, 252, 254, 0.96);
+  border-top: 1px solid rgba(219, 228, 239, 0.88);
+  background: rgba(251, 253, 255, 0.96);
   padding: 12px 18px 16px;
   backdrop-filter: blur(14px);
 }
@@ -1745,14 +1862,27 @@ dd {
   border: 0;
   border-radius: 8px;
   color: var(--surface);
-  background: var(--blue);
+  background: var(--pacto-gradient);
   font-size: 16px;
   font-weight: 900;
+  box-shadow: 0 14px 28px rgba(20, 92, 255, 0.22);
+  transition:
+    box-shadow 160ms ease,
+    filter 160ms ease,
+    transform 160ms ease;
+}
+
+.primary-button:hover,
+.primary-button:focus-visible {
+  filter: saturate(1.06);
+  box-shadow: 0 18px 34px rgba(20, 92, 255, 0.28);
+  transform: translateY(-1px);
 }
 
 .weak-button {
   color: var(--blue);
   background: var(--blue-soft);
+  box-shadow: none;
 }
 
 .primary-button:disabled,
@@ -1760,6 +1890,7 @@ dd {
   pointer-events: none;
   color: var(--muted);
   background: var(--line);
+  box-shadow: none;
 }
 
 .cta-stack,
@@ -1837,7 +1968,7 @@ dd {
   border: 1px solid rgba(227, 232, 239, 0.96);
   border-radius: 26px;
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 14px 30px rgba(23, 32, 51, 0.13);
+  box-shadow: 0 14px 30px rgba(16, 19, 24, 0.13);
   backdrop-filter: blur(14px);
 }
 
@@ -1856,6 +1987,27 @@ dd {
 .bottom-nav a:focus-visible,
 .bottom-nav a.active {
   color: var(--blue);
+}
+
+.bottom-nav a.active {
+  background: linear-gradient(180deg, rgba(232, 242, 255, 0.84), rgba(255, 255, 255, 0));
+}
+
+.bottom-nav-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.nav-dot {
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid var(--surface);
+  border-radius: 999px;
+  background: var(--amber);
 }
 
 .auth-shell {
@@ -1969,6 +2121,10 @@ dd {
 .auth-submit {
   grid-template-columns: minmax(0, auto) 18px;
   gap: 8px;
+}
+
+.auth-entry-actions .primary-button {
+  grid-template-columns: 1fr;
 }
 
 .text-link-button {
@@ -2202,41 +2358,18 @@ dd {
     font-size: 21px;
   }
 
-  .mission-journey-actions,
-  .journey-strip {
+  .mission-status-flow {
     grid-template-columns: 1fr;
-  }
-
-  .journey-strip {
     gap: 6px;
-    padding: 0;
   }
 
-  .journey-strip::before {
-    display: none;
-  }
-
-  .journey-strip button {
-    min-height: 46px;
-    grid-template-columns: 42px minmax(0, 1fr);
-    align-content: center;
-    justify-items: start;
-    border: 1px solid rgba(148, 163, 184, 0.28);
+  .mission-status-flow li,
+  .mission-status-flow li:first-child,
+  .mission-status-flow li:last-child {
+    margin-left: 0;
+    clip-path: none;
     border-radius: 8px;
-    padding: 4px 10px;
-  }
-
-  .journey-strip button.active {
-    border-color: rgba(37, 99, 235, 0.16);
-    background: var(--blue-soft);
-  }
-
-  .journey-strip span {
-    order: 1;
-  }
-
-  .journey-strip strong {
-    order: 0;
+    padding: 10px 12px;
   }
 
   .campaign-discovery-hero::after,

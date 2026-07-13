@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { getCampaignDetail, getMissionDetail } from "@pacto/api";
+import type { MissionStatus } from "@pacto/types";
 import {
   canSubmitMission,
   formatDeadlineDday,
@@ -69,6 +70,15 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
         </article>
       </section>
 
+      <section className="mission-journey-panel mission-detail-status" aria-label="미션 현황">
+        <div>
+          <p className="section-label">미션 현황</p>
+          <h2>현재 진행 단계</h2>
+          <strong>{getMissionStatusDescription(displayMission.status)}</strong>
+        </div>
+        <MissionDetailStatusFlow status={displayMission.status} />
+      </section>
+
       <section className="section-block">
         <div className="section-head">
           <div>
@@ -84,4 +94,68 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
       </div>
     </section>
   );
+}
+
+function MissionDetailStatusFlow({ status }: { status: MissionStatus }) {
+  const activeIndex = getMissionStatusStepIndex(status);
+  const steps =
+    status === "cancelled" || status === "rejected"
+      ? [
+          { label: "진행", helper: "미션 시작" },
+          { label: status === "cancelled" ? "취소" : "반려", helper: "종료" },
+        ]
+      : [
+          { label: "진행", helper: "리뷰 작성" },
+          { label: "제출", helper: "URL 등록" },
+          { label: "검수", helper: "광고주 확인" },
+          { label: "정산", helper: "보상 지급" },
+        ];
+
+  return (
+    <ol className="mission-status-flow">
+      {steps.map((step, index) => {
+        const state =
+          index < activeIndex ? "completed" : index === activeIndex ? "active" : "upcoming";
+
+        return (
+          <li className={state} key={step.label}>
+            <span>{index + 1}</span>
+            <div>
+              <strong>{step.label}</strong>
+              <em>{step.helper}</em>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function getMissionStatusStepIndex(status: MissionStatus) {
+  switch (status) {
+    case "in_progress":
+      return 0;
+    case "submitted":
+      return 2;
+    case "approved":
+      return 3;
+    case "rejected":
+    case "cancelled":
+      return 1;
+  }
+}
+
+function getMissionStatusDescription(status: MissionStatus) {
+  switch (status) {
+    case "in_progress":
+      return "리뷰 URL을 등록하면 광고주 검수 단계로 넘어갑니다.";
+    case "submitted":
+      return "리뷰 URL 제출이 완료되어 광고주 검수를 기다리고 있어요.";
+    case "approved":
+      return "미션 검수가 승인되어 보상 정산이 완료된 상태입니다.";
+    case "rejected":
+      return "제출한 미션이 반려되어 종료된 상태입니다.";
+    case "cancelled":
+      return "미션이 취소되어 더 이상 진행하지 않는 상태입니다.";
+  }
 }

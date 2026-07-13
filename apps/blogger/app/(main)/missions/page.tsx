@@ -4,7 +4,7 @@ import { formatPoint } from "@pacto/utils";
 import { redirect } from "next/navigation";
 
 import { MissionBoard } from "../../_components/mission-board";
-import { redirectOnAuthError } from "../../_lib/auth-error";
+import { fallbackOnNonAuthError } from "../../_lib/auth-error";
 import { getBloggerSession } from "../../_lib/session";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +19,9 @@ export default async function MissionsPage() {
   const [missions, applications] = await Promise.all([
     getMyMissions({}, session.accessToken),
     getMyApplicationResponses(session.accessToken),
-  ]).catch(redirectOnAuthError);
+  ]).catch((error: unknown) =>
+    fallbackOnNonAuthError<[Mission[], ApplicationResponse[]]>(error, [[], []]),
+  );
   const campaignMap = await getCampaignMap([...missions, ...applications], session.accessToken);
   const enrichedMissions = missions.map((mission) => enrichMission(mission, campaignMap));
   const enrichedApplications = applications.map((application) =>
@@ -45,17 +47,16 @@ export default async function MissionsPage() {
         </div>
         <div className="mission-hero-stats" aria-label="미션 요약">
           <span>
-            진행 중 <strong>{activeMissionCount}건</strong>
+            진행 중<strong>{activeMissionCount}건</strong>
           </span>
           <span>
             예상 보상 <strong>{formatPoint(expectedReward)}</strong>
           </span>
           <span>
-            승인 대기 <strong>{pendingApplicationCount}건</strong>
+            승인 대기<strong>{pendingApplicationCount}건</strong>
           </span>
         </div>
       </section>
-
       <MissionBoard applications={enrichedApplications} missions={enrichedMissions} />
     </section>
   );

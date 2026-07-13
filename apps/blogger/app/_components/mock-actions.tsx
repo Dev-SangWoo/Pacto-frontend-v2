@@ -46,7 +46,7 @@ export function CampaignApplyAction({
 
   return (
     <div className="cta-stack">
-      {errorMessage != null ? <p>{errorMessage}</p> : null}
+      {errorMessage != null ? <p className="form-error">{errorMessage}</p> : null}
       <button
         className="primary-button"
         disabled={isPending}
@@ -93,7 +93,7 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
   if (isSubmitted) {
     return (
       <div className="cta-stack">
-        <p>리뷰 URL을 제출했어요. 미션 목록에서 검토 상태를 확인할 수 있어요.</p>
+        <p>리뷰 URL을 제출했어요. 미션 목록에서 검수 상태를 확인할 수 있어요.</p>
         <Link className="primary-button" href="/missions">
           내 미션으로 돌아가기
         </Link>
@@ -120,7 +120,7 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
         }
       }}
     >
-      {errorMessage != null ? <p>{errorMessage}</p> : null}
+      {errorMessage != null ? <p className="form-error">{errorMessage}</p> : null}
       <label>
         리뷰 URL
         <input
@@ -145,7 +145,7 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
 function getApplicationCtaLabel(status: ApplicationStatusResponse) {
   switch (status) {
     case "PENDING":
-      return "신청 완료";
+      return "승인 대기 중";
     case "ACCEPTED":
       return "승인 완료";
     case "REJECTED":

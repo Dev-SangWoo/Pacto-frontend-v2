@@ -39,6 +39,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
 
       if (result.ok) {
         router.push("/campaigns");
+        router.refresh();
       } else {
         setErrorMessage(result.message);
       }
@@ -52,7 +53,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
           <img src="/brand/logo-bg-rm-cropped.png" alt="" />
         </div>
         <h1 id="login-title" className="visually-hidden">
-          Patco 안전한 블로그 캠페인
+          Pacto 안전한 블로그 캠페인
         </h1>
         <div className="identity-copy">
           <ShieldCheck aria-hidden="true" size={18} />
@@ -64,7 +65,6 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
         <div className="auth-entry-actions" aria-label="계정 시작">
           <button className="primary-button" onClick={() => openAuth("login")} type="button">
             로그인
-            <ArrowRight aria-hidden="true" size={18} />
           </button>
           <button className="text-link-button" onClick={() => openAuth("signup")} type="button">
             회원가입
@@ -86,7 +86,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
         </button>
 
         <div className="auth-form-heading">
-          <p>Patco Creator</p>
+          <p>Pacto Creator</p>
           <h2>{isSignup ? "회원가입" : "로그인"}</h2>
         </div>
 
@@ -107,7 +107,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
                 autoComplete="email"
                 inputMode="email"
                 name="email"
-                placeholder="blogger@patco.test"
+                placeholder="blogger@pacto.test"
                 required
                 type="email"
               />
@@ -120,9 +120,9 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
               <LockKeyhole aria-hidden="true" size={18} />
               <input
                 autoComplete={isSignup ? "new-password" : "current-password"}
-                minLength={8}
+                minLength={isSignup ? 8 : 4}
                 name="password"
-                placeholder="8자 이상 입력"
+                placeholder={isSignup ? "8자 이상 입력" : "비밀번호 입력"}
                 required
                 type={showPassword ? "text" : "password"}
               />
