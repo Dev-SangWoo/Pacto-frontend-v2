@@ -2,14 +2,14 @@ import type { ApplicationStatusResponse } from "@pacto/types";
 
 type ApplicationStatusView = {
   label: string;
-  tone: "blue" | "green" | "grey" | "red";
+  tone: "amber" | "blue" | "green" | "grey" | "red";
 };
 
 const applicationStatusViewMap: Record<ApplicationStatusResponse, ApplicationStatusView> = {
-  PENDING: { label: "\uc2e0\uccad \uc644\ub8cc", tone: "grey" },
-  ACCEPTED: { label: "\uc2b9\uc778 \uc644\ub8cc", tone: "blue" },
-  REJECTED: { label: "\uc2e0\uccad \ubc18\ub824", tone: "red" },
-  CANCELLED: { label: "\uc2e0\uccad \ucde8\uc18c", tone: "red" },
+  PENDING: { label: "승인 대기", tone: "amber" },
+  ACCEPTED: { label: "승인 완료", tone: "green" },
+  REJECTED: { label: "신청 반려", tone: "red" },
+  CANCELLED: { label: "신청 취소", tone: "red" },
 };
 
 export function getApplicationStatusView(status: ApplicationStatusResponse): ApplicationStatusView {

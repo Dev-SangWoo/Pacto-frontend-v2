@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { getApplicationStatusView, isPendingApplication } from "./application-status";
 
 describe("application status policy", () => {
-  it("PENDING application is displayed as applied", () => {
+  it("PENDING application is displayed as waiting for approval", () => {
     expect(getApplicationStatusView("PENDING")).toEqual({
-      label: "\uc2e0\uccad \uc644\ub8cc",
-      tone: "grey",
+      label: "승인 대기",
+      tone: "amber",
     });
   });
 
