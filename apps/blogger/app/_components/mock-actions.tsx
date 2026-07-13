@@ -10,12 +10,14 @@ type CampaignApplyActionProps = {
   applicationStatus?: ApplicationStatusResponse;
   campaignId: number;
   enabled: boolean;
+  missionId?: number;
 };
 
 export function CampaignApplyAction({
   applicationStatus,
   campaignId,
   enabled,
+  missionId,
 }: CampaignApplyActionProps) {
   const [currentStatus, setCurrentStatus] = useState<ApplicationStatusResponse | undefined>(
     applicationStatus,
@@ -24,6 +26,20 @@ export function CampaignApplyAction({
   const [isPending, startTransition] = useTransition();
 
   if (currentStatus != null) {
+    if (currentStatus === "ACCEPTED") {
+      return (
+        <div className="cta-stack">
+          <Link
+            className="primary-button"
+            href={missionId == null ? "/missions" : `/missions/${missionId}`}
+          >
+            미션 제출하기
+          </Link>
+          <p>선정이 완료됐어요. 리뷰 URL을 제출해 주세요.</p>
+        </div>
+      );
+    }
+
     return (
       <div className="cta-stack">
         <button className="primary-button weak-button" disabled type="button">

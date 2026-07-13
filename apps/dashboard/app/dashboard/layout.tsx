@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   }
 
   if (session.role !== "ADVERTISER") {
-    redirect("/logout");
+    redirect("/forbidden");
   }
 
   return (

@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { getCampaignDetail, getMyApplicationByCampaign } from "@pacto/api";
+import { getCampaignDetail, getMyApplicationByCampaign, getMyMissions } from "@pacto/api";
 import {
   canApplyToCampaign,
   formatDeadlineDday,
@@ -39,6 +39,9 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
   const myApplication = await getMyApplicationByCampaign(campaign.id, session.accessToken).catch(
     redirectOnAuthError,
   );
+  const myCampaignMission = await getMyMissions({}, session.accessToken)
+    .then((missions) => missions.find((mission) => mission.campaignId === campaign.id))
+    .catch(() => undefined);
   const statusView = getCampaignStatusView(campaign.status);
   const isApplyEnabled = canApplyToCampaign(campaign.status);
   const remainingSlots =
@@ -98,6 +101,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
           applicationStatus={myApplication?.status}
           campaignId={campaign.id}
           enabled={isApplyEnabled}
+          missionId={myCampaignMission?.id}
         />
       </div>
     </section>

@@ -233,13 +233,19 @@ dd {
 
 .notification-button > span {
   position: absolute;
-  top: 9px;
-  right: 9px;
-  width: 8px;
-  height: 8px;
+  top: 3px;
+  right: 2px;
+  display: inline-grid;
+  min-width: 17px;
+  height: 17px;
+  place-items: center;
   border: 2px solid var(--surface);
   border-radius: 999px;
   background: var(--amber);
+  color: var(--surface);
+  font-size: 9px;
+  font-weight: 950;
+  line-height: 1;
 }
 
 .screen-content {
@@ -2320,6 +2326,90 @@ dd {
   font-size: 12px;
   font-weight: 700;
   line-height: 1.45;
+}
+
+.notification-list {
+  display: grid;
+  gap: 10px;
+}
+
+.notification-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 15px;
+  box-shadow: 0 12px 28px rgba(16, 19, 24, 0.05);
+}
+
+.notification-card > span {
+  width: fit-content;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  padding: 5px 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.notification-card strong {
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.notification-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.notification-card em {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.notification-card.green {
+  border-color: rgba(0, 166, 97, 0.18);
+}
+
+.notification-card.green > span {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.notification-card.amber {
+  border-color: rgba(245, 158, 11, 0.22);
+}
+
+.notification-card.amber > span {
+  color: #b86b00;
+  background: var(--amber-soft);
+}
+
+.notification-card.blue {
+  border-color: rgba(20, 92, 255, 0.18);
+}
+
+.notification-card.blue > span {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.notification-card.red {
+  border-color: rgba(240, 68, 82, 0.18);
+}
+
+.notification-card.red > span {
+  color: var(--red);
+  background: var(--red-soft);
 }
 
 .auth-switch-button {

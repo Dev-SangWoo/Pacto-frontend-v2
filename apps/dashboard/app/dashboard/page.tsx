@@ -35,8 +35,12 @@ export default async function DashboardHomePage() {
   }
 
   const dashboard = await getAdvertiserDashboard(session.accessToken).catch((error: unknown) => {
-    if (error instanceof ApiError && (error.statusCode === 401 || error.statusCode === 403)) {
+    if (error instanceof ApiError && error.statusCode === 401) {
       redirect("/logout");
+    }
+
+    if (error instanceof ApiError && error.statusCode === 403) {
+      redirect("/forbidden");
     }
 
     throw error;

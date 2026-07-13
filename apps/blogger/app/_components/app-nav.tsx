@@ -54,13 +54,27 @@ export function AppHeaderStart() {
   );
 }
 
-export function TopActions() {
+type TopActionsProps = {
+  notificationCount?: number;
+};
+
+export function TopActions({ notificationCount = 0 }: TopActionsProps) {
+  const hasNotifications = notificationCount > 0;
+
   return (
     <div className="top-actions">
-      <button className="icon-button notification-button" type="button" aria-label="알림 열기">
+      <Link
+        className="icon-button notification-button"
+        href="/notifications"
+        aria-label="알림 열기"
+      >
         <Bell aria-hidden="true" size={21} strokeWidth={2.25} />
-        <span aria-hidden="true" />
-      </button>
+        {hasNotifications ? (
+          <span aria-label={`${notificationCount}개의 새 알림`}>
+            {notificationCount > 9 ? "9+" : notificationCount}
+          </span>
+        ) : null}
+      </Link>
       <Link className="icon-button profile" href="/profile" aria-label="내 정보">
         <UserCircle aria-hidden="true" size={23} strokeWidth={2.25} />
       </Link>
@@ -79,6 +93,10 @@ function getParentHref(pathname: string) {
 
   if (pathname.startsWith("/withdrawals")) {
     return "/wallet";
+  }
+
+  if (pathname.startsWith("/notifications")) {
+    return "/campaigns";
   }
 
   return "/campaigns";

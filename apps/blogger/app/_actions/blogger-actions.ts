@@ -59,8 +59,12 @@ export async function submitMissionAction(
 }
 
 function redirectIfAuthError(error: unknown) {
-  if (error instanceof ApiError && (error.statusCode === 401 || error.statusCode === 403)) {
+  if (error instanceof ApiError && error.statusCode === 401) {
     redirect("/logout?reason=session-expired");
+  }
+
+  if (error instanceof ApiError && error.statusCode === 403) {
+    redirect("/forbidden");
   }
 }
 

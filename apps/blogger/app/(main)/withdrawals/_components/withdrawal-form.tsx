@@ -45,8 +45,13 @@ export function WithdrawalForm({ accessToken, availableBalance }: WithdrawalForm
       router.push("/wallet");
       router.refresh();
     } catch (error) {
-      if (error instanceof ApiError && (error.statusCode === 401 || error.statusCode === 403)) {
+      if (error instanceof ApiError && error.statusCode === 401) {
         router.push("/logout?reason=session-expired");
+        return;
+      }
+
+      if (error instanceof ApiError && error.statusCode === 403) {
+        router.push("/forbidden");
         return;
       }
 

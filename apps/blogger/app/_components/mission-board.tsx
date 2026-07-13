@@ -54,6 +54,14 @@ const pendingApplicationGroup: ApplicationGroupConfig = {
   statuses: ["PENDING"],
 };
 
+const acceptedApplicationGroup: ApplicationGroupConfig = {
+  key: "accepted-applications",
+  title: "선정 완료된 캠페인",
+  description: "미션 제출을 준비할 캠페인",
+  emptyText: "선정 완료 후 미션 생성 대기 중인 캠페인이 없어요.",
+  statuses: ["ACCEPTED"],
+};
+
 const rejectedApplicationGroup: ApplicationGroupConfig = {
   key: "rejected-applications",
   title: "반려/취소된 신청",
@@ -94,8 +102,10 @@ const missionGroups: MissionGroupConfig[] = [
 ];
 
 export function MissionBoard({ applications, missions }: MissionBoardProps) {
+  const missionCampaignIds = new Set(missions.map((mission) => mission.campaignId));
   const visibleApplications = applications.filter(
-    (application) => application.status !== "ACCEPTED",
+    (application) =>
+      application.status !== "ACCEPTED" || !missionCampaignIds.has(application.campaignId),
   );
   const totalItems = visibleApplications.length + missions.length;
 
@@ -105,6 +115,10 @@ export function MissionBoard({ applications, missions }: MissionBoardProps) {
         <ApplicationGroup
           applications={filterApplications(visibleApplications, pendingApplicationGroup.statuses)}
           config={pendingApplicationGroup}
+        />
+        <ApplicationGroup
+          applications={filterApplications(visibleApplications, acceptedApplicationGroup.statuses)}
+          config={acceptedApplicationGroup}
         />
         {missionGroups
           .filter((group) => group.key !== "closed")
@@ -276,12 +290,12 @@ function getApplicationGuide(status: ApplicationResponse["status"]) {
   switch (status) {
     case "PENDING":
       return "광고주가 신청을 검토하고 있어요.";
+    case "ACCEPTED":
+      return "선정이 완료됐어요. 미션 제출 화면에서 리뷰 URL을 등록해 주세요.";
     case "REJECTED":
       return "이번 캠페인에는 선정되지 않았어요.";
     case "CANCELLED":
       return "취소된 신청이에요.";
-    case "ACCEPTED":
-      return undefined;
   }
 }
 
