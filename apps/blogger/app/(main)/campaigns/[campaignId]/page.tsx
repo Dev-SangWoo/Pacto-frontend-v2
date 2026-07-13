@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { getCampaignDetail, getMyApplicationByCampaign, getMyMissions } from "@pacto/api";
+import { getCampaignDetail } from "@pacto/api";
 import {
   canApplyToCampaign,
   formatDeadlineDday,
@@ -12,6 +12,7 @@ import {
 
 import { CampaignApplyAction } from "../../../_components/mock-actions";
 import { redirectOnAuthError } from "../../../_lib/auth-error";
+import { getBloggerActivity } from "../../../_lib/blogger-activity";
 import { getBloggerSession } from "../../../_lib/session";
 
 type CampaignDetailPageProps = {
@@ -36,12 +37,9 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
     notFound();
   }
 
-  const myApplication = await getMyApplicationByCampaign(campaign.id, session.accessToken).catch(
-    redirectOnAuthError,
-  );
-  const myCampaignMission = await getMyMissions({}, session.accessToken)
-    .then((missions) => missions.find((mission) => mission.campaignId === campaign.id))
-    .catch(() => undefined);
+  const { applications, missions } = await getBloggerActivity(session.accessToken);
+  const myApplication = applications.find((application) => application.campaignId === campaign.id);
+  const myCampaignMission = missions.find((mission) => mission.campaignId === campaign.id);
   const statusView = getCampaignStatusView(campaign.status);
   const isApplyEnabled = canApplyToCampaign(campaign.status);
   const remainingSlots =

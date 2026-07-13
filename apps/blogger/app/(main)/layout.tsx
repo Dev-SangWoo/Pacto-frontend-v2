@@ -1,5 +1,5 @@
 import { AppHeaderStart, BottomNav, TopActions } from "../_components/app-nav";
-import { getMyApplicationResponses, getMyMissions } from "@pacto/api";
+import { getBloggerActivity } from "../_lib/blogger-activity";
 import { buildBloggerNotifications, getUnreadNotificationCount } from "../_lib/notifications";
 import { getBloggerSession } from "../_lib/session";
 
@@ -29,10 +29,7 @@ async function getNotificationCount() {
     return 0;
   }
 
-  const [missions, applications] = await Promise.all([
-    getMyMissions({}, session.accessToken).catch(() => []),
-    getMyApplicationResponses(session.accessToken).catch(() => []),
-  ]);
+  const { applications, missions } = await getBloggerActivity(session.accessToken);
 
   return getUnreadNotificationCount(buildBloggerNotifications({ applications, missions }));
 }

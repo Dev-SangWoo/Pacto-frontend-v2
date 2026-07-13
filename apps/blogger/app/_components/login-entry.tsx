@@ -50,7 +50,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
     <section className="auth-studio" aria-labelledby="login-title">
       <div className={`auth-intro ${authMode == null ? "is-visible" : "is-hidden"}`}>
         <div className="identity-mark" aria-hidden="true">
-          <img src="/brand/logo-bg-rm-cropped.png" alt="" />
+          <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
         </div>
         <h1 id="login-title" className="visually-hidden">
           Pacto 안전한 블로그 캠페인

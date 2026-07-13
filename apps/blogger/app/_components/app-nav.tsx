@@ -48,7 +48,7 @@ export function AppHeaderStart() {
   return (
     <Link className="app-brand" href="/campaigns" aria-label="Pacto 홈">
       <span className="app-brand-mark" aria-hidden="true">
-        <img src="/brand/logo-bg-rm-cropped.png" alt="" />
+        <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
       </span>
     </Link>
   );

@@ -1,8 +1,9 @@
-import { getCampaignDetail, getMyApplicationResponses, getMyMissions } from "@pacto/api";
+import { getCampaignDetail } from "@pacto/api";
 import type { ApplicationResponse, Campaign, Mission } from "@pacto/types";
 import { formatKoreanDate } from "@pacto/utils";
 import { redirect } from "next/navigation";
 
+import { getBloggerActivity } from "../../_lib/blogger-activity";
 import { buildBloggerNotifications } from "../../_lib/notifications";
 import { getBloggerSession } from "../../_lib/session";
 
@@ -15,10 +16,7 @@ export default async function NotificationsPage() {
     redirect("/login");
   }
 
-  const [missions, applications] = await Promise.all([
-    getMyMissions({}, session.accessToken).catch(() => []),
-    getMyApplicationResponses(session.accessToken).catch(() => []),
-  ]);
+  const { applications, missions } = await getBloggerActivity(session.accessToken);
   const campaignMap = await getCampaignMap([...missions, ...applications], session.accessToken);
   const notifications = buildBloggerNotifications({ applications, campaignMap, missions });
 

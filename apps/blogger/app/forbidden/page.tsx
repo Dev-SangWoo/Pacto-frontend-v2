@@ -3,7 +3,7 @@ export default function BloggerForbiddenPage() {
     <main className="auth-shell">
       <section className="auth-studio forbidden-state">
         <div className="identity-mark" aria-hidden="true">
-          <img src="/brand/logo-bg-rm-cropped.png" alt="" />
+          <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
         </div>
         <p className="section-label">권한 없음</p>
         <h1>블로거 계정으로 접근해 주세요</h1>

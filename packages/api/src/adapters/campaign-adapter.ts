@@ -123,9 +123,9 @@ function isTiptapGuidelines(value: object): value is {
 
 function getFallbackThumbnail(id?: number): string {
   const thumbnails = [
-    "/campaigns/seongsu-brunch-cafe.png",
-    "/campaigns/hongdae-nail-studio.png",
-    "/campaigns/jamsil-fitness-lounge.png",
+    "/campaigns/seongsu-brunch-cafe.webp",
+    "/campaigns/hongdae-nail-studio.webp",
+    "/campaigns/jamsil-fitness-lounge.webp",
   ];
   const index = id == null ? 0 : Math.abs(id - 1) % thumbnails.length;
 

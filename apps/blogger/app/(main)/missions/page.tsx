@@ -1,10 +1,11 @@
-import { getCampaignDetail, getMyApplicationResponses, getMyMissions } from "@pacto/api";
+import { getCampaignDetail } from "@pacto/api";
 import type { ApplicationResponse, Campaign, Mission } from "@pacto/types";
 import { formatPoint } from "@pacto/utils";
 import { redirect } from "next/navigation";
 
 import { MissionBoard } from "../../_components/mission-board";
 import { fallbackOnNonAuthError } from "../../_lib/auth-error";
+import { getBloggerActivity } from "../../_lib/blogger-activity";
 import { getBloggerSession } from "../../_lib/session";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +17,12 @@ export default async function MissionsPage() {
     redirect("/login");
   }
 
-  const [missions, applications] = await Promise.all([
-    getMyMissions({}, session.accessToken),
-    getMyApplicationResponses(session.accessToken),
-  ]).catch((error: unknown) =>
-    fallbackOnNonAuthError<[Mission[], ApplicationResponse[]]>(error, [[], []]),
+  const { applications, missions } = await getBloggerActivity(session.accessToken).catch(
+    (error: unknown) =>
+      fallbackOnNonAuthError<{ applications: ApplicationResponse[]; missions: Mission[] }>(error, {
+        applications: [],
+        missions: [],
+      }),
   );
   const campaignMap = await getCampaignMap([...missions, ...applications], session.accessToken);
   const enrichedMissions = missions.map((mission) => enrichMission(mission, campaignMap));
