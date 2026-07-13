@@ -126,10 +126,11 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
         <input
           inputMode="url"
           onChange={(event) => setReviewUrl(event.target.value)}
-          placeholder="https://blog.example.com/review"
+          placeholder="https://blog.example.com/review 또는 Notion URL"
           type="url"
           value={reviewUrl}
         />
+        <span className="field-help">블로그 글 URL이나 공개된 Notion URL을 제출할 수 있어요.</span>
       </label>
       <button
         className="primary-button"
@@ -149,7 +150,7 @@ function getApplicationCtaLabel(status: ApplicationStatusResponse) {
     case "ACCEPTED":
       return "승인 완료";
     case "REJECTED":
-      return "신청 반려";
+      return "이번 캠페인에는 선정되지 않았어요";
     case "CANCELLED":
       return "신청 취소";
   }

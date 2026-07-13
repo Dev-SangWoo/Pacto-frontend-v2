@@ -23,8 +23,8 @@ type DashboardCampaignsPageProps = {
 const campaignStatusFilters: Array<{ label: string; value: CampaignStatus | "all" }> = [
   { label: "전체", value: "all" },
   { label: "모집 중", value: "open" },
-  { label: "모집 마감", value: "closed" },
-  { label: "캠페인 진행 중", value: "full" },
+  { label: "선정 중", value: "closed" },
+  { label: "진행 중", value: "full" },
   { label: "완료", value: "completed" },
   { label: "취소", value: "cancelled" },
 ];
@@ -84,12 +84,7 @@ export default async function DashboardCampaignsPage({
         <SummaryCard icon={Megaphone} iconTone="green" label="모집 중" value={`${openCount}건`}>
           블로거 신청을 받고 있어요
         </SummaryCard>
-        <SummaryCard
-          icon={Rocket}
-          iconTone="yellow"
-          label="캠페인 진행 중"
-          value={`${fullCount}건`}
-        >
+        <SummaryCard icon={Rocket} iconTone="yellow" label="진행 중" value={`${fullCount}건`}>
           미션 수행과 검수가 진행돼요
         </SummaryCard>
         <SummaryCard

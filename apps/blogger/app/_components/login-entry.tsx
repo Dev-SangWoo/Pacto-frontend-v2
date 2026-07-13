@@ -62,6 +62,9 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
         {sessionMessage != null ? (
           <p className="form-error auth-session-message">{sessionMessage}</p>
         ) : null}
+        <p className="auth-beta-note">
+          베타 기간에는 실제 사용하는 비밀번호 대신 테스트용 비밀번호를 사용해 주세요.
+        </p>
         <div className="auth-entry-actions" aria-label="계정 시작">
           <button className="primary-button" onClick={() => openAuth("login")} type="button">
             로그인

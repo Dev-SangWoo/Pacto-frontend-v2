@@ -20,8 +20,8 @@ type DashboardCampaignPanelProps = {
 const campaignTabs: Array<{ label: string; value: CampaignFilter }> = [
   { label: "전체", value: "all" },
   { label: "모집 중", value: "open" },
-  { label: "모집 마감", value: "closed" },
-  { label: "캠페인 진행 중", value: "full" },
+  { label: "선정 중", value: "closed" },
+  { label: "진행 중", value: "full" },
   { label: "완료", value: "completed" },
   { label: "취소", value: "cancelled" },
 ];

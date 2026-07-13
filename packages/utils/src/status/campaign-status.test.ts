@@ -13,7 +13,7 @@ describe("campaign status policy", () => {
 
   it("상태 배지 문구를 정책 기준으로 반환한다", () => {
     expect(getCampaignStatusView("open")).toEqual({ label: "모집 중", tone: "blue" });
-    expect(getCampaignStatusView("full")).toEqual({ label: "모집 완료", tone: "amber" });
-    expect(getCampaignStatusView("closed")).toEqual({ label: "모집 마감", tone: "grey" });
+    expect(getCampaignStatusView("closed")).toEqual({ label: "선정 중", tone: "amber" });
+    expect(getCampaignStatusView("full")).toEqual({ label: "진행 중", tone: "blue" });
   });
 });

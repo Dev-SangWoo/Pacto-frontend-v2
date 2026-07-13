@@ -238,6 +238,7 @@ function GroupHeader({
 function ApplicationCard({ application }: { application: EnrichedApplicationResponse }) {
   const statusView = getApplicationStatusView(application.status);
   const campaignTitle = application.campaignTitle ?? `캠페인 #${application.campaignId}`;
+  const applicationGuide = getApplicationGuide(application.status);
 
   return (
     <Link className="mission-card" href={`/campaigns/${application.campaignId}`}>
@@ -259,6 +260,7 @@ function ApplicationCard({ application }: { application: EnrichedApplicationResp
             : `광고주 ID #${application.advertiserId}`}
         </p>
         <h3>{campaignTitle}</h3>
+        {applicationGuide != null ? <p>{applicationGuide}</p> : null}
         <dl className="mission-facts">
           <div>
             <dt>신청일</dt>
@@ -268,6 +270,19 @@ function ApplicationCard({ application }: { application: EnrichedApplicationResp
       </div>
     </Link>
   );
+}
+
+function getApplicationGuide(status: ApplicationResponse["status"]) {
+  switch (status) {
+    case "PENDING":
+      return "광고주가 신청을 검토하고 있어요.";
+    case "REJECTED":
+      return "이번 캠페인에는 선정되지 않았어요.";
+    case "CANCELLED":
+      return "취소된 신청이에요.";
+    case "ACCEPTED":
+      return undefined;
+  }
 }
 
 type MissionCardProps = {
