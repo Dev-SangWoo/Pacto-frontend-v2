@@ -121,8 +121,13 @@ export function CampaignExplorer({ campaigns, loadErrorMessage }: CampaignExplor
           </div>
         ) : (
           <div className={`campaign-feed ${viewMode === "list" ? "list-view" : "grid-view"}`}>
-            {filteredCampaigns.map((campaign) => (
-              <CampaignCard campaign={campaign} key={campaign.id} viewMode={viewMode} />
+            {filteredCampaigns.map((campaign, index) => (
+              <CampaignCard
+                campaign={campaign}
+                isPriority={index < 2}
+                key={campaign.id}
+                viewMode={viewMode}
+              />
             ))}
             {filteredCampaigns.length === 0 ? (
               <div className="empty-state compact">
@@ -181,10 +186,11 @@ function matchesCategory(campaign: Campaign, category: CampaignCategory) {
 
 type CampaignCardProps = {
   campaign: Campaign;
+  isPriority: boolean;
   viewMode: ViewMode;
 };
 
-function CampaignCard({ campaign, viewMode }: CampaignCardProps) {
+function CampaignCard({ campaign, isPriority, viewMode }: CampaignCardProps) {
   const statusView = getCampaignStatusView(campaign.status);
   const remainingSlots =
     campaign.remainingSlots ?? Math.max(campaign.recruitCount - campaign.approvedCount, 0);
@@ -194,7 +200,13 @@ function CampaignCard({ campaign, viewMode }: CampaignCardProps) {
   return (
     <Link className="campaign-ticket" href={`/campaigns/${campaign.id}`}>
       <div className="ticket-media">
-        <img src={thumbnailUrl} alt={`${campaign.title} 대표 이미지`} loading="lazy" />
+        <img
+          src={thumbnailUrl}
+          alt={`${campaign.title} 대표 이미지`}
+          decoding="async"
+          fetchPriority={isPriority ? "high" : "auto"}
+          loading={isPriority ? "eager" : "lazy"}
+        />
       </div>
       <div className="ticket-body">
         <div className="ticket-topline">

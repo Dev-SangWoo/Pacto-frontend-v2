@@ -12,7 +12,12 @@ export default async function CampaignsPage() {
     redirect("/login");
   }
 
-  const campaignResult = await getCampaigns({ page: 0, size: 100, sort: "campaignId,desc" }).then(
+  const campaignResult = await getCampaigns({
+    page: 0,
+    size: 24,
+    sort: "campaignId,desc",
+    status: "RECRUITING",
+  }).then(
     (campaigns) => ({
       campaigns: campaigns.filter(isCurrentlyApplicableCampaign),
       errorMessage: undefined,

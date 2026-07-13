@@ -63,6 +63,30 @@ The biggest expected gain is on pages where fallback campaign thumbnails or CSS 
 | Speed Index | Down                  | Smaller images and fewer blocking requests                                              |
 | TBT         | Slight down / neutral | Server fetch dedupe helps page work, but client bundle work still needs a separate pass |
 
+## Follow-up Measurement: `/campaigns`
+
+After the first optimization pass, `/campaigns` still measured similarly:
+
+| Metric      | Measured |
+| ----------- | -------: |
+| FCP         |     0.9s |
+| LCP         |     6.6s |
+| TBT         |  1,710ms |
+| CLS         |        0 |
+| Speed Index |     4.2s |
+
+Interpretation:
+
+- FCP is already acceptable, so the page can paint early.
+- LCP is still too slow, which points to the largest visible campaign content arriving late or being image-load delayed.
+- TBT is still high, which points to client-side JavaScript execution/hydration cost rather than only image transfer size.
+
+Second-pass changes for `/campaigns`:
+
+- Request only recruiting campaigns from the API with `status: "RECRUITING"`.
+- Reduce initial campaign page size from 100 to 24.
+- Load the first two campaign card images eagerly with high fetch priority; keep the rest lazy.
+
 ## Re-measure Plan
 
 Run Lighthouse again on the same deployed environment and same device profile as the baseline:
