@@ -62,7 +62,7 @@ export function MissionReviewList({ campaignId, initialMissions }: MissionReview
           <h2>제출물 검수</h2>
           <p>제출 URL을 확인하고 승인 또는 반려 처리합니다.</p>
         </div>
-        <span>{missions.length}건</span>
+        <span>{missions.length}</span>
       </div>
       <div className="review-list">
         {missions.length > 0 ? (

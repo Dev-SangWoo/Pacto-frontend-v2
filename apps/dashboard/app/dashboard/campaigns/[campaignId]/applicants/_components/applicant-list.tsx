@@ -94,7 +94,7 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
           <p>왼쪽에서 지원자를 선택하고 오른쪽 패널에서 승인 여부를 결정합니다.</p>
         </div>
         <div className="panel-actions">
-          <span>{applicants.length}명</span>
+          <span>{applicants.length}</span>
           <button
             className="primary-button"
             disabled={
@@ -112,15 +112,15 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
       <div className="applicant-review-summary" aria-label="지원자 상태 요약">
         <div>
           <span>승인 대기</span>
-          <strong>{pendingCount}명</strong>
+          <strong>{pendingCount}</strong>
         </div>
         <div>
           <span>승인 완료</span>
-          <strong>{acceptedCount}명</strong>
+          <strong>{acceptedCount}</strong>
         </div>
         <div>
           <span>반려</span>
-          <strong>{rejectedCount}명</strong>
+          <strong>{rejectedCount}</strong>
         </div>
       </div>
 

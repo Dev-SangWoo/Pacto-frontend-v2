@@ -10,7 +10,7 @@ import {
   getCampaignStatusView,
 } from "@pacto/utils";
 
-type Tone = "blue" | "green" | "grey" | "red";
+type Tone = "amber" | "blue" | "green" | "grey" | "red";
 type CampaignFilter = CampaignStatus | "all";
 
 type DashboardCampaignPanelProps = {
@@ -98,7 +98,7 @@ function CampaignListItem({ campaign }: { campaign: Campaign }) {
           total={totalSlots}
         />
       </div>
-      <em>{isCancelled ? "모집 종료" : `${approvedSlots}/${totalSlots}명`}</em>
+      <em>{isCancelled ? "모집 종료" : `${approvedSlots}/${totalSlots}`}</em>
       <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
     </a>
   );

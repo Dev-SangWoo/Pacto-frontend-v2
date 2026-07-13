@@ -14,7 +14,7 @@ type CampaignTransitionActionsProps = {
   redirectTo: string;
   selectedCount?: number;
   status: CampaignStatus;
-  variant?: "compact" | "panel";
+  variant?: "compact" | "floating" | "panel";
 };
 
 type CampaignTransitionButton = {

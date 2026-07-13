@@ -91,7 +91,7 @@ export default async function CampaignSettlementsPage({ params }: SettlementsPag
               흐름을 보조 표시합니다.
             </p>
           </div>
-          <span>{settlementRows.length}건</span>
+          <span>{settlementRows.length}</span>
         </div>
         <div className="table-wrap">
           <table>
