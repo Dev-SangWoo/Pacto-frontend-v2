@@ -215,7 +215,7 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
             <h2>미션 가이드</h2>
           </div>
           <div className="panel-body">
-            <p>{campaign.guidelines}</p>
+            <p>{formatGuidelinesText(campaign.guidelines)}</p>
           </div>
           <div className="compact-list campaign-meta-list">
             <div>
@@ -365,6 +365,78 @@ function CampaignKpiCard({
       {children}
     </article>
   );
+}
+
+function formatGuidelinesText(guidelines: string) {
+  const trimmedGuidelines = guidelines.trim();
+
+  if (trimmedGuidelines.length === 0) {
+    return "캠페인 가이드를 확인해 주세요.";
+  }
+
+  try {
+    const parsed = JSON.parse(trimmedGuidelines) as unknown;
+
+    if (isTiptapGuidelines(parsed)) {
+      const text = extractTiptapText(parsed.content.content);
+      return text.length > 0 ? text : "캠페인 가이드를 확인해 주세요.";
+    }
+  } catch {
+    return trimmedGuidelines;
+  }
+
+  return trimmedGuidelines;
+}
+
+type TiptapTextNode = {
+  text?: string;
+  type?: string;
+};
+
+type TiptapNode = TiptapTextNode & {
+  attrs?: Record<string, unknown>;
+  content?: TiptapNode[];
+};
+
+function isTiptapGuidelines(value: unknown): value is {
+  content: { content: TiptapNode[] };
+  editor: "tiptap";
+} {
+  if (typeof value !== "object" || value === null || !("content" in value)) {
+    return false;
+  }
+
+  const content = (value as { content?: unknown }).content;
+
+  return (
+    (value as { editor?: unknown }).editor === "tiptap" &&
+    typeof content === "object" &&
+    content !== null &&
+    Array.isArray((content as { content?: unknown }).content)
+  );
+}
+
+function extractTiptapText(nodes: TiptapNode[] = []): string {
+  return nodes
+    .map(extractTiptapNodeText)
+    .filter((text) => text.length > 0)
+    .join("\n");
+}
+
+function extractTiptapNodeText(node: TiptapNode): string {
+  if (node.type === "text" && typeof node.text === "string") {
+    return node.text;
+  }
+
+  if (node.type === "image") {
+    const alt = typeof node.attrs?.alt === "string" ? node.attrs.alt : "가이드 이미지";
+    return `[이미지] ${alt}`;
+  }
+
+  return (node.content ?? [])
+    .map(extractTiptapNodeText)
+    .filter((text) => text.length > 0)
+    .join(" ");
 }
 
 function getPercentage(value: number, total: number) {

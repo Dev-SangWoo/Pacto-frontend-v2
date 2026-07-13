@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { getCampaignDetail, getMyApplicationByCampaign } from "@pacto/api";
 import {
@@ -83,10 +84,10 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
           </div>
         </div>
         <div className="mission-guide-list">
-          {missionGuideItems.map((item) => (
-            <article key={`${item.label}-${item.value}`}>
+          {missionGuideItems.map((item, index) => (
+            <article key={`${item.label}-${index}`}>
               <span>{item.label}</span>
-              <p>{item.value}</p>
+              <div className="mission-guide-content">{item.content}</div>
             </article>
           ))}
         </div>
@@ -104,8 +105,8 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
 }
 
 type MissionGuideItem = {
+  content: ReactNode;
   label: string;
-  value: string;
 };
 
 const missionGuideLabelMap: Record<string, string> = {
@@ -118,18 +119,27 @@ function parseMissionGuide(guidelines: string): MissionGuideItem[] {
   const trimmedGuidelines = guidelines.trim();
 
   if (trimmedGuidelines.length === 0) {
-    return [{ label: "상세 안내", value: "캠페인 가이드를 확인해 주세요." }];
+    return [{ content: <p>캠페인 가이드를 확인해 주세요.</p>, label: "상세 안내" }];
   }
 
   const parsedGuidelines = parseJsonObject(trimmedGuidelines);
 
   if (parsedGuidelines != null) {
+    if (isTiptapGuidelines(parsedGuidelines)) {
+      return [
+        {
+          content: <TiptapGuideContent nodes={parsedGuidelines.content.content} />,
+          label: "미션 가이드",
+        },
+      ];
+    }
+
     return Object.entries(parsedGuidelines)
       .map(([key, value]) => ({
+        content: <p>{formatGuideValue(value)}</p>,
         label: missionGuideLabelMap[key] ?? formatGuideLabel(key),
-        value: formatGuideValue(value),
       }))
-      .filter((item) => item.value.length > 0);
+      .filter((item) => getTextContent(item.content).length > 0);
   }
 
   return trimmedGuidelines
@@ -137,9 +147,167 @@ function parseMissionGuide(guidelines: string): MissionGuideItem[] {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line, index) => ({
+      content: <p>{line}</p>,
       label: index === 0 ? "상세 안내" : `안내 ${index + 1}`,
-      value: line,
     }));
+}
+
+type TiptapTextNode = {
+  marks?: Array<{
+    attrs?: Record<string, unknown>;
+    type?: string;
+  }>;
+  text?: string;
+  type?: string;
+};
+
+type TiptapNode = TiptapTextNode & {
+  attrs?: Record<string, unknown>;
+  content?: TiptapNode[];
+};
+
+type TiptapGuidelines = {
+  content: {
+    content: TiptapNode[];
+    type?: string;
+  };
+  editor: "tiptap";
+};
+
+function TiptapGuideContent({ nodes }: { nodes: TiptapNode[] }) {
+  if (nodes.length === 0) {
+    return <p>캠페인 가이드를 확인해 주세요.</p>;
+  }
+
+  return <>{nodes.map(renderTiptapNode)}</>;
+}
+
+function renderTiptapNode(node: TiptapNode, index: number): ReactNode {
+  if (node.type === "heading") {
+    return <h3 key={index}>{renderInlineContent(node.content)}</h3>;
+  }
+
+  if (node.type === "paragraph") {
+    return <p key={index}>{renderInlineContent(node.content)}</p>;
+  }
+
+  if (node.type === "bulletList") {
+    return (
+      <ul key={index}>
+        {(node.content ?? []).map((item, itemIndex) => (
+          <li key={itemIndex}>{renderInlineContent(item.content)}</li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (node.type === "orderedList") {
+    return (
+      <ol key={index}>
+        {(node.content ?? []).map((item, itemIndex) => (
+          <li key={itemIndex}>{renderInlineContent(item.content)}</li>
+        ))}
+      </ol>
+    );
+  }
+
+  if (node.type === "blockquote") {
+    return <blockquote key={index}>{renderBlockContent(node.content)}</blockquote>;
+  }
+
+  if (node.type === "image") {
+    const src = typeof node.attrs?.src === "string" ? node.attrs.src : "";
+    const alt = typeof node.attrs?.alt === "string" ? node.attrs.alt : "가이드 이미지";
+
+    return src.length > 0 ? <img alt={alt} key={index} src={src} /> : null;
+  }
+
+  return null;
+}
+
+function renderInlineContent(nodes?: TiptapNode[]): ReactNode {
+  return (nodes ?? []).map((node, index) => {
+    if (node.type === "text") {
+      return renderTextNode(node, index);
+    }
+
+    if (node.type === "hardBreak") {
+      return <br key={index} />;
+    }
+
+    return <span key={index}>{renderInlineContent(node.content)}</span>;
+  });
+}
+
+function renderTextNode(node: TiptapNode, index: number): ReactNode {
+  const marks = node.marks ?? [];
+  const href = marks.find((mark) => mark.type === "link")?.attrs?.href;
+  const text = node.text ?? "";
+  let content: ReactNode = text;
+
+  if (marks.some((mark) => mark.type === "bold")) {
+    content = <strong>{content}</strong>;
+  }
+
+  if (marks.some((mark) => mark.type === "italic")) {
+    content = <em>{content}</em>;
+  }
+
+  if (marks.some((mark) => mark.type === "strike")) {
+    content = <s>{content}</s>;
+  }
+
+  if (typeof href === "string" && href.length > 0) {
+    return (
+      <a href={href} key={index} rel="noopener noreferrer" target="_blank">
+        {content}
+      </a>
+    );
+  }
+
+  return <span key={index}>{content}</span>;
+}
+
+function renderBlockContent(nodes?: TiptapNode[]): ReactNode {
+  return (nodes ?? []).map((node, index) => {
+    if (node.type === "paragraph") {
+      return <p key={index}>{renderInlineContent(node.content)}</p>;
+    }
+
+    if (node.type === "heading") {
+      return <h3 key={index}>{renderInlineContent(node.content)}</h3>;
+    }
+
+    return <span key={index}>{renderInlineContent(node.content)}</span>;
+  });
+}
+
+function isTiptapGuidelines(value: Record<string, unknown>): value is TiptapGuidelines {
+  const content = value.content;
+
+  return (
+    value.editor === "tiptap" &&
+    typeof content === "object" &&
+    content !== null &&
+    "content" in content &&
+    Array.isArray((content as { content?: unknown }).content)
+  );
+}
+
+function getTextContent(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(getTextContent).join("");
+  }
+
+  if (typeof node === "object" && node !== null && "props" in node) {
+    return getTextContent((node as { props?: { children?: ReactNode } }).props?.children);
+  }
+
+  return "";
 }
 
 function parseJsonObject(value: string): Record<string, unknown> | undefined {

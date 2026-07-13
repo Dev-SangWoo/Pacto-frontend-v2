@@ -1546,13 +1546,67 @@ dd {
   line-height: 1;
 }
 
-.mission-guide-list p {
+.mission-guide-content {
+  display: grid;
+  gap: 10px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.62;
+  overflow-wrap: anywhere;
+}
+
+.mission-guide-content p,
+.mission-guide-content h3,
+.mission-guide-content ul,
+.mission-guide-content ol,
+.mission-guide-content blockquote {
+  margin: 0;
+}
+
+.mission-guide-content p {
   white-space: pre-line;
   color: var(--ink-soft);
   font-size: 14px;
   font-weight: 750;
   line-height: 1.62;
   overflow-wrap: anywhere;
+}
+
+.mission-guide-content h3 {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.mission-guide-content ul,
+.mission-guide-content ol {
+  padding-left: 20px;
+}
+
+.mission-guide-content li + li {
+  margin-top: 4px;
+}
+
+.mission-guide-content blockquote {
+  border-left: 3px solid var(--blue);
+  background: var(--blue-soft);
+  padding: 10px 12px;
+}
+
+.mission-guide-content img {
+  width: 100%;
+  max-height: 260px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.mission-guide-content a {
+  color: var(--blue);
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .campaign-detail-hero {
