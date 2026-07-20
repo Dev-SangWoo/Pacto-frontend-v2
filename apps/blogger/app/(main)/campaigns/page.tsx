@@ -41,6 +41,7 @@ export default async function CampaignsPage({ searchParams }: CampaignsPageProps
     <CampaignExplorer
       campaigns={campaignResult.campaigns}
       loadErrorMessage={campaignResult.errorMessage}
+      searchQuery={searchQuery}
     />
   );
 }
