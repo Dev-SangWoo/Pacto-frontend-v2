@@ -5,6 +5,7 @@ export type MissionStatusResponse =
   | "APPROVED"
   | "CANCELLED"
   | "IN_PROGRESS"
+  | "READY"
   | "REJECTED"
   | "SUBMITTED";
 
@@ -84,6 +85,7 @@ function getFallbackThumbnail(id?: number): string {
 
 export function mapMissionStatus(status: MissionResponse["status"]): MissionStatus {
   switch (status) {
+    case "READY":
     case "IN_PROGRESS":
     case "in_progress":
       return "in_progress";

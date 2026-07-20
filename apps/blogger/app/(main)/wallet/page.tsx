@@ -59,7 +59,7 @@ export default async function WalletPage() {
     let headline = "포인트 변동";
     let tone: WalletLedgerItem["tone"] = isWithdrawal ? "red" : "green";
     let type: WalletLedgerItem["type"] = isWithdrawal ? "withdrawal" : "deposit";
-    const campaignTitle = campaign?.title ?? mission?.campaignTitle;
+    const campaignTitle = history.campaignTitle ?? campaign?.title ?? mission?.campaignTitle;
 
     switch (history.type) {
       case "CHARGE":
@@ -101,7 +101,7 @@ export default async function WalletPage() {
 
     return {
       amount: history.amount,
-      campaignId: mission?.campaignId,
+      campaignId: history.campaignId ?? mission?.campaignId,
       category,
       date: history.createdAt,
       detail,

@@ -24,7 +24,7 @@ const campaignStatusFilters: Array<{ label: string; value: CampaignStatus | "all
   { label: "전체", value: "all" },
   { label: "모집 중", value: "open" },
   { label: "선정 중", value: "closed" },
-  { label: "진행 중", value: "full" },
+  { label: "진행 중", value: "in_progress" },
   { label: "완료", value: "completed" },
   { label: "취소", value: "cancelled" },
 ];
@@ -32,7 +32,7 @@ const campaignStatusFilters: Array<{ label: string; value: CampaignStatus | "all
 const validCampaignStatuses = new Set<CampaignStatus>([
   "draft",
   "open",
-  "full",
+  "in_progress",
   "closed",
   "completed",
   "cancelled",
@@ -56,7 +56,7 @@ export default async function DashboardCampaignsPage({
     return matchesStatus && matchesQuery;
   });
   const openCount = campaigns.filter((campaign) => campaign.status === "open").length;
-  const fullCount = campaigns.filter((campaign) => campaign.status === "full").length;
+  const inProgressCount = campaigns.filter((campaign) => campaign.status === "in_progress").length;
   const completedCount = campaigns.filter((campaign) => campaign.status === "completed").length;
   const totalApplicants = campaigns.reduce((sum, campaign) => sum + campaign.applicantCount, 0);
 
@@ -84,7 +84,7 @@ export default async function DashboardCampaignsPage({
         <SummaryCard icon={Megaphone} iconTone="green" label="모집 중" value={`${openCount}건`}>
           블로거 신청을 받고 있어요
         </SummaryCard>
-        <SummaryCard icon={Rocket} iconTone="yellow" label="진행 중" value={`${fullCount}건`}>
+        <SummaryCard icon={Rocket} iconTone="yellow" label="진행 중" value={`${inProgressCount}건`}>
           미션 수행과 검수가 진행돼요
         </SummaryCard>
         <SummaryCard

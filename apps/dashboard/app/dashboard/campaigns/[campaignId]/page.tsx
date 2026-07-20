@@ -334,7 +334,7 @@ function getCampaignStatusProcessIndex(status: CampaignStatus) {
       return 0;
     case "closed":
       return 1;
-    case "full":
+    case "in_progress":
       return 2;
     case "completed":
       return 3;

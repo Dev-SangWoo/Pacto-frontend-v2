@@ -32,10 +32,6 @@ export type CreateCampaignPayload = {
   totalSlots: number;
 };
 
-export type UpdateCampaignStatusPayload = {
-  status: CampaignStatusResponse;
-};
-
 export async function getCampaigns(
   params: GetCampaignsParams = {},
   token?: string,
@@ -75,32 +71,6 @@ export async function createCampaign(payload: CreateCampaignPayload, token?: str
   return adaptCreateCampaign(unwrapCommonResponse<CreateCampaignResponse>(response));
 }
 
-export async function updateCampaignStatus(
-  campaignId: number,
-  payload: UpdateCampaignStatusPayload,
-  token?: string,
-) {
-  const response = await apiRequest<CreateCampaignResponse | UpdateCampaignStatusPayload>(
-    `/api/v1/campaigns/${campaignId}/status`,
-    {
-      body: payload,
-      method: "PATCH",
-      token,
-    },
-  );
-  const result = unwrapCommonResponse<CreateCampaignResponse | UpdateCampaignStatusPayload>(
-    response,
-  );
-
-  return {
-    id:
-      "campaign_id" in result || "campaignId" in result
-        ? adaptCreateCampaign(result).id
-        : campaignId,
-    status: mapCampaignStatus(result.status),
-  };
-}
-
 export async function closeCampaign(campaignId: number, token?: string) {
   return transitionCampaign(campaignId, "close", token);
 }
@@ -109,17 +79,13 @@ export async function proceedCampaign(campaignId: number, token?: string) {
   return transitionCampaign(campaignId, "proceed", token);
 }
 
-export async function completeCampaign(campaignId: number, token?: string) {
-  return transitionCampaign(campaignId, "complete", token);
-}
-
 export async function cancelCampaign(campaignId: number, token?: string) {
   return transitionCampaign(campaignId, "cancel", token);
 }
 
 async function transitionCampaign(
   campaignId: number,
-  action: "cancel" | "close" | "complete" | "proceed",
+  action: "cancel" | "close" | "proceed",
   token?: string,
 ) {
   const response = await apiRequest<CreateCampaignResponse>(

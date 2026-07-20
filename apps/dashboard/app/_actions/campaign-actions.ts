@@ -5,7 +5,6 @@ import {
   approveMission,
   cancelCampaign,
   closeCampaign,
-  completeCampaign,
   createCampaign,
   getCampaignDetail,
   getMe,
@@ -27,7 +26,7 @@ export type CampaignTransitionState = {
   message?: string;
 };
 
-type CampaignTransitionAction = "cancel" | "close" | "complete" | "proceed";
+type CampaignTransitionAction = "cancel" | "close" | "proceed";
 
 export async function transitionCampaignAction(
   campaignId: number,
@@ -58,8 +57,6 @@ export async function transitionCampaignAction(
       await closeCampaign(campaignId, session.accessToken);
     } else if (action === "proceed") {
       await proceedCampaign(campaignId, session.accessToken);
-    } else if (action === "complete") {
-      await completeCampaign(campaignId, session.accessToken);
     } else {
       await cancelCampaign(campaignId, session.accessToken);
     }
@@ -280,7 +277,6 @@ function getCampaignTransitionErrorMessage(action: CampaignTransitionAction, err
     cancel: "취소",
     close: "모집 마감",
     proceed: "진행 전환",
-    complete: "완료",
   };
 
   return `캠페인 ${actionLabelMap[action]} 처리에 실패했어요. 상태와 권한을 확인해 주세요.`;
@@ -312,7 +308,7 @@ async function getCampaignOwnershipError(campaignId: number, token: string) {
 }
 
 function isCampaignTransitionAction(value: string): value is CampaignTransitionAction {
-  return value === "cancel" || value === "close" || value === "complete" || value === "proceed";
+  return value === "cancel" || value === "close" || value === "proceed";
 }
 
 function isApiErrorLike(error: unknown): error is { message: string; statusCode: number } {

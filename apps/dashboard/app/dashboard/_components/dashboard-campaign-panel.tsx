@@ -21,7 +21,7 @@ const campaignTabs: Array<{ label: string; value: CampaignFilter }> = [
   { label: "전체", value: "all" },
   { label: "모집 중", value: "open" },
   { label: "선정 중", value: "closed" },
-  { label: "진행 중", value: "full" },
+  { label: "진행 중", value: "in_progress" },
   { label: "완료", value: "completed" },
   { label: "취소", value: "cancelled" },
 ];

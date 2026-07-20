@@ -4,7 +4,6 @@ export {
   approveApplicant,
   cancelCampaign,
   closeCampaign,
-  completeCampaign,
   createCampaign,
   getApplicants,
   getCampaignDetail,
@@ -12,7 +11,6 @@ export {
   getCampaigns,
   proceedCampaign,
   rejectApplicant,
-  updateCampaignStatus,
 } from "./services/campaign-service";
 
 export {
@@ -36,21 +34,17 @@ export {
   submitMission,
 } from "./services/mission-service";
 
-export { getPayment, preparePayment } from "./services/payment-service";
+export { getMyPayments, getPayment, preparePayment } from "./services/payment-service";
 export { getMyPointHistories, getMyWallet, requestWithdraw } from "./services/wallet-service";
 export { getMe, login, signup } from "./services/auth-service";
 export { ApiError } from "./client/api-error";
 export type { LoginPayload, SignupPayload } from "./services/auth-service";
-export type {
-  CreateCampaignPayload,
-  GetCampaignsParams,
-  UpdateCampaignStatusPayload,
-} from "./services/campaign-service";
+export type { CreateCampaignPayload, GetCampaignsParams } from "./services/campaign-service";
 export type { GetEscrowsParams } from "./services/escrow-service";
 export type {
   CancelMissionPayload,
   GetMyMissionsParams,
   SubmitMissionPayload,
 } from "./services/mission-service";
-export type { PreparePaymentPayload } from "./services/payment-service";
+export type { GetMyPaymentsParams, PreparePaymentPayload } from "./services/payment-service";
 export type { GetPointHistoriesParams, WithdrawPayload } from "./services/wallet-service";

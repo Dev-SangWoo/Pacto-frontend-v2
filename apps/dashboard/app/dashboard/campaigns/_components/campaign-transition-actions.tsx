@@ -18,7 +18,7 @@ type CampaignTransitionActionsProps = {
 };
 
 type CampaignTransitionButton = {
-  action: "cancel" | "close" | "complete" | "proceed";
+  action: "cancel" | "close" | "proceed";
   className: string;
   confirmMessage: string;
   label: string;

@@ -9,7 +9,8 @@ export type CampaignStatusResponse =
   | "DRAFT"
   | "FULL"
   | "IN_PROGRESS"
-  | "RECRUITING";
+  | "RECRUITING"
+  | "full";
 
 export type CampaignResponse = {
   advertiser_id?: number;
@@ -143,7 +144,8 @@ export function mapCampaignStatus(status: CampaignResponse["status"]): CampaignS
     case "IN_PROGRESS":
     case "FULL":
     case "full":
-      return "full";
+    case "in_progress":
+      return "in_progress";
     case "CLOSED":
     case "closed":
       return "closed";

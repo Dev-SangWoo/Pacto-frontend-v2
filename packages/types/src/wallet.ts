@@ -16,10 +16,15 @@ export type Withdrawal = {
 
 export type PointHistoryType = "CHARGE" | "LOCK" | "RELEASE" | "REFUND" | "WITHDRAW";
 
+export type PointHistoryReferenceType = "CAMPAIGN" | "ESCROW" | "PAYMENT" | "WITHDRAWAL";
+
 export type PointHistory = {
   id: number;
   type: PointHistoryType;
   amount: number;
+  campaignId?: number;
+  campaignTitle?: string;
   referenceId: number;
+  referenceType?: PointHistoryReferenceType;
   createdAt: string;
 };

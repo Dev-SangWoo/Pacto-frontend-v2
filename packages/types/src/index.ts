@@ -3,6 +3,7 @@ export type { Campaign, CampaignStatus } from "./campaign";
 export type { Mission, MissionStatus } from "./mission";
 export type {
   PointHistory,
+  PointHistoryReferenceType,
   PointHistoryType,
   Wallet,
   Withdrawal,
