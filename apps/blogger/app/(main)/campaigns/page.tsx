@@ -23,7 +23,6 @@ export default async function CampaignsPage({ searchParams }: CampaignsPageProps
     page: 0,
     size: 24,
     sort: "campaignId,desc",
-    status: "RECRUITING",
   }).then(
     (campaigns) => ({
       campaigns: campaigns
