@@ -1,11 +1,18 @@
 import { getCampaigns } from "@pacto/api";
 import type { Campaign } from "@pacto/types";
+import { matchesCampaignSearch } from "@pacto/utils";
 import { redirect } from "next/navigation";
 
 import { CampaignExplorer } from "../../_components/campaign-explorer";
 import { getBloggerSession } from "../../_lib/session";
 
-export default async function CampaignsPage() {
+type CampaignsPageProps = {
+  searchParams?: Promise<{ q?: string }>;
+};
+
+export default async function CampaignsPage({ searchParams }: CampaignsPageProps) {
+  const params = await searchParams;
+  const searchQuery = params?.q?.trim() ?? "";
   const session = await getBloggerSession();
 
   if (session.accessToken == null) {
@@ -19,7 +26,9 @@ export default async function CampaignsPage() {
     status: "RECRUITING",
   }).then(
     (campaigns) => ({
-      campaigns: campaigns.filter(isCurrentlyApplicableCampaign),
+      campaigns: campaigns
+        .filter(isCurrentlyApplicableCampaign)
+        .filter((campaign) => matchesCampaignSearch(campaign, searchQuery)),
       errorMessage: undefined,
     }),
     (error: unknown) => ({
