@@ -31,6 +31,7 @@ docs/performance/lighthouse/**/*.html
 
 # Local package manager cache
 .pnpm-store/
+.worktrees/
 
 # OS / editor
 .DS_Store
