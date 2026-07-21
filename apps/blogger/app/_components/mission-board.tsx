@@ -18,8 +18,11 @@ import {
 } from "@pacto/utils";
 
 type MissionBoardProps = {
+  activeMissionCount: number;
   applications: EnrichedApplicationResponse[];
+  expectedReward: number;
   missions: Mission[];
+  pendingApplicationCount: number;
 };
 
 type EnrichedApplicationResponse = ApplicationResponse & {
@@ -103,7 +106,13 @@ const missionGroups: MissionGroupConfig[] = [
   },
 ];
 
-export function MissionBoard({ applications, missions }: MissionBoardProps) {
+export function MissionBoard({
+  activeMissionCount,
+  applications,
+  expectedReward,
+  missions,
+  pendingApplicationCount,
+}: MissionBoardProps) {
   const missionCampaignIds = new Set(missions.map((mission) => mission.campaignId));
   const visibleApplications = applications.filter(
     (application) =>
@@ -145,67 +154,100 @@ export function MissionBoard({ applications, missions }: MissionBoardProps) {
 
   return (
     <section className="mission-board" aria-label="미션 목록">
+      {totalItems > 0 ? (
+        <div className="mission-page-tabs" aria-label="미션 상태" role="tablist">
+          {tabItems.map((tab) => (
+            <button
+              aria-controls={`mission-tab-panel-${tab.key}`}
+              aria-selected={selectedTab === tab.key}
+              className={selectedTab === tab.key ? "active" : undefined}
+              key={tab.key}
+              onClick={() => setSelectedTab(tab.key)}
+              role="tab"
+              type="button"
+            >
+              <span>{tab.label}</span>
+              <strong>{tab.count}</strong>
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <MissionSummary
+        activeMissionCount={activeMissionCount}
+        expectedReward={expectedReward}
+        pendingApplicationCount={pendingApplicationCount}
+      />
       {totalItems === 0 ? (
         <div className="empty-state">
           <strong>아직 참여한 미션이 없어요</strong>
           <p>캠페인을 신청하면 승인 대기와 미션 진행 상태가 여기에 모여요.</p>
         </div>
       ) : (
-        <>
-          <div className="mission-page-tabs" aria-label="미션 상태" role="tablist">
-            {tabItems.map((tab) => (
-              <button
-                aria-controls={`mission-tab-panel-${tab.key}`}
-                aria-selected={selectedTab === tab.key}
-                className={selectedTab === tab.key ? "active" : undefined}
-                key={tab.key}
-                onClick={() => setSelectedTab(tab.key)}
-                role="tab"
-                type="button"
-              >
-                <span>{tab.label}</span>
-                <strong>{tab.count}</strong>
-              </button>
+        <div className="mission-view-panel" id={`mission-tab-panel-${selectedTab}`} role="tabpanel">
+          {selectedTab === "applications" ? (
+            <>
+              <ApplicationGroup
+                applications={filterApplications(
+                  visibleApplications,
+                  pendingApplicationGroup.statuses,
+                )}
+                config={pendingApplicationGroup}
+              />
+              <ApplicationGroup
+                applications={filterApplications(
+                  visibleApplications,
+                  acceptedApplicationGroup.statuses,
+                )}
+                config={acceptedApplicationGroup}
+              />
+            </>
+          ) : null}
+          {missionGroups
+            .filter((group) => group.key === selectedTab)
+            .map((group) => (
+              <MissionGroup
+                config={group}
+                key={group.key}
+                missions={filterMissions(missions, group.statuses)}
+              />
             ))}
-          </div>
-          <div
-            className="mission-view-panel"
-            id={`mission-tab-panel-${selectedTab}`}
-            role="tabpanel"
-          >
-            {selectedTab === "applications" ? (
-              <>
-                <ApplicationGroup
-                  applications={filterApplications(
-                    visibleApplications,
-                    pendingApplicationGroup.statuses,
-                  )}
-                  config={pendingApplicationGroup}
-                />
-                <ApplicationGroup
-                  applications={filterApplications(
-                    visibleApplications,
-                    acceptedApplicationGroup.statuses,
-                  )}
-                  config={acceptedApplicationGroup}
-                />
-              </>
-            ) : null}
-            {missionGroups
-              .filter((group) => group.key === selectedTab)
-              .map((group) => (
-                <MissionGroup
-                  config={group}
-                  key={group.key}
-                  missions={filterMissions(missions, group.statuses)}
-                />
-              ))}
-            {selectedTab === "closed" ? (
-              <ClosedMissionGroup applications={visibleApplications} missions={missions} />
-            ) : null}
-          </div>
-        </>
+          {selectedTab === "closed" ? (
+            <ClosedMissionGroup applications={visibleApplications} missions={missions} />
+          ) : null}
+        </div>
       )}
+    </section>
+  );
+}
+
+function MissionSummary({
+  activeMissionCount,
+  expectedReward,
+  pendingApplicationCount,
+}: {
+  activeMissionCount: number;
+  expectedReward: number;
+  pendingApplicationCount: number;
+}) {
+  return (
+    <section className="mobile-summary-panel mission-summary-panel" aria-label="미션 요약">
+      <div className="mobile-summary-grid">
+        <span>
+          진행 중<strong>{activeMissionCount}건</strong>
+        </span>
+        <span>
+          예상 보상 <strong>{formatPoint(expectedReward)}</strong>
+        </span>
+        <span>
+          승인 대기<strong>{pendingApplicationCount}건</strong>
+        </span>
+      </div>
+      <img
+        alt=""
+        aria-hidden="true"
+        className="mobile-summary-illustration mission-summary-illustration"
+        src="/illustrations/mission-cta-action.webp"
+      />
     </section>
   );
 }

@@ -1,6 +1,5 @@
 import { getCampaignDetail } from "@pacto/api";
 import type { ApplicationResponse, Campaign, Mission } from "@pacto/types";
-import { formatPoint } from "@pacto/utils";
 import { redirect } from "next/navigation";
 
 import { MissionBoard } from "../../_components/mission-board";
@@ -47,26 +46,13 @@ export default async function MissionsPage() {
       <header className="mobile-page-heading">
         <h1 id="missions-title">내 미션</h1>
       </header>
-      <section className="mobile-summary-panel mission-summary-panel" aria-label="미션 요약">
-        <div className="mobile-summary-grid">
-          <span>
-            진행 중<strong>{activeMissionCount}건</strong>
-          </span>
-          <span>
-            예상 보상 <strong>{formatPoint(expectedReward)}</strong>
-          </span>
-          <span>
-            승인 대기<strong>{pendingApplicationCount}건</strong>
-          </span>
-        </div>
-        <img
-          alt=""
-          aria-hidden="true"
-          className="mobile-summary-illustration mission-summary-illustration"
-          src="/illustrations/mission-cta-action.webp"
-        />
-      </section>
-      <MissionBoard applications={enrichedApplications} missions={enrichedMissions} />
+      <MissionBoard
+        activeMissionCount={activeMissionCount}
+        applications={enrichedApplications}
+        expectedReward={expectedReward}
+        missions={enrichedMissions}
+        pendingApplicationCount={pendingApplicationCount}
+      />
     </section>
   );
 }
