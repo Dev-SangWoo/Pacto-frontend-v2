@@ -14,14 +14,7 @@ export default async function ProfilePage() {
   const avatarLabel = getAvatarLabel(profile?.nickname ?? profile?.name ?? email);
 
   return (
-    <section
-      className="screen-stack mobile-system-page profile-system-page"
-      aria-labelledby="profile-title"
-    >
-      <header className="profile-title-block mobile-page-heading">
-        <h1 id="profile-title">계정 설정</h1>
-      </header>
-
+    <section aria-label="계정 설정" className="screen-stack mobile-system-page profile-system-page">
       <section className="profile-section" aria-labelledby="account-profile-title">
         <div className="section-head">
           <div>
