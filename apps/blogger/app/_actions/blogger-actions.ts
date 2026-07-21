@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { ApiError, applyToCampaign, submitMission } from "@pacto/api";
+import { ApiError, applyToCampaign, submitMission, updateMyProfile } from "@pacto/api";
 
 import { getBloggerSession } from "../_lib/session";
 
@@ -11,6 +11,46 @@ type ActionResult = {
   message?: string;
   ok: boolean;
 };
+
+export type ProfileUpdateState = ActionResult;
+
+export async function updateBloggerProfileAction(
+  _previousState: ProfileUpdateState,
+  formData: FormData,
+): Promise<ProfileUpdateState> {
+  try {
+    const session = await getBloggerSession();
+
+    if (session.accessToken == null) {
+      redirect("/login");
+    }
+
+    await updateMyProfile(
+      {
+        bloggerProfile: {
+          accountHolder: readText(formData, "accountHolder"),
+          accountNumber: readText(formData, "accountNumber"),
+          bankName: readText(formData, "bankName"),
+          blogUrl: readText(formData, "blogUrl"),
+          contact: readText(formData, "contact"),
+          name: readText(formData, "name"),
+          nickname: readText(formData, "nickname"),
+        },
+      },
+      session.accessToken,
+    );
+    revalidatePath("/profile");
+
+    return { message: "프로필 정보를 저장했어요.", ok: true };
+  } catch (error) {
+    redirectIfAuthError(error);
+
+    return {
+      message: getProfileUpdateErrorMessage(error),
+      ok: false,
+    };
+  }
+}
 
 export async function acceptCampaignAction(campaignId: number): Promise<ActionResult> {
   try {
@@ -95,4 +135,16 @@ function isApiErrorLike(error: unknown): error is { message: string; statusCode:
     typeof (error as { message?: unknown }).message === "string" &&
     typeof (error as { statusCode?: unknown }).statusCode === "number"
   );
+}
+
+function readText(formData: FormData, key: string) {
+  return String(formData.get(key) ?? "").trim();
+}
+
+function getProfileUpdateErrorMessage(error: unknown) {
+  if (isApiErrorLike(error) && error.message.length > 0) {
+    return error.message;
+  }
+
+  return "프로필 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.";
 }

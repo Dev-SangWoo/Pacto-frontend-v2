@@ -2996,6 +2996,74 @@ td strong {
   border-color: var(--blue-500);
 }
 
+.campaign-image-upload-field {
+  align-content: start;
+  border: 1px dashed var(--grey-300);
+  border-radius: 10px;
+  background: var(--grey-50);
+  padding: 14px;
+}
+
+.campaign-image-upload-field input[type="file"] {
+  border-style: solid;
+  background: var(--white);
+  cursor: pointer;
+}
+
+.campaign-image-upload-field input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--blue-50);
+  padding: 8px 10px;
+  color: var(--blue-500);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.campaign-image-upload-field small {
+  color: var(--grey-600);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.campaign-upload-preview {
+  width: min(100%, 360px);
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--grey-200);
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.campaign-upload-file-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.campaign-upload-file-list li {
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--white);
+  padding: 8px 10px;
+  color: var(--grey-700);
+  font-size: 12px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-error.inline-error a {
+  display: block;
+  margin-top: 5px;
+  color: var(--blue-500);
+  font-weight: 900;
+  text-decoration: underline;
+}
+
 .full-row {
   grid-column: 1 / -1;
 }
@@ -3464,6 +3532,94 @@ td strong {
   padding: 18px;
 }
 
+.settings-profile-panel {
+  gap: 20px;
+}
+
+.settings-profile-form {
+  display: grid;
+  gap: 18px;
+}
+
+.settings-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.settings-profile-grid.three-columns {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.settings-profile-grid label {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-profile-grid label > span,
+.settings-form-heading strong {
+  color: var(--grey-800);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.settings-profile-grid input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--grey-200);
+  border-radius: 8px;
+  outline: none;
+  background: var(--grey-50);
+  padding: 0 12px;
+  color: var(--grey-900);
+}
+
+.settings-profile-grid input:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.1);
+}
+
+.settings-profile-grid .full-row {
+  grid-column: 1 / -1;
+}
+
+.settings-form-divider {
+  height: 1px;
+  background: var(--grey-200);
+}
+
+.settings-form-heading {
+  display: grid;
+  gap: 5px;
+}
+
+.settings-form-heading span {
+  color: var(--grey-600);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.settings-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.settings-save-message {
+  margin-right: auto;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.settings-save-message.success {
+  color: var(--green-500);
+}
+
+.settings-save-message.error {
+  color: var(--red-500);
+}
+
 .settings-detail-list strong {
   overflow: hidden;
   max-width: 62%;
@@ -3789,6 +3945,8 @@ td strong {
   .campaign-detail-kpi-grid,
   .campaign-management-summary,
   .content-grid,
+  .settings-profile-grid,
+  .settings-profile-grid.three-columns,
   .settings-content-grid,
   .settings-extension-grid,
   .settings-overview-grid,

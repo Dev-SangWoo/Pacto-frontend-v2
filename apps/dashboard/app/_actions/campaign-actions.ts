@@ -12,6 +12,8 @@ import {
   proceedCampaign,
   rejectApplicant,
   rejectMission,
+  uploadCampaignGuidelineImages,
+  uploadCampaignThumbnail,
 } from "@pacto/api";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -19,6 +21,7 @@ import { redirect } from "next/navigation";
 import { getDashboardSession } from "../_lib/session";
 
 export type CampaignCreateState = {
+  createdCampaignId?: number;
   message?: string;
 };
 
@@ -141,7 +144,11 @@ export async function createCampaignAction(
   const rewardPoint = Number(formData.get("rewardPoint"));
   const totalSlots = Number(formData.get("totalSlots"));
   const deadline = String(formData.get("deadline") ?? "").trim();
-  const thumbnailUrl = String(formData.get("thumbnailUrl") ?? "").trim();
+  const thumbnail = readImageFile(formData.get("thumbnail"));
+  const guidelineImages = formData
+    .getAll("guidelineImages")
+    .map(readImageFile)
+    .filter((file): file is File => file != null);
   const guidelines = parseGuidelinesJson(String(formData.get("guidelines") ?? ""));
 
   if (title.length === 0 || guidelines == null || deadline.length === 0) {
@@ -154,6 +161,12 @@ export async function createCampaignAction(
 
   if (!Number.isInteger(totalSlots) || totalSlots <= 0) {
     return { message: "모집 인원은 1명 이상으로 입력해 주세요." };
+  }
+
+  const imageValidationMessage = validateCampaignImages(thumbnail, guidelineImages);
+
+  if (imageValidationMessage != null) {
+    return { message: imageValidationMessage };
   }
 
   const deadlineDate = new Date(deadline);
@@ -176,20 +189,35 @@ export async function createCampaignAction(
     return { message: "지갑 잔액을 확인하지 못했어요. 로그인 상태를 다시 확인해 주세요." };
   }
 
+  let campaignId: number;
+
   try {
-    await createCampaign(
+    const campaign = await createCampaign(
       {
         deadline: toLocalDateTime(deadlineDate),
         guidelines,
         rewardPoint,
-        thumbnailUrl: thumbnailUrl.length > 0 ? thumbnailUrl : undefined,
         title,
         totalSlots,
       },
       session.accessToken,
     );
+    campaignId = campaign.id;
   } catch (error) {
     return { message: getCreateCampaignErrorMessage(error) };
+  }
+
+  try {
+    if (thumbnail != null) {
+      await uploadCampaignThumbnail(campaignId, thumbnail, session.accessToken);
+    }
+    await uploadCampaignGuidelineImages(campaignId, guidelineImages, session.accessToken);
+  } catch (error) {
+    revalidatePath("/dashboard/campaigns");
+    return {
+      createdCampaignId: campaignId,
+      message: `캠페인 #${campaignId}은 등록됐지만 이미지 업로드에 실패했어요. 캠페인 상세에서 확인해 주세요. ${getCreateCampaignErrorMessage(error)}`,
+    };
   }
 
   revalidatePath("/dashboard");
@@ -320,4 +348,32 @@ function isApiErrorLike(error: unknown): error is { message: string; statusCode:
     typeof (error as { message?: unknown }).message === "string" &&
     typeof (error as { statusCode?: unknown }).statusCode === "number"
   );
+}
+
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"]);
+
+function readImageFile(value: FormDataEntryValue | null): File | undefined {
+  return value instanceof File && value.size > 0 ? value : undefined;
+}
+
+function validateCampaignImages(thumbnail: File | undefined, guidelineImages: File[]) {
+  if (guidelineImages.length > 5) {
+    return "가이드 이미지는 최대 5장까지 업로드할 수 있어요.";
+  }
+
+  const files = thumbnail == null ? guidelineImages : [thumbnail, ...guidelineImages];
+  const oversizedFile = files.find((file) => file.size > MAX_IMAGE_SIZE);
+
+  if (oversizedFile != null) {
+    return `${oversizedFile.name} 파일이 10MB를 초과해요.`;
+  }
+
+  const unsupportedFile = files.find((file) => !ALLOWED_IMAGE_TYPES.has(file.type));
+
+  if (unsupportedFile != null) {
+    return `${unsupportedFile.name} 파일 형식은 지원하지 않아요. JPG, PNG, WEBP, GIF만 사용할 수 있어요.`;
+  }
+
+  return undefined;
 }

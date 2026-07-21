@@ -71,6 +71,40 @@ export async function createCampaign(payload: CreateCampaignPayload, token?: str
   return adaptCreateCampaign(unwrapCommonResponse<CreateCampaignResponse>(response));
 }
 
+export async function uploadCampaignThumbnail(
+  campaignId: number,
+  file: File,
+  token?: string,
+): Promise<void> {
+  const body = new FormData();
+  body.append("file", file);
+
+  await apiRequest(`/api/v1/campaigns/${campaignId}/thumbnail`, {
+    body,
+    method: "POST",
+    token,
+  });
+}
+
+export async function uploadCampaignGuidelineImages(
+  campaignId: number,
+  files: File[],
+  token?: string,
+): Promise<void> {
+  if (files.length === 0) {
+    return;
+  }
+
+  const body = new FormData();
+  files.forEach((file) => body.append("files", file));
+
+  await apiRequest(`/api/v1/campaigns/${campaignId}/guideline-images`, {
+    body,
+    method: "POST",
+    token,
+  });
+}
+
 export async function closeCampaign(campaignId: number, token?: string) {
   return transitionCampaign(campaignId, "close", token);
 }

@@ -1,4 +1,4 @@
-export type { User, UserRole } from "./auth";
+export type { AdvertiserProfile, BloggerProfile, User, UserRole } from "./auth";
 export type { Campaign, CampaignStatus } from "./campaign";
 export type { Mission, MissionStatus } from "./mission";
 export type {

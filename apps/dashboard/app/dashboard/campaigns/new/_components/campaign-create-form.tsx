@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 
 import { formatPoint } from "@pacto/utils";
 
@@ -26,10 +26,20 @@ export function CampaignCreateForm() {
   const [totalSlots, setTotalSlots] = useState(1);
   const [deadline, setDeadline] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [guidelineImageNames, setGuidelineImageNames] = useState<string[]>([]);
   const [guidelines, setGuidelines] = useState<TiptapGuidelines>(initialGuidelines);
   const lockedBudget = useMemo(
     () => Math.max(rewardPoint, 0) * Math.max(totalSlots, 0),
     [rewardPoint, totalSlots],
+  );
+
+  useEffect(
+    () => () => {
+      if (thumbnailUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(thumbnailUrl);
+      }
+    },
+    [thumbnailUrl],
   );
 
   return (
@@ -90,15 +100,46 @@ export function CampaignCreateForm() {
                 value={deadline}
               />
             </label>
-            <label className="full-row">
-              <span>대표 이미지 URL</span>
+            <label className="full-row campaign-image-upload-field">
+              <span>대표 이미지</span>
               <input
-                name="thumbnailUrl"
-                onChange={(event) => setThumbnailUrl(event.currentTarget.value)}
-                placeholder="https://example.com/campaign-thumbnail.jpg"
-                type="url"
-                value={thumbnailUrl}
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                name="thumbnail"
+                onChange={(event) => {
+                  const file = event.currentTarget.files?.[0];
+                  setThumbnailUrl(file == null ? "" : URL.createObjectURL(file));
+                }}
+                type="file"
               />
+              <small>JPG, PNG, WEBP, GIF · 파일당 최대 10MB</small>
+              {thumbnailUrl.length > 0 ? (
+                <img
+                  className="campaign-upload-preview"
+                  src={thumbnailUrl}
+                  alt="대표 이미지 미리보기"
+                />
+              ) : null}
+            </label>
+            <label className="full-row campaign-image-upload-field">
+              <span>가이드 이미지</span>
+              <input
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+                name="guidelineImages"
+                onChange={(event) => {
+                  const files = Array.from(event.currentTarget.files ?? []).slice(0, 5);
+                  setGuidelineImageNames(files.map((file) => file.name));
+                }}
+                type="file"
+              />
+              <small>제품 컷이나 촬영 가이드 이미지를 최대 5장까지 추가할 수 있어요.</small>
+              {guidelineImageNames.length > 0 ? (
+                <ul className="campaign-upload-file-list">
+                  {guidelineImageNames.map((name, index) => (
+                    <li key={`${name}-${index}`}>{name}</li>
+                  ))}
+                </ul>
+              ) : null}
             </label>
             <GuidelineEditor onChange={setGuidelines} />
           </div>
@@ -106,6 +147,9 @@ export function CampaignCreateForm() {
             {state.message != null ? (
               <p className="form-error inline-error" role="alert">
                 {state.message}
+                {state.createdCampaignId != null ? (
+                  <a href={`/dashboard/campaigns/${state.createdCampaignId}`}>등록된 캠페인 보기</a>
+                ) : null}
               </p>
             ) : null}
             <a className="secondary-link" href="/dashboard/campaigns">

@@ -823,6 +823,95 @@ dd {
   line-height: 1;
 }
 
+.profile-photo-preview.image {
+  display: block;
+  object-fit: cover;
+}
+
+.profile-edit-form {
+  display: grid;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 16px;
+}
+
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profile-form-grid label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.profile-form-grid label > span,
+.profile-form-heading strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.profile-form-grid input {
+  width: 100%;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+  background: #fbfdff;
+  padding: 0 12px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.profile-form-grid input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(20, 92, 255, 0.1);
+}
+
+.profile-form-full {
+  grid-column: 1 / -1;
+}
+
+.profile-form-divider {
+  height: 1px;
+  background: var(--line);
+}
+
+.profile-form-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.profile-form-heading span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.profile-form-message {
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.profile-form-message.success {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.profile-form-message.error {
+  color: var(--red);
+  background: var(--red-soft);
+}
+
 .profile-action-list strong {
   color: var(--blue);
 }
