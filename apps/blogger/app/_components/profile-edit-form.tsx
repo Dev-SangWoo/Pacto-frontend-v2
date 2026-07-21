@@ -16,7 +16,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
 
   return (
     <form action={formAction} className="profile-edit-form">
-      <div className="profile-form-grid">
+      <div className="profile-form-grid profile-basic-fields">
         <label>
           <span>이름</span>
           <input defaultValue={profile?.name ?? ""} name="name" placeholder="실명" required />
@@ -57,7 +57,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         <strong>정산 계좌</strong>
         <span>캠페인 보상을 출금할 계좌 정보를 입력해 주세요.</span>
       </div>
-      <div className="profile-form-grid">
+      <div className="profile-form-grid profile-payout-fields">
         <label>
           <span>은행</span>
           <input defaultValue={profile?.bankName ?? ""} name="bankName" placeholder="은행명" />
