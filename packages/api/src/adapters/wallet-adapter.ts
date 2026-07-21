@@ -17,9 +17,12 @@ export type WithdrawalResponse = {
 
 export type PointHistoryResponse = {
   amount: number;
+  campaignId?: number;
+  campaignTitle?: string;
   createdAt: string;
   historyId: number;
   referenceId: number;
+  referenceType?: PointHistory["referenceType"];
   type: PointHistory["type"];
 };
 
@@ -51,7 +54,10 @@ export function adaptPointHistory(response: PointHistoryResponse): PointHistory 
     id: response.historyId,
     type: response.type,
     amount: response.amount,
+    campaignId: response.campaignId,
+    campaignTitle: response.campaignTitle,
     referenceId: response.referenceId,
+    referenceType: response.referenceType,
     createdAt: response.createdAt,
   };
 }

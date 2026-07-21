@@ -1,8 +1,9 @@
-export type { User, UserRole } from "./auth";
+export type { AdvertiserProfile, BloggerProfile, User, UserRole } from "./auth";
 export type { Campaign, CampaignStatus } from "./campaign";
 export type { Mission, MissionStatus } from "./mission";
 export type {
   PointHistory,
+  PointHistoryReferenceType,
   PointHistoryType,
   Wallet,
   Withdrawal,
@@ -15,3 +16,9 @@ export type {
   ApplicationStatusResponse,
   CampaignApplicant,
 } from "./application";
+export type {
+  Notification,
+  NotificationPage,
+  NotificationType,
+  PushRegistrationType,
+} from "./notification";

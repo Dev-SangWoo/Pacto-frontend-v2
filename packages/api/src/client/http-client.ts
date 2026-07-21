@@ -4,7 +4,7 @@ import { getApiEnv } from "./env";
 
 const DEFAULT_API_BASE_URL = "";
 
-type HttpMethod = "GET" | "POST" | "PATCH";
+type HttpMethod = "DELETE" | "GET" | "POST" | "PATCH";
 
 interface NextFetchRequestConfig {
   revalidate?: number | false;
@@ -12,7 +12,7 @@ interface NextFetchRequestConfig {
 }
 
 type ApiRequestOptions = {
-  body?: unknown;
+  body?: FormData | unknown;
   method?: HttpMethod;
   next?: NextFetchRequestConfig;
   query?: Record<string, number | string | undefined>;
@@ -54,7 +54,9 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 
   const headers = new Headers();
 
-  if (body != null) {
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+
+  if (body != null && !isFormData) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -65,7 +67,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   console.log(`[apiRequest] ${method} ${url.toString()} (Has Token: ${!!token})`);
 
   const response = await fetch(url, {
-    body: body == null ? undefined : JSON.stringify(body),
+    body: body == null ? undefined : isFormData ? body : JSON.stringify(body),
     cache: "no-store",
     headers,
     method,

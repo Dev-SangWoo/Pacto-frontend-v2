@@ -1,6 +1,12 @@
 import type { ApplicationResponse } from "./application";
 
-export type CampaignStatus = "draft" | "open" | "full" | "closed" | "completed" | "cancelled";
+export type CampaignStatus =
+  | "draft"
+  | "open"
+  | "in_progress"
+  | "closed"
+  | "completed"
+  | "cancelled";
 
 export type Campaign = {
   id: number;
@@ -15,6 +21,7 @@ export type Campaign = {
   totalSlots: number;
   remainingSlots: number;
   guidelines: string;
+  guidelineImageUrls?: string[];
   deadline: string;
   status: CampaignStatus;
   applicants?: ApplicationResponse[];

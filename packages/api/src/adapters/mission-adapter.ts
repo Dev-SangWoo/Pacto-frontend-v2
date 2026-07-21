@@ -5,6 +5,7 @@ export type MissionStatusResponse =
   | "APPROVED"
   | "CANCELLED"
   | "IN_PROGRESS"
+  | "READY"
   | "REJECTED"
   | "SUBMITTED";
 
@@ -73,9 +74,9 @@ export function adaptMissionAction(response: MissionActionResponse): Mission {
 
 function getFallbackThumbnail(id?: number): string {
   const thumbnails = [
-    "/campaigns/seongsu-brunch-cafe.png",
-    "/campaigns/hongdae-nail-studio.png",
-    "/campaigns/jamsil-fitness-lounge.png",
+    "/campaigns/seongsu-brunch-cafe.webp",
+    "/campaigns/hongdae-nail-studio.webp",
+    "/campaigns/jamsil-fitness-lounge.webp",
   ];
   const index = id == null ? 0 : Math.abs(id - 1) % thumbnails.length;
 
@@ -84,6 +85,7 @@ function getFallbackThumbnail(id?: number): string {
 
 export function mapMissionStatus(status: MissionResponse["status"]): MissionStatus {
   switch (status) {
+    case "READY":
     case "IN_PROGRESS":
     case "in_progress":
       return "in_progress";

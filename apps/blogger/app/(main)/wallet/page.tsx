@@ -1,10 +1,10 @@
 import { getCampaignDetail, getMyMissions, getMyPointHistories, getMyWallet } from "@pacto/api";
-import type { Campaign, Mission } from "@pacto/types";
+import type { Campaign, Mission, PointHistory, Wallet } from "@pacto/types";
 import { redirect } from "next/navigation";
 
 import { WalletLedger, type WalletLedgerItem } from "../../_components/wallet-ledger";
 import { WalletSummary } from "../../_components/wallet-summary";
-import { fallbackOnNonAuthError, redirectOnAuthError } from "../../_lib/auth-error";
+import { fallbackOnNonAuthError } from "../../_lib/auth-error";
 import { getBloggerSession } from "../../_lib/session";
 
 export default async function WalletPage() {
@@ -14,15 +14,23 @@ export default async function WalletPage() {
     redirect("/login");
   }
 
-  const [wallet, pointHistories] = await Promise.all([
-    getMyWallet(session.accessToken).catch(redirectOnAuthError),
+  const fallbackWallet: Wallet = {
+    availableBalance: 0,
+    id: 0,
+    lockedBalance: 0,
+    updatedAt: new Date().toISOString(),
+  };
+  const [wallet, pointHistories, missions] = await Promise.all([
+    getMyWallet(session.accessToken).catch((error: unknown) =>
+      fallbackOnNonAuthError(error, fallbackWallet),
+    ),
     getMyPointHistories({}, session.accessToken).catch((error: unknown) =>
-      fallbackOnNonAuthError(error, []),
+      fallbackOnNonAuthError<PointHistory[]>(error, []),
+    ),
+    getMyMissions({}, session.accessToken).catch((error: unknown) =>
+      fallbackOnNonAuthError<Mission[]>(error, []),
     ),
   ]);
-  const missions = await getMyMissions({}, session.accessToken).catch((error: unknown) =>
-    fallbackOnNonAuthError(error, []),
-  );
   const campaignMap = await getCampaignMap(missions, session.accessToken);
   const missionByEscrowId = new Map(missions.map((mission) => [mission.escrowId, mission]));
   const pendingMissionItems = missions
@@ -51,7 +59,7 @@ export default async function WalletPage() {
     let headline = "포인트 변동";
     let tone: WalletLedgerItem["tone"] = isWithdrawal ? "red" : "green";
     let type: WalletLedgerItem["type"] = isWithdrawal ? "withdrawal" : "deposit";
-    const campaignTitle = campaign?.title ?? mission?.campaignTitle;
+    const campaignTitle = history.campaignTitle ?? campaign?.title ?? mission?.campaignTitle;
 
     switch (history.type) {
       case "CHARGE":
@@ -93,7 +101,7 @@ export default async function WalletPage() {
 
     return {
       amount: history.amount,
-      campaignId: mission?.campaignId,
+      campaignId: history.campaignId ?? mission?.campaignId,
       category,
       date: history.createdAt,
       detail,
@@ -111,7 +119,10 @@ export default async function WalletPage() {
   const pendingMissionAmount = pendingMissionItems.reduce((sum, item) => sum + item.amount, 0);
 
   return (
-    <section className="screen-stack detail-screen" aria-labelledby="wallet-title">
+    <section
+      className="screen-stack detail-screen mobile-system-page wallet-system-page"
+      aria-labelledby="wallet-title"
+    >
       <WalletSummary
         availableBalance={wallet.availableBalance}
         latestSettlement={latestSettlement}

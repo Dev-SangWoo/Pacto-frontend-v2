@@ -14,11 +14,11 @@ type CampaignTransitionActionsProps = {
   redirectTo: string;
   selectedCount?: number;
   status: CampaignStatus;
-  variant?: "compact" | "panel";
+  variant?: "compact" | "floating" | "panel";
 };
 
 type CampaignTransitionButton = {
-  action: "cancel" | "close" | "complete" | "proceed";
+  action: "cancel" | "close" | "proceed";
   className: string;
   confirmMessage: string;
   label: string;

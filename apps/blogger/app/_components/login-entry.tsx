@@ -39,6 +39,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
 
       if (result.ok) {
         router.push("/campaigns");
+        router.refresh();
       } else {
         setErrorMessage(result.message);
       }
@@ -49,10 +50,10 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
     <section className="auth-studio" aria-labelledby="login-title">
       <div className={`auth-intro ${authMode == null ? "is-visible" : "is-hidden"}`}>
         <div className="identity-mark" aria-hidden="true">
-          <img src="/brand/logo-bg-rm-cropped.png" alt="" />
+          <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
         </div>
         <h1 id="login-title" className="visually-hidden">
-          Patco 안전한 블로그 캠페인
+          Pacto 안전한 블로그 캠페인
         </h1>
         <div className="identity-copy">
           <ShieldCheck aria-hidden="true" size={18} />
@@ -61,10 +62,12 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
         {sessionMessage != null ? (
           <p className="form-error auth-session-message">{sessionMessage}</p>
         ) : null}
+        <p className="auth-beta-note">
+          베타 기간에는 실제 사용하는 비밀번호 대신 테스트용 비밀번호를 사용해 주세요.
+        </p>
         <div className="auth-entry-actions" aria-label="계정 시작">
           <button className="primary-button" onClick={() => openAuth("login")} type="button">
             로그인
-            <ArrowRight aria-hidden="true" size={18} />
           </button>
           <button className="text-link-button" onClick={() => openAuth("signup")} type="button">
             회원가입
@@ -86,7 +89,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
         </button>
 
         <div className="auth-form-heading">
-          <p>Patco Creator</p>
+          <p>Pacto Creator</p>
           <h2>{isSignup ? "회원가입" : "로그인"}</h2>
         </div>
 
@@ -107,7 +110,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
                 autoComplete="email"
                 inputMode="email"
                 name="email"
-                placeholder="blogger@patco.test"
+                placeholder="blogger@pacto.test"
                 required
                 type="email"
               />
@@ -120,9 +123,9 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
               <LockKeyhole aria-hidden="true" size={18} />
               <input
                 autoComplete={isSignup ? "new-password" : "current-password"}
-                minLength={8}
+                minLength={isSignup ? 8 : 4}
                 name="password"
-                placeholder="8자 이상 입력"
+                placeholder={isSignup ? "8자 이상 입력" : "비밀번호 입력"}
                 required
                 type={showPassword ? "text" : "password"}
               />

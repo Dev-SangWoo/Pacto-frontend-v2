@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { UserCircle } from "lucide-react";
+import { BarChart3, CreditCard, FileText, Megaphone, Settings, UserCircle } from "lucide-react";
 
 import { logoutAction } from "../_actions/auth-actions";
 import { getDashboardSession } from "../_lib/session";
@@ -9,11 +9,11 @@ type DashboardLayoutProps = {
 };
 
 const navItems = [
-  { href: "/dashboard", label: "\ub300\uc2dc\ubcf4\ub4dc" },
-  { href: "/dashboard/campaigns", label: "\ucea0\ud398\uc778" },
-  { href: "/dashboard/payments", label: "\uacb0\uc81c" },
-  { href: "/dashboard/reports", label: "\ub9ac\ud3ec\ud2b8" },
-  { href: "/dashboard/settings", label: "\uc124\uc815" },
+  { href: "/dashboard", icon: BarChart3, label: "\ub300\uc2dc\ubcf4\ub4dc" },
+  { href: "/dashboard/campaigns", icon: Megaphone, label: "\ucea0\ud398\uc778" },
+  { href: "/dashboard/payments", icon: CreditCard, label: "\uacb0\uc81c" },
+  { href: "/dashboard/reports", icon: FileText, label: "\ub9ac\ud3ec\ud2b8" },
+  { href: "/dashboard/settings", icon: Settings, label: "\uc124\uc815" },
 ];
 
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   }
 
   if (session.role !== "ADVERTISER") {
-    redirect("/logout");
+    redirect("/forbidden");
   }
 
   return (
@@ -35,11 +35,16 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
           <p>광고 캠페인 운영을 한눈에 관리하세요</p>
         </a>
         <nav>
-          {navItems.map((item) => (
-            <a href={item.href} key={item.href}>
-              {item.label}
-            </a>
-          ))}
+          {navItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <a href={item.href} key={item.href}>
+                <Icon aria-hidden="true" size={18} strokeWidth={2.1} />
+                <span>{item.label}</span>
+              </a>
+            );
+          })}
         </nav>
         <div className="sidebar-session">
           <a className="sidebar-account-link" href="/dashboard/settings">

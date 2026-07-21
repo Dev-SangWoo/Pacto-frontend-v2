@@ -1,204 +1,187 @@
 "use client";
 
-import { LayoutGrid, List, X } from "lucide-react";
+import { CalendarClock, ChevronRight, Coins, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import type { Campaign } from "@pacto/types";
 import {
+  CAMPAIGN_DISCOVERY_CATEGORIES,
   formatDeadlineDday,
-  formatKoreanDate,
   formatPoint,
-  getCampaignStatusView,
+  getCampaignDiscoveryBadge,
+  getCampaignSummaryText,
+  matchesCampaignDiscoveryCategory,
 } from "@pacto/utils";
+import type { CampaignDiscoveryCategory } from "@pacto/utils";
 
 type CampaignExplorerProps = {
   campaigns: Campaign[];
   loadErrorMessage?: string;
+  searchQuery: string;
 };
 
-type ViewMode = "grid" | "list";
-type CampaignCategory = "전체" | "맛집" | "뷰티" | "운동" | "마감 임박";
-
-const interestTabs: CampaignCategory[] = ["전체", "맛집", "뷰티", "운동", "마감 임박"];
-
-export function CampaignExplorer({ campaigns, loadErrorMessage }: CampaignExplorerProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [selectedCategory, setSelectedCategory] = useState<CampaignCategory>("전체");
-  const [isNoticeVisible, setIsNoticeVisible] = useState(true);
+export function CampaignExplorer({
+  campaigns,
+  loadErrorMessage,
+  searchQuery,
+}: CampaignExplorerProps) {
+  const [selectedCategory, setSelectedCategory] = useState<CampaignDiscoveryCategory>("전체");
   const filteredCampaigns = campaigns.filter((campaign) =>
-    matchesCategory(campaign, selectedCategory),
+    matchesCampaignDiscoveryCategory(campaign, selectedCategory),
   );
-  const closingSoonCount = campaigns.filter((campaign) =>
-    matchesCategory(campaign, "마감 임박"),
-  ).length;
-  const averageReward =
-    campaigns.length === 0
-      ? 0
-      : Math.round(
-          campaigns.reduce((sum, campaign) => sum + campaign.rewardPoint, 0) / campaigns.length,
-        );
 
   return (
-    <section className="screen-stack" aria-labelledby="campaigns-title">
-      <section className="creator-hero campaign-discovery-hero">
-        <div>
-          <p className="section-label">캠페인 찾기</p>
-          <h1 className="campaign-hero-title" id="campaigns-title">
-            이번엔 어떤 캠페인에
-            <span>참여할까요?</span>
-          </h1>
-          <p>보상, 일정, 남은 자리를 보고 가볍게 골라보세요.</p>
+    <section className="campaign-discovery-screen" aria-labelledby="campaigns-title">
+      <section className="campaign-promotion" aria-label="블로거 캠페인 안내">
+        <div className="campaign-promotion-copy">
+          <p>내 블로그로</p>
+          <p>브랜드를 소개하고</p>
+          <strong>보상을 받아보세요!</strong>
         </div>
-        <div className="hero-reward-strip" aria-label="캠페인 요약">
-          <article>
-            <span>모집 중</span>
-            <strong>{campaigns.length}개</strong>
-          </article>
-          <article>
-            <span>평균 보상</span>
-            <strong>{formatPoint(averageReward)}</strong>
-          </article>
-          <article>
-            <span>마감 임박</span>
-            <strong>{closingSoonCount}개</strong>
-          </article>
-        </div>
+        <img
+          alt=""
+          aria-hidden="true"
+          className="campaign-promotion-image"
+          src="/illustrations/woman-social-tablet-hd-transparent-refined.png"
+        />
       </section>
 
-      <div className="interest-tabs" aria-label="관심사 필터">
-        {interestTabs.map((tab) => (
+      <div className="campaign-recommendation-heading">
+        <h1 id="campaigns-title">추천 캠페인</h1>
+        <Link href="/campaigns">
+          전체 보기
+          <ChevronRight aria-hidden="true" size={15} />
+        </Link>
+      </div>
+
+      {searchQuery ? (
+        <p className="campaign-search-summary">
+          “{searchQuery}” 검색 결과 {campaigns.length}개
+        </p>
+      ) : null}
+
+      <div className="campaign-category-list" aria-label="캠페인 카테고리">
+        {CAMPAIGN_DISCOVERY_CATEGORIES.map((category) => (
           <button
-            className={selectedCategory === tab ? "active" : undefined}
-            onClick={() => setSelectedCategory(tab)}
+            aria-pressed={selectedCategory === category}
+            className={selectedCategory === category ? "selected" : undefined}
+            key={category}
+            onClick={() => setSelectedCategory(category)}
             type="button"
-            key={tab}
           >
-            {tab}
+            {category}
           </button>
         ))}
       </div>
 
-      <section className="section-block" aria-labelledby="recommended-title">
-        <div className="section-head campaign-list-head">
-          <div>
-            <p className="section-label">추천 캠페인</p>
-            <h2 id="recommended-title">지금 둘러보기</h2>
-          </div>
-          <div className="view-toggle" aria-label="캠페인 표시 방식">
-            <button
-              aria-label="2열 그리드로 보기"
-              aria-pressed={viewMode === "grid"}
-              className={viewMode === "grid" ? "active" : undefined}
-              onClick={() => setViewMode("grid")}
-              type="button"
-            >
-              <LayoutGrid aria-hidden="true" size={17} />
-            </button>
-            <button
-              aria-label="세로 목록으로 보기"
-              aria-pressed={viewMode === "list"}
-              className={viewMode === "list" ? "active" : undefined}
-              onClick={() => setViewMode("list")}
-              type="button"
-            >
-              <List aria-hidden="true" size={17} />
-            </button>
-          </div>
+      {loadErrorMessage != null ? (
+        <div className="campaign-discovery-empty" role="alert">
+          <strong>캠페인 목록을 불러오지 못했어요</strong>
+          <p>{loadErrorMessage}</p>
         </div>
-
-        {loadErrorMessage != null ? (
-          <div className="empty-state compact">
-            <strong>캠페인 목록을 불러올 수 없어요.</strong>
-            <p>{loadErrorMessage}</p>
-          </div>
-        ) : (
-          <div className={`campaign-feed ${viewMode === "list" ? "list-view" : "grid-view"}`}>
-            {filteredCampaigns.map((campaign) => (
-              <CampaignCard campaign={campaign} key={campaign.id} viewMode={viewMode} />
-            ))}
-            {filteredCampaigns.length === 0 ? (
-              <div className="empty-state compact">
-                <p>선택한 카테고리에 맞는 캠페인이 없어요.</p>
-              </div>
-            ) : null}
-          </div>
-        )}
-      </section>
-
-      {isNoticeVisible ? (
-        <div className="campaign-floating-notice" role="status">
-          <p>보상이 높은 캠페인보다 일정에 맞게 제출할 수 있는 캠페인을 먼저 고르면 좋아요.</p>
-          <button aria-label="안내 닫기" onClick={() => setIsNoticeVisible(false)} type="button">
-            <X aria-hidden="true" size={16} />
-          </button>
+      ) : filteredCampaigns.length > 0 ? (
+        <div className="campaign-card-list">
+          {filteredCampaigns.map((campaign, index) => (
+            <CampaignCard campaign={campaign} isPriority={index < 2} key={campaign.id} />
+          ))}
         </div>
-      ) : null}
+      ) : (
+        <div className="campaign-discovery-empty">
+          <strong>조건에 맞는 캠페인이 없어요</strong>
+          <p>검색어나 카테고리를 바꿔 다시 확인해 주세요.</p>
+          {searchQuery ? (
+            <Link href="/campaigns">전체 캠페인 보기</Link>
+          ) : (
+            <button onClick={() => setSelectedCategory("전체")} type="button">
+              전체 카테고리 보기
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 }
 
-function matchesCategory(campaign: Campaign, category: CampaignCategory) {
-  if (category === "전체") {
-    return true;
-  }
-
-  if (category === "마감 임박") {
-    const deadlineMs = new Date(campaign.deadline).getTime();
-    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-
-    return Number.isFinite(deadlineMs) && deadlineMs - Date.now() <= sevenDaysMs;
-  }
-
-  const haystack = `${campaign.title} ${campaign.guidelines}`.toLowerCase();
-  const keywords: Record<Exclude<CampaignCategory, "전체" | "마감 임박">, string[]> = {
-    맛집: ["맛집", "식당", "카페", "브런치", "디저트", "푸드", "음식"],
-    뷰티: ["뷰티", "네일", "헤어", "피부", "화장품", "미용"],
-    운동: ["운동", "헬스", "피트니스", "요가", "필라테스", "스포츠"],
-  };
-
-  return keywords[category].some((keyword) => haystack.includes(keyword));
-}
-
 type CampaignCardProps = {
   campaign: Campaign;
-  viewMode: ViewMode;
+  isPriority: boolean;
 };
 
-function CampaignCard({ campaign, viewMode }: CampaignCardProps) {
-  const statusView = getCampaignStatusView(campaign.status);
-  const remainingSlots =
-    campaign.remainingSlots ?? Math.max(campaign.recruitCount - campaign.approvedCount, 0);
+function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
+  const badge = getCampaignDiscoveryBadge(campaign);
+  const missionCopy = getCampaignSummaryText(campaign.guidelines);
+  const thumbnailUrl = campaign.thumbnailUrl ?? getFallbackThumbnail(campaign.id);
+  const totalSlots = campaign.totalSlots || campaign.recruitCount;
+  const campaignHref = `/campaigns/${campaign.id}`;
 
   return (
-    <Link className="campaign-ticket" href={`/campaigns/${campaign.id}`}>
-      <div className="ticket-media">
-        <img src={campaign.thumbnailUrl} alt={`${campaign.title} 대표 이미지`} loading="lazy" />
-      </div>
-      <div className="ticket-body">
-        <div className="ticket-topline">
-          <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
-          <strong>{formatPoint(campaign.rewardPoint)}</strong>
-        </div>
-        <div>
-          <p>{campaign.brandName}</p>
-          <h3>{campaign.title}</h3>
-        </div>
-        <dl className="ticket-facts" aria-label="캠페인 조건">
-          <div>
-            <dt>남은 자리</dt>
-            <dd>{remainingSlots}명</dd>
+    <article className="campaign-list-card">
+      <div className="campaign-card-summary">
+        <Link className="campaign-card-image-link" href={campaignHref}>
+          <img
+            alt={`${campaign.title} 대표 이미지`}
+            decoding="async"
+            fetchPriority={isPriority ? "high" : "auto"}
+            loading={isPriority ? "eager" : "lazy"}
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = getFallbackThumbnail(campaign.id);
+            }}
+            src={thumbnailUrl}
+          />
+        </Link>
+        <div className="campaign-card-content">
+          <div className="campaign-card-title-row">
+            <span className={`campaign-discovery-badge ${badge.tone}`}>{badge.label}</span>
+            <Link href={campaignHref}>{campaign.title}</Link>
           </div>
-          <div>
-            <dt>마감</dt>
-            <dd>
-              {formatKoreanDate(campaign.deadline)}
-              <em>{formatDeadlineDday(campaign.deadline)}</em>
-            </dd>
-          </div>
-        </dl>
-        {viewMode === "list" ? <span className="ticket-action">조건 보고 신청하기</span> : null}
+          <p className="campaign-card-description">{missionCopy}</p>
+          <dl className="campaign-card-metrics">
+            <div>
+              <dt>
+                <Coins aria-hidden="true" size={15} strokeWidth={1.7} />
+                보상 금액
+              </dt>
+              <dd>{formatPoint(campaign.rewardPoint)}</dd>
+            </div>
+            <div>
+              <dt>
+                <CalendarClock aria-hidden="true" size={15} strokeWidth={1.7} />
+                마감까지
+              </dt>
+              <dd>{formatDeadlineDday(campaign.deadline)}</dd>
+            </div>
+            <div>
+              <dt>
+                <UsersRound aria-hidden="true" size={15} strokeWidth={1.7} />
+                신청 현황
+              </dt>
+              <dd>
+                {campaign.applicantCount}/{totalSlots}
+              </dd>
+            </div>
+          </dl>
+        </div>
       </div>
-    </Link>
+
+      <div className="campaign-mission-panel">
+        <p>
+          <strong>미션:</strong> {missionCopy}
+        </p>
+        <Link href={campaignHref}>신청하기</Link>
+      </div>
+    </article>
   );
+}
+
+function getFallbackThumbnail(id?: number): string {
+  const thumbnails = [
+    "/campaigns/seongsu-brunch-cafe.webp",
+    "/campaigns/hongdae-nail-studio.webp",
+    "/campaigns/jamsil-fitness-lounge.webp",
+  ];
+  const index = id == null ? 0 : Math.abs(id - 1) % thumbnails.length;
+
+  return thumbnails[index] ?? thumbnails[0];
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import type {
   ApplicationResponse,
@@ -18,8 +18,11 @@ import {
 } from "@pacto/utils";
 
 type MissionBoardProps = {
+  activeMissionCount: number;
   applications: EnrichedApplicationResponse[];
+  expectedReward: number;
   missions: Mission[];
+  pendingApplicationCount: number;
 };
 
 type EnrichedApplicationResponse = ApplicationResponse & {
@@ -33,7 +36,6 @@ type ApplicationGroupConfig = {
   description: string;
   emptyText: string;
   key: string;
-  shortLabel: string;
   statuses: ApplicationStatusResponse[];
   title: string;
 };
@@ -41,35 +43,34 @@ type ApplicationGroupConfig = {
 type MissionGroupConfig = {
   description: string;
   emptyText: string;
-  key: string;
-  shortLabel: string;
+  key: MissionViewKey;
   statuses: MissionStatus[];
   title: string;
 };
 
 type MissionViewKey = "closed" | "in-progress" | "pending-applications" | "settled" | "submitted";
-
-type StatusPanel = {
-  count: number;
-  description: string;
-  key: MissionViewKey;
-  label: string;
-};
+type MissionTabKey = "applications" | "closed" | "in-progress" | "settled" | "submitted";
 
 const pendingApplicationGroup: ApplicationGroupConfig = {
   key: "pending-applications",
-  shortLabel: "신청",
-  title: "신청한 캠페인",
-  description: "광고주 승인을 기다리는 신청",
+  title: "승인 대기 중인 신청",
+  description: "광고주 승인을 기다리는 캠페인",
   emptyText: "승인 대기 중인 신청이 없어요.",
   statuses: ["PENDING"],
 };
 
+const acceptedApplicationGroup: ApplicationGroupConfig = {
+  key: "accepted-applications",
+  title: "선정 완료된 캠페인",
+  description: "미션 제출을 준비할 캠페인",
+  emptyText: "선정 완료 후 미션 생성 대기 중인 캠페인이 없어요.",
+  statuses: ["ACCEPTED"],
+};
+
 const rejectedApplicationGroup: ApplicationGroupConfig = {
   key: "rejected-applications",
-  shortLabel: "신청 반려",
   title: "반려/취소된 신청",
-  description: "진행 미션으로 전환되지 않은 신청",
+  description: "미션으로 이어지지 않은 신청",
   emptyText: "반려되거나 취소된 신청이 없어요.",
   statuses: ["REJECTED", "CANCELLED"],
 };
@@ -77,174 +78,201 @@ const rejectedApplicationGroup: ApplicationGroupConfig = {
 const missionGroups: MissionGroupConfig[] = [
   {
     key: "in-progress",
-    shortLabel: "리뷰 작성",
-    title: "리뷰 작성이 필요한 미션",
-    description: "콘텐츠 작성 후 리뷰 URL을 등록해야 하는 미션",
-    emptyText: "현재 리뷰를 작성할 미션이 없어요.",
+    title: "리뷰 제출이 필요한 미션",
+    description: "콘텐츠 작성 후 리뷰 URL을 등록해야 해요.",
+    emptyText: "지금 제출할 미션이 없어요.",
     statuses: ["in_progress"],
   },
   {
     key: "submitted",
-    shortLabel: "검수 대기",
-    title: "검수 대기",
-    description: "리뷰 URL 등록 후 광고주 검수와 정산을 기다리는 미션",
+    title: "검수 대기 중인 미션",
+    description: "리뷰 URL 제출 후 광고주 확인을 기다리고 있어요.",
     emptyText: "검수 대기 중인 미션이 없어요.",
     statuses: ["submitted"],
   },
   {
     key: "settled",
-    shortLabel: "정산",
-    title: "정산 완료",
-    description: "보상 지급이 완료된 미션",
+    title: "정산 완료 미션",
+    description: "보상 지급이 완료된 미션이에요.",
     emptyText: "정산 완료된 미션이 없어요.",
     statuses: ["approved"],
   },
   {
     key: "closed",
-    shortLabel: "미션 반려",
     title: "반려/취소된 미션",
-    description: "제출 후 반려되었거나 취소된 미션",
+    description: "제출 후 반려되었거나 취소된 미션이에요.",
     emptyText: "반려되거나 취소된 미션이 없어요.",
     statuses: ["rejected", "cancelled"],
   },
 ];
 
-export function MissionBoard({ applications, missions }: MissionBoardProps) {
+export function MissionBoard({
+  activeMissionCount,
+  applications,
+  expectedReward,
+  missions,
+  pendingApplicationCount,
+}: MissionBoardProps) {
+  const missionCampaignIds = new Set(missions.map((mission) => mission.campaignId));
   const visibleApplications = applications.filter(
-    (application) => application.status !== "ACCEPTED",
+    (application) =>
+      application.status !== "ACCEPTED" || !missionCampaignIds.has(application.campaignId),
   );
   const totalItems = visibleApplications.length + missions.length;
-  const readyToSubmitCount = filterMissions(missions, ["in_progress"]).length;
-  const waitingReviewCount = filterMissions(missions, ["submitted"]).length;
-  const settledCount = filterMissions(missions, ["approved"]).length;
-  const pendingApplicationCount = filterApplications(visibleApplications, ["PENDING"]).length;
-  const closedMissionCount = filterMissions(missions, ["rejected", "cancelled"]).length;
-  const closedApplicationCount = filterApplications(visibleApplications, [
-    "REJECTED",
-    "CANCELLED",
-  ]).length;
-  const [selectedView, setSelectedView] = useState<MissionViewKey>(
-    getInitialView(readyToSubmitCount, waitingReviewCount, pendingApplicationCount),
+  const tabItems: Array<{ count: number; key: MissionTabKey; label: string }> = [
+    {
+      count: filterApplications(visibleApplications, ["PENDING", "ACCEPTED"]).length,
+      key: "applications",
+      label: "신청",
+    },
+    {
+      count: filterMissions(missions, ["in_progress"]).length,
+      key: "in-progress",
+      label: "진행",
+    },
+    {
+      count: filterMissions(missions, ["submitted"]).length,
+      key: "submitted",
+      label: "검수",
+    },
+    {
+      count: filterMissions(missions, ["approved"]).length,
+      key: "settled",
+      label: "완료",
+    },
+    {
+      count:
+        filterMissions(missions, ["rejected", "cancelled"]).length +
+        filterApplications(visibleApplications, ["REJECTED", "CANCELLED"]).length,
+      key: "closed",
+      label: "종료",
+    },
+  ];
+  const [selectedTab, setSelectedTab] = useState<MissionTabKey>(() =>
+    getInitialMissionTab(tabItems),
   );
-  const statusPanels = useMemo(
-    () =>
-      getStatusPanels({
-        closedCount: closedMissionCount + closedApplicationCount,
-        pendingApplicationCount,
-        readyToSubmitCount,
-        settledCount,
-        waitingReviewCount,
-      }),
-    [
-      closedApplicationCount,
-      closedMissionCount,
-      pendingApplicationCount,
-      readyToSubmitCount,
-      settledCount,
-      waitingReviewCount,
-    ],
-  );
-  const activePanel = statusPanels.find((panel) => panel.key === selectedView) ?? statusPanels[0];
 
   return (
     <section className="mission-board" aria-label="미션 목록">
-      <section className="mission-journey-panel" aria-label="미션 현황">
-        <div>
-          <p className="section-label">미션 현황</p>
-          <strong>{activePanel.description}</strong>
-        </div>
-        <div className="journey-strip" role="tablist" aria-label="미션 상태 필터">
-          {statusPanels.map((panel) => (
-            <button
-              aria-selected={selectedView === panel.key}
-              className={selectedView === panel.key ? "active" : undefined}
-              key={panel.key}
-              onClick={() => setSelectedView(panel.key)}
-              role="tab"
-              type="button"
-            >
-              <span>{panel.label}</span>
-              <strong>{panel.count}</strong>
-            </button>
-          ))}
-        </div>
-        <div className="mission-journey-actions">
-          <Link href="/campaigns">캠페인 찾으러 가기</Link>
-        </div>
-      </section>
-
-      <div className="mission-view-panel" role="tabpanel">
-        <SelectedMissionView
-          applications={visibleApplications}
-          missions={missions}
-          selectedView={selectedView}
-        />
+      <div className="mission-page-tabs" aria-label="미션 상태" role="tablist">
+        {tabItems.map((tab) => (
+          <button
+            aria-controls={`mission-tab-panel-${tab.key}`}
+            aria-selected={selectedTab === tab.key}
+            className={selectedTab === tab.key ? "active" : undefined}
+            key={tab.key}
+            onClick={() => setSelectedTab(tab.key)}
+            role="tab"
+            type="button"
+          >
+            <span>{tab.label}</span>
+            <strong>{tab.count}</strong>
+          </button>
+        ))}
       </div>
-
+      <MissionSummary
+        activeMissionCount={activeMissionCount}
+        expectedReward={expectedReward}
+        pendingApplicationCount={pendingApplicationCount}
+      />
       {totalItems === 0 ? (
         <div className="empty-state">
-          <strong>아직 참여한 미션이 없어요.</strong>
-          <p>캠페인에서 관심 있는 미션을 신청해 보세요.</p>
+          <strong>아직 참여한 미션이 없어요</strong>
+          <p>캠페인을 신청하면 승인 대기와 미션 진행 상태가 여기에 모여요.</p>
         </div>
-      ) : null}
+      ) : (
+        <div className="mission-view-panel" id={`mission-tab-panel-${selectedTab}`} role="tabpanel">
+          {selectedTab === "applications" ? (
+            <>
+              <ApplicationGroup
+                applications={filterApplications(
+                  visibleApplications,
+                  pendingApplicationGroup.statuses,
+                )}
+                config={pendingApplicationGroup}
+              />
+              <ApplicationGroup
+                applications={filterApplications(
+                  visibleApplications,
+                  acceptedApplicationGroup.statuses,
+                )}
+                config={acceptedApplicationGroup}
+              />
+            </>
+          ) : null}
+          {missionGroups
+            .filter((group) => group.key === selectedTab)
+            .map((group) => (
+              <MissionGroup
+                config={group}
+                key={group.key}
+                missions={filterMissions(missions, group.statuses)}
+              />
+            ))}
+          {selectedTab === "closed" ? (
+            <ClosedMissionGroup applications={visibleApplications} missions={missions} />
+          ) : null}
+        </div>
+      )}
     </section>
   );
 }
 
-function SelectedMissionView({
-  applications,
-  missions,
-  selectedView,
+function MissionSummary({
+  activeMissionCount,
+  expectedReward,
+  pendingApplicationCount,
 }: {
-  applications: EnrichedApplicationResponse[];
-  missions: Mission[];
-  selectedView: MissionViewKey;
+  activeMissionCount: number;
+  expectedReward: number;
+  pendingApplicationCount: number;
 }) {
-  if (selectedView === "pending-applications") {
-    return (
-      <ApplicationGroup
-        applications={filterApplications(applications, pendingApplicationGroup.statuses)}
-        config={pendingApplicationGroup}
+  return (
+    <section className="mobile-summary-panel mission-summary-panel" aria-label="미션 요약">
+      <div className="mission-summary-copy">
+        <span className="mission-summary-eyebrow">나의 미션 현황</span>
+        <strong className="mission-summary-headline">
+          {activeMissionCount > 0 ? (
+            <>
+              진행 중인 미션이 <em>{activeMissionCount}건</em> 있어요
+            </>
+          ) : (
+            <>새로운 미션을 시작해 보세요</>
+          )}
+        </strong>
+        <div className="mission-summary-stats">
+          <span>
+            <small>예상 보상</small>
+            <strong>{formatPoint(expectedReward)}</strong>
+          </span>
+          <span>
+            <small>승인 대기</small>
+            <strong>{pendingApplicationCount}건</strong>
+          </span>
+        </div>
+      </div>
+      <img
+        alt=""
+        aria-hidden="true"
+        className="mobile-summary-illustration mission-summary-illustration"
+        src="/illustrations/mission-cta-action.webp"
       />
-    );
-  }
+    </section>
+  );
+}
 
-  if (selectedView === "closed") {
-    const closedMissions = filterMissions(missions, ["rejected", "cancelled"]);
-    const closedApplications = filterApplications(applications, rejectedApplicationGroup.statuses);
+function getInitialMissionTab(tabs: Array<{ count: number; key: MissionTabKey }>): MissionTabKey {
+  const priority: MissionTabKey[] = [
+    "in-progress",
+    "submitted",
+    "applications",
+    "settled",
+    "closed",
+  ];
 
-    return (
-      <section className="mission-group" id="mission-group-closed">
-        <GroupHeader
-          count={closedMissions.length + closedApplications.length}
-          description="거절되었거나 반려된 신청과 미션"
-          title="거절/반려된 항목"
-        />
-        {closedMissions.length > 0 || closedApplications.length > 0 ? (
-          <div className="mission-list">
-            {closedMissions.map((mission) => (
-              <MissionCard groupKey="closed" key={mission.id} mission={mission} />
-            ))}
-            {closedApplications.map((application) => (
-              <ApplicationCard application={application} key={application.applicationId} />
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state compact">
-            <p>거절되거나 반려된 항목이 없어요.</p>
-          </div>
-        )}
-      </section>
-    );
-  }
-
-  const group = missionGroups.find((item) => item.key === selectedView);
-
-  if (!group) {
-    return null;
-  }
-
-  return <MissionGroup config={group} missions={filterMissions(missions, group.statuses)} />;
+  return (
+    priority.find((key) => tabs.some((tab) => tab.key === key && tab.count > 0)) ?? "applications"
+  );
 }
 
 type ApplicationGroupProps = {
@@ -299,6 +327,41 @@ function MissionGroup({ config, missions }: MissionGroupProps) {
   );
 }
 
+function ClosedMissionGroup({
+  applications,
+  missions,
+}: {
+  applications: EnrichedApplicationResponse[];
+  missions: Mission[];
+}) {
+  const closedMissions = filterMissions(missions, ["rejected", "cancelled"]);
+  const closedApplications = filterApplications(applications, rejectedApplicationGroup.statuses);
+
+  return (
+    <section className="mission-group" id="mission-group-closed">
+      <GroupHeader
+        count={closedMissions.length + closedApplications.length}
+        description="진행이 종료된 신청과 미션"
+        title="종료된 항목"
+      />
+      {closedMissions.length > 0 || closedApplications.length > 0 ? (
+        <div className="mission-list">
+          {closedMissions.map((mission) => (
+            <MissionCard groupKey="closed" key={mission.id} mission={mission} />
+          ))}
+          {closedApplications.map((application) => (
+            <ApplicationCard application={application} key={application.applicationId} />
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state compact">
+          <p>종료된 항목이 없어요.</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function GroupHeader({
   count,
   description,
@@ -322,6 +385,7 @@ function GroupHeader({
 function ApplicationCard({ application }: { application: EnrichedApplicationResponse }) {
   const statusView = getApplicationStatusView(application.status);
   const campaignTitle = application.campaignTitle ?? `캠페인 #${application.campaignId}`;
+  const applicationGuide = getApplicationGuide(application.status);
 
   return (
     <Link className="mission-card" href={`/campaigns/${application.campaignId}`}>
@@ -343,6 +407,7 @@ function ApplicationCard({ application }: { application: EnrichedApplicationResp
             : `광고주 ID #${application.advertiserId}`}
         </p>
         <h3>{campaignTitle}</h3>
+        {applicationGuide != null ? <p>{applicationGuide}</p> : null}
         <dl className="mission-facts">
           <div>
             <dt>신청일</dt>
@@ -352,6 +417,19 @@ function ApplicationCard({ application }: { application: EnrichedApplicationResp
       </div>
     </Link>
   );
+}
+
+function getApplicationGuide(status: ApplicationResponse["status"]) {
+  switch (status) {
+    case "PENDING":
+      return "광고주가 신청을 검토하고 있어요.";
+    case "ACCEPTED":
+      return "선정이 완료됐어요. 미션 제출 화면에서 리뷰 URL을 등록해 주세요.";
+    case "REJECTED":
+      return "이번 캠페인에는 선정되지 않았어요.";
+    case "CANCELLED":
+      return "취소된 신청이에요.";
+  }
 }
 
 type MissionCardProps = {
@@ -365,7 +443,7 @@ function MissionCard({ groupKey, mission }: MissionCardProps) {
 
   return (
     <Link className="mission-card" href={`/missions/${mission.id}`}>
-      <img src={mission.thumbnailUrl} alt={`${mission.campaignTitle}`} loading="lazy" />
+      <img src={mission.thumbnailUrl} alt={`${mission.campaignTitle} 대표 이미지`} loading="lazy" />
       <div>
         <div className="ticket-topline">
           <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
@@ -398,15 +476,15 @@ function filterMissions(missions: Mission[], statuses: MissionStatus[]) {
 function getMissionSchedule(groupKey: string, mission: Mission) {
   if (groupKey === "in-progress") {
     return {
-      label: "완료 마감",
+      label: "제출 마감",
       value: `${formatKoreanDate(mission.dueDate)} · ${formatDeadlineDday(mission.dueDate)}`,
     };
   }
 
   if (groupKey === "submitted") {
     return {
-      label: "검수 대기",
-      value: `등록 완료 · ${formatDeadlineDday(mission.dueDate)}`,
+      label: "검수 상태",
+      value: `제출 완료 · ${formatDeadlineDday(mission.dueDate)}`,
     };
   }
 
@@ -423,78 +501,11 @@ function getMissionSchedule(groupKey: string, mission: Mission) {
   };
 }
 
-function getInitialView(
-  readyToSubmitCount: number,
-  waitingReviewCount: number,
-  pendingApplicationCount: number,
-): MissionViewKey {
-  if (readyToSubmitCount > 0) {
-    return "in-progress";
-  }
-
-  if (waitingReviewCount > 0) {
-    return "submitted";
-  }
-
-  if (pendingApplicationCount > 0) {
-    return "pending-applications";
-  }
-
-  return "pending-applications";
-}
-
-function getStatusPanels({
-  closedCount,
-  pendingApplicationCount,
-  readyToSubmitCount,
-  settledCount,
-  waitingReviewCount,
-}: {
-  closedCount: number;
-  pendingApplicationCount: number;
-  readyToSubmitCount: number;
-  settledCount: number;
-  waitingReviewCount: number;
-}): StatusPanel[] {
-  return [
-    {
-      count: pendingApplicationCount,
-      description: "승인 대기 중인 캠페인 신청",
-      key: "pending-applications",
-      label: "신청",
-    },
-    {
-      count: readyToSubmitCount,
-      description: "리뷰 작성과 URL 등록이 필요한 미션",
-      key: "in-progress",
-      label: "리뷰 작성",
-    },
-    {
-      count: waitingReviewCount,
-      description: "리뷰 URL 등록 후 광고주 검수를 기다리는 미션",
-      key: "submitted",
-      label: "검수",
-    },
-    {
-      count: settledCount,
-      description: "보상 지급이 완료된 미션",
-      key: "settled",
-      label: "정산",
-    },
-    {
-      count: closedCount,
-      description: "거절되었거나 반려된 항목",
-      key: "closed",
-      label: "거절/반려",
-    },
-  ];
-}
-
 function getFallbackThumbnail(id?: number): string {
   const thumbnails = [
-    "/campaigns/seongsu-brunch-cafe.png",
-    "/campaigns/hongdae-nail-studio.png",
-    "/campaigns/jamsil-fitness-lounge.png",
+    "/campaigns/seongsu-brunch-cafe.webp",
+    "/campaigns/hongdae-nail-studio.webp",
+    "/campaigns/jamsil-fitness-lounge.webp",
   ];
   const index = id == null ? 0 : Math.abs(id - 1) % thumbnails.length;
 

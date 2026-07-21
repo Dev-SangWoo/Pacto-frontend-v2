@@ -1,4 +1,4 @@
-import type { User } from "@pacto/types";
+import type { AdvertiserProfile, BloggerProfile, User } from "@pacto/types";
 
 import { adaptUser } from "../adapters/auth-adapter";
 import type { LoginResponse, MeResponse } from "../adapters/auth-adapter";
@@ -12,6 +12,11 @@ export type LoginPayload = {
 };
 
 export type SignupPayload = LoginPayload;
+
+export type ProfileUpdatePayload = {
+  advertiserProfile?: AdvertiserProfile;
+  bloggerProfile?: BloggerProfile;
+};
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const response = await apiRequest<CommonResponse<LoginResponse> | LoginResponse>(
@@ -42,6 +47,22 @@ export async function getMe(token?: string): Promise<User> {
   const response = await apiRequest<CommonResponse<MeResponse> | MeResponse>("/api/v1/auth/me", {
     token,
   });
+
+  return adaptUser(unwrapCommonResponse<MeResponse>(response));
+}
+
+export async function updateMyProfile(
+  payload: ProfileUpdatePayload,
+  token?: string,
+): Promise<User> {
+  const response = await apiRequest<CommonResponse<MeResponse> | MeResponse>(
+    "/api/v1/auth/me/profile",
+    {
+      body: payload,
+      method: "PATCH",
+      token,
+    },
+  );
 
   return adaptUser(unwrapCommonResponse<MeResponse>(response));
 }

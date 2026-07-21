@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { ArrowLeft, Bell, House, Target, UserCircle, WalletCards } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, Bell, House, Search, Target, UserCircle, WalletCards } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const navItems: Array<{
   href: string;
@@ -18,50 +19,96 @@ const navItems: Array<{
 
 const rootPaths = new Set(navItems.map((item) => item.href));
 
-export function AppHeaderStart() {
+type AppHeaderProps = {
+  bloggerName?: string;
+  notificationCount?: number;
+};
+
+export function AppHeader({ bloggerName, notificationCount = 0 }: AppHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const parentHref = getParentHref(pathname);
   const isRootPath = rootPaths.has(pathname);
+  const hasNotifications = notificationCount > 0;
+  const isCampaignHome = pathname === "/campaigns";
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  if (!isRootPath) {
-    return (
-      <button
-        className="app-back-button"
-        onClick={() => {
-          if (window.history.length > 1) {
-            router.back();
-            return;
-          }
-
-          router.push(parentHref);
-        }}
-        type="button"
-      >
-        <ArrowLeft aria-hidden="true" size={24} strokeWidth={2.25} />
-      </button>
-    );
-  }
+  useEffect(() => {
+    if (isSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchOpen]);
 
   return (
-    <Link className="app-brand" href="/campaigns" aria-label="Pacto 홈">
-      <span className="app-brand-mark" aria-hidden="true">
-        <img src="/brand/logo-bg-rm-cropped.png" alt="" />
-      </span>
-    </Link>
-  );
-}
+    <header className="app-top">
+      {isRootPath ? (
+        <Link className="app-brand" href="/campaigns" aria-label="Pacto 홈">
+          <span className="app-brand-mark" aria-hidden="true">
+            <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
+          </span>
+          {bloggerName != null ? <small className="app-blogger-name">{bloggerName}</small> : null}
+        </Link>
+      ) : (
+        <button
+          aria-label="이전 화면으로 이동"
+          className="app-back-button"
+          onClick={() => {
+            if (window.history.length > 1) {
+              router.back();
+              return;
+            }
 
-export function TopActions() {
-  return (
-    <div className="top-actions">
-      <button className="icon-button" type="button" aria-label="알림 열기">
-        <Bell aria-hidden="true" size={21} strokeWidth={2.25} />
-      </button>
-      <Link className="icon-button profile" href="/profile" aria-label="내 정보">
-        <UserCircle aria-hidden="true" size={23} strokeWidth={2.25} />
-      </Link>
-    </div>
+            router.push(parentHref);
+          }}
+          type="button"
+        >
+          <ArrowLeft aria-hidden="true" size={24} strokeWidth={2.25} />
+        </button>
+      )}
+      <div className="top-actions">
+        <Link
+          className="icon-button notification-button"
+          href="/notifications"
+          aria-label={hasNotifications ? `${notificationCount}개의 새 알림 열기` : "알림 열기"}
+        >
+          <Bell aria-hidden="true" size={21} strokeWidth={2.25} />
+          {hasNotifications ? (
+            <span className="header-notification-dot" aria-hidden="true" />
+          ) : null}
+        </Link>
+        {isCampaignHome ? (
+          <button
+            aria-expanded={isSearchOpen}
+            aria-label={isSearchOpen ? "캠페인 검색 닫기" : "캠페인 검색 열기"}
+            className="icon-button campaign-search-toggle"
+            onClick={() => setIsSearchOpen((open) => !open)}
+            type="button"
+          >
+            <Search aria-hidden="true" size={22} strokeWidth={2} />
+          </button>
+        ) : (
+          <Link className="icon-button profile" href="/profile" aria-label="내 정보">
+            <UserCircle aria-hidden="true" size={23} strokeWidth={2.25} />
+          </Link>
+        )}
+        {isCampaignHome && isSearchOpen ? (
+          <form action="/campaigns" className="campaign-header-search" method="get">
+            <Search aria-hidden="true" size={18} />
+            <input
+              aria-label="캠페인 검색어"
+              defaultValue={searchParams.get("q") ?? ""}
+              name="q"
+              placeholder="캠페인명, 브랜드, 미션 검색"
+              ref={searchInputRef}
+              type="search"
+            />
+            <button type="submit">검색</button>
+          </form>
+        ) : null}
+      </div>
+    </header>
   );
 }
 
@@ -76,6 +123,14 @@ function getParentHref(pathname: string) {
 
   if (pathname.startsWith("/withdrawals")) {
     return "/wallet";
+  }
+
+  if (pathname.startsWith("/notifications")) {
+    return "/campaigns";
+  }
+
+  if (pathname.startsWith("/profile/")) {
+    return "/profile";
   }
 
   return "/campaigns";
@@ -96,8 +151,11 @@ export function BottomNav() {
             className={isActive ? "active" : undefined}
             href={item.href}
             key={item.href}
+            prefetch={true}
           >
-            <Icon aria-hidden="true" size={21} strokeWidth={2.25} />
+            <span className="bottom-nav-icon">
+              <Icon aria-hidden="true" size={21} strokeWidth={2.25} />
+            </span>
             <span>{item.label}</span>
           </Link>
         );

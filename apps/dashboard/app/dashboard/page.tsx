@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Clock3, FileCheck2, Megaphone, UsersRound, WalletCards } from "lucide-react";
 
 import {
   ApiError,
@@ -34,8 +35,12 @@ export default async function DashboardHomePage() {
   }
 
   const dashboard = await getAdvertiserDashboard(session.accessToken).catch((error: unknown) => {
-    if (error instanceof ApiError && (error.statusCode === 401 || error.statusCode === 403)) {
+    if (error instanceof ApiError && error.statusCode === 401) {
       redirect("/logout");
+    }
+
+    if (error instanceof ApiError && error.statusCode === 403) {
+      redirect("/forbidden");
     }
 
     throw error;
@@ -68,28 +73,29 @@ export default async function DashboardHomePage() {
           <a className="secondary-link" href="/dashboard/payments">
             예산 관리
           </a>
-          <a className="primary-link" href="/dashboard/campaigns/new">
-            새 캠페인 만들기
-          </a>
         </div>
       </header>
 
       <section className="dashboard-kpi-grid" aria-label="광고주 운영 요약">
-        {viewModel.stats.map((stat) => (
-          <article
-            className={`dashboard-kpi-card ${stat.emphasis ? "emphasis" : ""}`}
-            key={stat.id}
-          >
-            <span>
-              <span className="info-card-emoji" aria-hidden="true">
-                {stat.emoji}
+        {viewModel.stats.map((stat) => {
+          const Icon = stat.icon;
+
+          return (
+            <article
+              className={`dashboard-kpi-card ${stat.emphasis ? "emphasis" : ""}`}
+              key={stat.id}
+            >
+              <span>
+                <span className={`info-card-icon ${stat.iconTone}`} aria-hidden="true">
+                  <Icon size={22} strokeWidth={2.1} />
+                </span>
+                {stat.label}
               </span>
-              {stat.label}
-            </span>
-            <strong>{stat.value}</strong>
-            <p>{stat.subValue}</p>
-          </article>
-        ))}
+              <strong>{stat.value}</strong>
+              <p>{stat.subValue}</p>
+            </article>
+          );
+        })}
       </section>
 
       <section className="dashboard-board-grid">
@@ -111,12 +117,12 @@ export default async function DashboardHomePage() {
           actionHref="/dashboard/campaigns"
           actionLabel="검수 보기"
           centerLabel="전체 미션"
-          centerValue={`${viewModel.totalMissions}건`}
+          centerValue={String(viewModel.totalMissions)}
           className="dashboard-content-panel"
           items={viewModel.contentItems}
           title="콘텐츠 진행 상태"
           totalLabel="검수 대기"
-          totalValue={`${dashboard.missionSummary.submittedMissions}건`}
+          totalValue={String(dashboard.missionSummary.submittedMissions)}
         />
 
         <article className="panel dashboard-blogger-panel">
@@ -145,13 +151,13 @@ export default async function DashboardHomePage() {
             <div className="dashboard-mini-metrics">
               <MetricCell
                 label="전체 참여"
-                value={`${dashboard.applicationSummary.acceptedApplications}명`}
+                value={String(dashboard.applicationSummary.acceptedApplications)}
               />
               <MetricCell
                 label="신규 신청"
-                value={`${dashboard.applicationSummary.pendingApplications}명`}
+                value={String(dashboard.applicationSummary.pendingApplications)}
               />
-              <MetricCell label="최근 승인" value={`${acceptedBloggers.length}명`} />
+              <MetricCell label="최근 승인" value={String(acceptedBloggers.length)} />
             </div>
           </div>
         </article>
@@ -199,6 +205,10 @@ export default async function DashboardHomePage() {
           missions={dashboard.pendingMissions}
         />
       </section>
+
+      <a className="floating-campaign-create" href="/dashboard/campaigns/new">
+        신규 캠페인 설정 <span aria-hidden="true">+</span>
+      </a>
     </>
   );
 }
@@ -246,7 +256,7 @@ function DonutStatusCard({
             <div key={item.label}>
               <span style={{ background: item.color }} />
               <p>{item.label}</p>
-              <em>{item.amount == null ? `${item.count ?? 0}건` : formatPoint(item.amount)}</em>
+              <em>{item.amount == null ? (item.count ?? 0) : formatPoint(item.amount)}</em>
             </div>
           ))}
         </div>
@@ -263,7 +273,7 @@ function RecentApplicationsPanel({ dashboard }: { dashboard: AdvertiserDashboard
           <h2>최근 지원자</h2>
           <p>최근 들어온 지원자를 확인하고 승인 화면으로 이동합니다.</p>
         </div>
-        <span>{dashboard.recentApplications.length}건</span>
+        <span>{dashboard.recentApplications.length}</span>
       </div>
       <div className="table-wrap">
         <table>
@@ -329,7 +339,7 @@ function RecentActivityPanel({
             <h2>검수 대기 미션</h2>
             <p>블로거가 URL을 제출한 미션입니다.</p>
           </div>
-          <span>{missions.length}건</span>
+          <span>{missions.length}</span>
         </div>
         <div className="dashboard-card-list">
           {missions.length > 0 ? (
@@ -405,7 +415,7 @@ function SettlementStep({
       <span />
       <p>{label}</p>
       <strong>{formatPoint(amount)}</strong>
-      <em>{count}건</em>
+      <em>{count}</em>
     </div>
   );
 }
@@ -460,38 +470,43 @@ function createDashboardViewModel(dashboard: AdvertiserDashboardSummary) {
     stats: [
       {
         emphasis: true,
-        emoji: "📣",
+        icon: Megaphone,
+        iconTone: "blue",
         id: "campaigns",
         label: "전체 캠페인",
-        subValue: `모집 중 ${dashboard.campaignSummary.recruitingCampaigns}건`,
+        subValue: `모집 중 ${dashboard.campaignSummary.recruitingCampaigns}`,
         value: String(dashboard.campaignSummary.totalCampaigns),
       },
       {
-        emoji: "💰",
+        icon: WalletCards,
+        iconTone: "green",
         id: "escrow",
         label: "예산 예치",
         subValue: `사용 가능 ${formatPoint(dashboard.wallet.balance)}`,
         value: formatPoint(dashboard.wallet.lockedBalance || dashboard.escrowSummary.lockedAmount),
       },
       {
-        emoji: "🙋",
+        icon: UsersRound,
+        iconTone: "yellow",
         id: "bloggers",
         label: "참여 블로거",
-        subValue: `승인 대기 ${dashboard.applicationSummary.pendingApplications}명`,
-        value: `${dashboard.applicationSummary.acceptedApplications}명`,
+        subValue: `승인 대기 ${dashboard.applicationSummary.pendingApplications}`,
+        value: String(dashboard.applicationSummary.acceptedApplications),
       },
       {
-        emoji: "📝",
+        icon: FileCheck2,
+        iconTone: "blue",
         id: "contents",
         label: "진행 중 콘텐츠",
-        subValue: `검수 대기 ${dashboard.missionSummary.submittedMissions}건`,
-        value: `${totalMissions}건`,
+        subValue: `검수 대기 ${dashboard.missionSummary.submittedMissions}`,
+        value: String(totalMissions),
       },
       {
-        emoji: "⏳",
+        icon: Clock3,
+        iconTone: "yellow",
         id: "settlement",
         label: "정산 대기 금액",
-        subValue: `${dashboard.escrowSummary.lockedEscrows}건 대기`,
+        subValue: `${dashboard.escrowSummary.lockedEscrows} 대기`,
         value: formatPoint(dashboard.escrowSummary.lockedAmount),
       },
     ],

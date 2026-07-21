@@ -1,6 +1,6 @@
 "use client";
 
-import type { ApplicationStatusResponse } from "@pacto/types";
+import type { ApplicationStatusResponse, CampaignStatus, MissionStatus } from "@pacto/types";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
@@ -8,14 +8,20 @@ import { acceptCampaignAction, submitMissionAction } from "../_actions/blogger-a
 
 type CampaignApplyActionProps = {
   applicationStatus?: ApplicationStatusResponse;
+  campaignStatus: CampaignStatus;
   campaignId: number;
   enabled: boolean;
+  missionId?: number;
+  missionStatus?: MissionStatus;
 };
 
 export function CampaignApplyAction({
   applicationStatus,
+  campaignStatus,
   campaignId,
   enabled,
+  missionId,
+  missionStatus,
 }: CampaignApplyActionProps) {
   const [currentStatus, setCurrentStatus] = useState<ApplicationStatusResponse | undefined>(
     applicationStatus,
@@ -24,6 +30,41 @@ export function CampaignApplyAction({
   const [isPending, startTransition] = useTransition();
 
   if (currentStatus != null) {
+    if (currentStatus === "ACCEPTED") {
+      const missionHref = missionId == null ? "/missions" : `/missions/${missionId}`;
+
+      if (campaignStatus === "closed") {
+        return (
+          <div className="cta-stack">
+            <Link className="primary-button weak-button" href={missionHref}>
+              선정 완료 · 미션 시작 대기
+            </Link>
+            <p>광고주가 캠페인을 시작하면 리뷰 URL을 제출할 수 있어요.</p>
+          </div>
+        );
+      }
+
+      if (campaignStatus !== "in_progress" || missionStatus !== "in_progress") {
+        return (
+          <div className="cta-stack">
+            <Link className="primary-button weak-button" href={missionHref}>
+              미션 상태 확인하기
+            </Link>
+            <p>선정된 캠페인의 진행 및 정산 상태를 확인해 주세요.</p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="cta-stack">
+          <Link className="primary-button" href={missionHref}>
+            미션 제출하기
+          </Link>
+          <p>선정이 완료됐어요. 리뷰 URL을 제출해 주세요.</p>
+        </div>
+      );
+    }
+
     return (
       <div className="cta-stack">
         <button className="primary-button weak-button" disabled type="button">
@@ -46,7 +87,7 @@ export function CampaignApplyAction({
 
   return (
     <div className="cta-stack">
-      {errorMessage != null ? <p>{errorMessage}</p> : null}
+      {errorMessage != null ? <p className="form-error">{errorMessage}</p> : null}
       <button
         className="primary-button"
         disabled={isPending}
@@ -93,7 +134,7 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
   if (isSubmitted) {
     return (
       <div className="cta-stack">
-        <p>리뷰 URL을 제출했어요. 미션 목록에서 검토 상태를 확인할 수 있어요.</p>
+        <p>리뷰 URL을 제출했어요. 미션 목록에서 검수 상태를 확인할 수 있어요.</p>
         <Link className="primary-button" href="/missions">
           내 미션으로 돌아가기
         </Link>
@@ -120,16 +161,17 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
         }
       }}
     >
-      {errorMessage != null ? <p>{errorMessage}</p> : null}
+      {errorMessage != null ? <p className="form-error">{errorMessage}</p> : null}
       <label>
         리뷰 URL
         <input
           inputMode="url"
           onChange={(event) => setReviewUrl(event.target.value)}
-          placeholder="https://blog.example.com/review"
+          placeholder="https://blog.example.com/review 또는 Notion URL"
           type="url"
           value={reviewUrl}
         />
+        <span className="field-help">블로그 글 URL이나 공개된 Notion URL을 제출할 수 있어요.</span>
       </label>
       <button
         className="primary-button"
@@ -145,11 +187,11 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
 function getApplicationCtaLabel(status: ApplicationStatusResponse) {
   switch (status) {
     case "PENDING":
-      return "신청 완료";
+      return "승인 대기 중";
     case "ACCEPTED":
       return "승인 완료";
     case "REJECTED":
-      return "신청 반려";
+      return "이번 캠페인에는 선정되지 않았어요";
     case "CANCELLED":
       return "신청 취소";
   }

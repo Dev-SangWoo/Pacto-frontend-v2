@@ -45,8 +45,13 @@ export function WithdrawalForm({ accessToken, availableBalance }: WithdrawalForm
       router.push("/wallet");
       router.refresh();
     } catch (error) {
-      if (error instanceof ApiError && (error.statusCode === 401 || error.statusCode === 403)) {
+      if (error instanceof ApiError && error.statusCode === 401) {
         router.push("/logout?reason=session-expired");
+        return;
+      }
+
+      if (error instanceof ApiError && error.statusCode === 403) {
+        router.push("/forbidden");
         return;
       }
 
@@ -56,6 +61,22 @@ export function WithdrawalForm({ accessToken, availableBalance }: WithdrawalForm
       setIsLoading(false);
     }
   };
+
+  function handleAmountChange(value: string) {
+    if (value.length === 0) {
+      setAmount(0);
+      return;
+    }
+
+    const nextAmount = Number(value);
+
+    if (!Number.isFinite(nextAmount) || nextAmount < 0) {
+      setAmount(0);
+      return;
+    }
+
+    setAmount(Math.min(Math.floor(nextAmount), availableBalance));
+  }
 
   return (
     <form className="section-block" onSubmit={handleSubmit}>
@@ -80,8 +101,16 @@ export function WithdrawalForm({ accessToken, availableBalance }: WithdrawalForm
           </label>
           <input
             type="number"
+            min={1}
+            max={availableBalance}
+            step={1}
             value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
+            onChange={(e) => handleAmountChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (["-", "+", "e", "E"].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
             placeholder="금액을 입력하세요"
             style={{
               width: "100%",
@@ -133,8 +162,9 @@ export function WithdrawalForm({ accessToken, availableBalance }: WithdrawalForm
           <input
             type="text"
             value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value)}
-            placeholder="'-' 없이 입력"
+            onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
+            inputMode="numeric"
+            placeholder="숫자만 입력"
             style={{
               width: "100%",
               padding: "0.75rem",
@@ -148,7 +178,7 @@ export function WithdrawalForm({ accessToken, availableBalance }: WithdrawalForm
         <button
           type="submit"
           className="primary-button"
-          disabled={isLoading || availableBalance === 0}
+          disabled={isLoading || amount <= 0 || amount > availableBalance || availableBalance === 0}
           style={{ marginTop: "1rem" }}
         >
           {isLoading ? "신청 중..." : "출금 신청하기"}

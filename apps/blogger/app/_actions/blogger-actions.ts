@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { ApiError, applyToCampaign, submitMission } from "@pacto/api";
+import {
+  ApiError,
+  applyToCampaign,
+  markNotificationAsRead,
+  registerPushSubscription,
+  submitMission,
+  updateMyProfile,
+} from "@pacto/api";
 
 import { getBloggerSession } from "../_lib/session";
 
@@ -11,6 +18,47 @@ type ActionResult = {
   message?: string;
   ok: boolean;
 };
+
+export type ProfileUpdateState = ActionResult;
+
+export async function updateBloggerProfileAction(
+  _previousState: ProfileUpdateState,
+  formData: FormData,
+): Promise<ProfileUpdateState> {
+  try {
+    const session = await getBloggerSession();
+
+    if (session.accessToken == null) {
+      redirect("/login");
+    }
+
+    await updateMyProfile(
+      {
+        bloggerProfile: {
+          accountHolder: readText(formData, "accountHolder"),
+          accountNumber: readText(formData, "accountNumber"),
+          bankName: readText(formData, "bankName"),
+          blogUrl: readText(formData, "blogUrl"),
+          contact: readText(formData, "contact"),
+          name: readText(formData, "name"),
+          nickname: readText(formData, "nickname"),
+        },
+      },
+      session.accessToken,
+    );
+    revalidatePath("/profile");
+    revalidatePath("/profile/edit");
+
+    return { message: "프로필 정보를 저장했어요.", ok: true };
+  } catch (error) {
+    redirectIfAuthError(error);
+
+    return {
+      message: getProfileUpdateErrorMessage(error),
+      ok: false,
+    };
+  }
+}
 
 export async function acceptCampaignAction(campaignId: number): Promise<ActionResult> {
   try {
@@ -58,9 +106,47 @@ export async function submitMissionAction(
   }
 }
 
+export async function readNotificationAction(notificationId: number, targetUrl?: string) {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    await markNotificationAsRead(notificationId, session.accessToken);
+    revalidatePath("/notifications");
+    revalidatePath("/", "layout");
+  } catch (error) {
+    redirectIfAuthError(error);
+  }
+
+  redirect(getSafeNotificationTarget(targetUrl));
+}
+
+export async function registerPushTokenAction(registrationId: string): Promise<ActionResult> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    await registerPushSubscription(registrationId, session.accessToken);
+    return { message: "푸시 알림을 설정했어요.", ok: true };
+  } catch (error) {
+    redirectIfAuthError(error);
+    return { message: "푸시 알림을 설정하지 못했어요. 잠시 후 다시 시도해 주세요.", ok: false };
+  }
+}
+
 function redirectIfAuthError(error: unknown) {
-  if (error instanceof ApiError && (error.statusCode === 401 || error.statusCode === 403)) {
+  if (error instanceof ApiError && error.statusCode === 401) {
     redirect("/logout?reason=session-expired");
+  }
+
+  if (error instanceof ApiError && error.statusCode === 403) {
+    redirect("/forbidden");
   }
 }
 
@@ -91,4 +177,24 @@ function isApiErrorLike(error: unknown): error is { message: string; statusCode:
     typeof (error as { message?: unknown }).message === "string" &&
     typeof (error as { statusCode?: unknown }).statusCode === "number"
   );
+}
+
+function readText(formData: FormData, key: string) {
+  return String(formData.get(key) ?? "").trim();
+}
+
+function getProfileUpdateErrorMessage(error: unknown) {
+  if (isApiErrorLike(error) && error.message.length > 0) {
+    return error.message;
+  }
+
+  return "프로필 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.";
+}
+
+function getSafeNotificationTarget(targetUrl?: string) {
+  if (targetUrl?.startsWith("/") && !targetUrl.startsWith("//")) {
+    return targetUrl;
+  }
+
+  return "/notifications";
 }

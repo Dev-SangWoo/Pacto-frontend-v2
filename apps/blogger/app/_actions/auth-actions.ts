@@ -1,18 +1,14 @@
 "use server";
 
-import { ApiError, getMe, login, signup } from "@pacto/api";
+import { ApiError, getMe, login, signup, unregisterPushSubscription } from "@pacto/api";
 import { redirect } from "next/navigation";
 
-import { clearBloggerSession, setBloggerSession } from "../_lib/session";
+import { clearBloggerSession, getBloggerSession, setBloggerSession } from "../_lib/session";
 
 type AuthActionResult = {
   message?: string;
   ok: boolean;
 };
-
-const TEST_EMAIL = "testtest@gmail.com";
-const TEST_PASSWORD = "1234";
-const TEST_BLOGGER_ID = 1;
 
 function getApiErrorMessage(error: unknown, fallbackMessage: string): string {
   return error instanceof ApiError ? error.message : fallbackMessage;
@@ -36,12 +32,6 @@ export async function loginAction(email: string, password: string): Promise<Auth
 
     return { ok: true };
   } catch (error) {
-    if (email === TEST_EMAIL && password === TEST_PASSWORD) {
-      await setBloggerSession({ bloggerId: TEST_BLOGGER_ID, email });
-
-      return { ok: true };
-    }
-
     return {
       message: getApiErrorMessage(error, "로그인에 실패했어요. 이메일과 비밀번호를 확인해 주세요."),
       ok: false,
@@ -67,6 +57,17 @@ export async function signupAction(email: string, password: string): Promise<Aut
 }
 
 export async function logoutAction() {
+  await clearBloggerSession();
+  redirect("/login");
+}
+
+export async function logoutWithPushAction(registrationId?: string) {
+  const session = await getBloggerSession();
+
+  if (registrationId != null && session.accessToken != null) {
+    await unregisterPushSubscription(registrationId, session.accessToken).catch(() => undefined);
+  }
+
   await clearBloggerSession();
   redirect("/login");
 }

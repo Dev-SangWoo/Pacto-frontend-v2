@@ -4,6 +4,8 @@ import { mapEscrowStatus } from "@pacto/utils";
 
 export type EscrowLedgerResponse = {
   amount: number;
+  bloggerEmail?: string;
+  bloggerId?: number;
   bloggerName?: string;
   campaignId?: number;
   campaignTitle?: string;
@@ -22,6 +24,8 @@ export function adaptEscrowLedger(response: EscrowLedgerResponse): EscrowLedger 
     id: response.escrowId ?? response.escrow_id ?? 0,
     campaignId,
     campaignTitle: response.campaignTitle,
+    bloggerId: response.bloggerId,
+    bloggerEmail: response.bloggerEmail,
     bloggerName: response.bloggerName,
     amount: response.amount,
     status: mapEscrowStatus(response.status),

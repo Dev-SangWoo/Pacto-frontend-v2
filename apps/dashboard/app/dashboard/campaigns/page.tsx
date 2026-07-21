@@ -1,5 +1,7 @@
 import { getCampaigns } from "@pacto/api";
 import type { Campaign, CampaignStatus } from "@pacto/types";
+import type { LucideIcon } from "lucide-react";
+import { CheckCircle2, Megaphone, Rocket, UsersRound } from "lucide-react";
 import {
   formatDeadlineDday,
   formatKoreanDate,
@@ -21,8 +23,8 @@ type DashboardCampaignsPageProps = {
 const campaignStatusFilters: Array<{ label: string; value: CampaignStatus | "all" }> = [
   { label: "전체", value: "all" },
   { label: "모집 중", value: "open" },
-  { label: "모집 마감", value: "closed" },
-  { label: "캠페인 진행 중", value: "full" },
+  { label: "선정 중", value: "closed" },
+  { label: "진행 중", value: "in_progress" },
   { label: "완료", value: "completed" },
   { label: "취소", value: "cancelled" },
 ];
@@ -30,7 +32,7 @@ const campaignStatusFilters: Array<{ label: string; value: CampaignStatus | "all
 const validCampaignStatuses = new Set<CampaignStatus>([
   "draft",
   "open",
-  "full",
+  "in_progress",
   "closed",
   "completed",
   "cancelled",
@@ -54,7 +56,7 @@ export default async function DashboardCampaignsPage({
     return matchesStatus && matchesQuery;
   });
   const openCount = campaigns.filter((campaign) => campaign.status === "open").length;
-  const fullCount = campaigns.filter((campaign) => campaign.status === "full").length;
+  const inProgressCount = campaigns.filter((campaign) => campaign.status === "in_progress").length;
   const completedCount = campaigns.filter((campaign) => campaign.status === "completed").length;
   const totalApplicants = campaigns.reduce((sum, campaign) => sum + campaign.applicantCount, 0);
 
@@ -68,25 +70,37 @@ export default async function DashboardCampaignsPage({
             캠페인의 모집 상태와 운영 현황을 확인하고 필요한 액션을 진행합니다.
           </p>
         </div>
-        <a className="primary-link" href="/dashboard/campaigns/new">
-          신규 캠페인
-        </a>
       </header>
 
       <section className="campaign-management-summary" aria-label="캠페인 운영 요약">
-        <SummaryCard emoji="📣" label="전체 캠페인" value={`${campaigns.length}건`}>
+        <SummaryCard
+          icon={Megaphone}
+          iconTone="blue"
+          label="전체 캠페인"
+          value={`${campaigns.length}건`}
+        >
           생성된 캠페인
         </SummaryCard>
-        <SummaryCard emoji="📢" label="모집 중" value={`${openCount}건`}>
+        <SummaryCard icon={Megaphone} iconTone="green" label="모집 중" value={`${openCount}건`}>
           블로거 신청을 받고 있어요
         </SummaryCard>
-        <SummaryCard emoji="🚀" label="캠페인 진행 중" value={`${fullCount}건`}>
+        <SummaryCard icon={Rocket} iconTone="yellow" label="진행 중" value={`${inProgressCount}건`}>
           미션 수행과 검수가 진행돼요
         </SummaryCard>
-        <SummaryCard emoji="🙋" label="총 지원자" value={`${totalApplicants}명`}>
+        <SummaryCard
+          icon={UsersRound}
+          iconTone="blue"
+          label="총 지원자"
+          value={`${totalApplicants}명`}
+        >
           모든 캠페인 누적 지원자
         </SummaryCard>
-        <SummaryCard emoji="✅" label="완료" value={`${completedCount}건`}>
+        <SummaryCard
+          icon={CheckCircle2}
+          iconTone="green"
+          label="완료"
+          value={`${completedCount}건`}
+        >
           정산까지 마무리된 캠페인
         </SummaryCard>
       </section>
@@ -228,26 +242,32 @@ export default async function DashboardCampaignsPage({
           </section>
         )}
       </section>
+
+      <a className="floating-campaign-create" href="/dashboard/campaigns/new">
+        신규 캠페인 설정 <span aria-hidden="true">+</span>
+      </a>
     </>
   );
 }
 
 function SummaryCard({
   children,
-  emoji,
+  icon: Icon,
+  iconTone,
   label,
   value,
 }: {
   children: React.ReactNode;
-  emoji: string;
+  icon: LucideIcon;
+  iconTone: "blue" | "green" | "grey" | "yellow";
   label: string;
   value: string;
 }) {
   return (
     <article>
       <span>
-        <span className="info-card-emoji" aria-hidden="true">
-          {emoji}
+        <span className={`info-card-icon ${iconTone}`} aria-hidden="true">
+          <Icon size={22} strokeWidth={2.1} />
         </span>
         {label}
       </span>

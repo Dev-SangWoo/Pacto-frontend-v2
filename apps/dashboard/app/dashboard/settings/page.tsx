@@ -1,28 +1,17 @@
-import { Bell, Building2, CreditCard, LogOut, ShieldCheck, UserCircle } from "lucide-react";
+import { Bell, CreditCard, LogOut, ShieldCheck, UserCircle } from "lucide-react";
 
 import { getMe, getMyWallet } from "@pacto/api";
 import { formatKoreanDate, formatPoint } from "@pacto/utils";
 
 import { logoutAction } from "../../_actions/auth-actions";
 import { getDashboardSession } from "../../_lib/session";
+import { AdvertiserProfileForm } from "./_components/advertiser-profile-form";
 
 const futureSettings = [
-  {
-    description: "브랜드명, 사업자 정보, 담당자 연락처를 관리할 수 있도록 확장할 영역입니다.",
-    icon: Building2,
-    label: "조직 정보",
-    state: "준비 중",
-  },
   {
     description: "캠페인 신청, 미션 제출, 정산 이벤트 알림 채널을 설정할 영역입니다.",
     icon: Bell,
     label: "알림 설정",
-    state: "준비 중",
-  },
-  {
-    description: "환불, 세금계산서, 정산 계좌 정보가 필요해지면 이 영역에 연결합니다.",
-    icon: CreditCard,
-    label: "정산 정보",
     state: "준비 중",
   },
 ];
@@ -92,6 +81,16 @@ export default async function SettingsPage() {
             </span>
           </div>
         </article>
+      </section>
+
+      <section className="panel settings-panel settings-profile-panel">
+        <div className="panel-heading">
+          <div>
+            <h2>광고주 정보</h2>
+            <p>캠페인에 사용하는 브랜드·담당자 정보와 정산 계좌를 관리합니다.</p>
+          </div>
+        </div>
+        <AdvertiserProfileForm profile={user?.advertiserProfile} />
       </section>
 
       <section className="settings-content-grid">

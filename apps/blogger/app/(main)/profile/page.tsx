@@ -1,19 +1,21 @@
-import { logoutAction } from "../../_actions/auth-actions";
+import { getMe } from "@pacto/api";
+
+import { PushNotificationSetting } from "../../_components/push-notification-setting";
+import { PushAwareLogoutButton } from "../../_components/push-aware-logout-button";
 import { getBloggerSession } from "../../_lib/session";
 
 export default async function ProfilePage() {
   const session = await getBloggerSession();
-  const email = session.email ?? "로그인이 필요해요";
-  const avatarLabel = getAvatarLabel(session.email);
+  const user =
+    session.accessToken != null
+      ? await getMe(session.accessToken).catch(() => undefined)
+      : undefined;
+  const email = user?.email ?? session.email ?? "로그인이 필요해요";
+  const profile = user?.bloggerProfile;
+  const avatarLabel = getAvatarLabel(profile?.nickname ?? profile?.name ?? email);
 
   return (
-    <section className="screen-stack" aria-labelledby="profile-title">
-      <section className="profile-title-block">
-        <p className="section-label">내 정보</p>
-        <h1 id="profile-title">계정 설정</h1>
-        <p>로그인 정보와 정산 메뉴를 확인하세요.</p>
-      </section>
-
+    <section aria-label="계정 설정" className="screen-stack mobile-system-page profile-system-page">
       <section className="profile-section" aria-labelledby="account-profile-title">
         <div className="section-head">
           <div>
@@ -22,16 +24,39 @@ export default async function ProfilePage() {
           </div>
         </div>
         <div className="profile-card">
-          <span className="profile-photo-preview" aria-hidden="true">
-            {avatarLabel}
-          </span>
+          {profile?.profileImageUrl != null && profile.profileImageUrl.length > 0 ? (
+            <img
+              className="profile-photo-preview image"
+              src={profile.profileImageUrl}
+              alt="프로필"
+            />
+          ) : (
+            <span className="profile-photo-preview" aria-hidden="true">
+              {avatarLabel}
+            </span>
+          )}
           <div className="profile-card-copy">
-            <strong>{email}</strong>
+            <strong>{profile?.nickname || profile?.name || email}</strong>
+            <span>{email}</span>
             <span>블로거 ID #{session.bloggerId}</span>
-            <span>블로거 계정</span>
           </div>
         </div>
+        <div className="profile-action-list">
+          <a href="/profile/edit">
+            <span>내 정보 수정</span>
+            <strong>프로필과 정산 계좌 관리</strong>
+          </a>
+        </div>
       </section>
+
+      <a className="profile-image-cta" href="/profile/edit">
+        <span>
+          <small>프로필 완성하기</small>
+          <strong>활동 정보와 정산 계좌를 확인해 주세요</strong>
+          <em>정보 수정하기</em>
+        </span>
+        <img alt="" aria-hidden="true" src="/illustrations/goal-mountain.webp" />
+      </a>
 
       <section className="profile-section" aria-labelledby="payout-profile-title">
         <div className="section-head">
@@ -52,19 +77,17 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <form action={logoutAction}>
-        <button className="primary-button weak-button full-width" type="submit">
-          로그아웃
-        </button>
-      </form>
+      <PushNotificationSetting />
+
+      <PushAwareLogoutButton />
     </section>
   );
 }
 
-function getAvatarLabel(email?: string) {
-  if (email == null || email.trim().length === 0) {
+function getAvatarLabel(value?: string) {
+  if (value == null || value.trim().length === 0) {
     return "P";
   }
 
-  return email.trim().slice(0, 1).toUpperCase();
+  return value.trim().slice(0, 1).toUpperCase();
 }

@@ -9,7 +9,8 @@ export type CampaignStatusResponse =
   | "DRAFT"
   | "FULL"
   | "IN_PROGRESS"
-  | "RECRUITING";
+  | "RECRUITING"
+  | "full";
 
 export type CampaignResponse = {
   advertiser_id?: number;
@@ -20,6 +21,8 @@ export type CampaignResponse = {
   campaignId?: number;
   deadline?: string;
   guidelines?: unknown;
+  guidelineImageUrls?: string[];
+  guideline_image_urls?: string[];
   id?: number;
   advertiserName?: string;
   brandName?: string;
@@ -73,6 +76,7 @@ export function adaptCampaign(response: CampaignResponse): Campaign {
     totalSlots,
     remainingSlots,
     guidelines: normalizeGuidelines(response.guidelines),
+    guidelineImageUrls: response.guidelineImageUrls ?? response.guideline_image_urls ?? [],
     deadline: response.deadline ?? new Date().toISOString(),
     status: mapCampaignStatus(response.status),
   };
@@ -94,8 +98,7 @@ function normalizeGuidelines(guidelines?: unknown): string {
 
   if (typeof guidelines === "object" && guidelines !== null) {
     if (isTiptapGuidelines(guidelines)) {
-      const text = extractTiptapText(guidelines.content.content);
-      return text.length > 0 ? text : "캠페인 가이드를 확인해 주세요.";
+      return JSON.stringify(guidelines);
     }
     if ("items" in guidelines && Array.isArray(guidelines.items)) {
       return guidelines.items.join("\n");
@@ -122,47 +125,11 @@ function isTiptapGuidelines(value: object): value is {
   );
 }
 
-function extractTiptapText(nodes: unknown[] = []): string {
-  return nodes
-    .map(extractTiptapNodeText)
-    .filter((text) => text.length > 0)
-    .join("\n");
-}
-
-function extractTiptapNodeText(node: unknown): string {
-  if (typeof node !== "object" || node === null) {
-    return "";
-  }
-
-  if ("text" in node && typeof node.text === "string") {
-    return node.text;
-  }
-
-  if ("type" in node && node.type === "image") {
-    const attrs = "attrs" in node ? node.attrs : undefined;
-    const alt =
-      typeof attrs === "object" && attrs !== null && "alt" in attrs && typeof attrs.alt === "string"
-        ? attrs.alt
-        : "가이드 이미지";
-
-    return `[이미지] ${alt}`;
-  }
-
-  if ("content" in node && Array.isArray(node.content)) {
-    return node.content
-      .map(extractTiptapNodeText)
-      .filter((text) => text.length > 0)
-      .join(" ");
-  }
-
-  return "";
-}
-
 function getFallbackThumbnail(id?: number): string {
   const thumbnails = [
-    "/campaigns/seongsu-brunch-cafe.png",
-    "/campaigns/hongdae-nail-studio.png",
-    "/campaigns/jamsil-fitness-lounge.png",
+    "/campaigns/seongsu-brunch-cafe.webp",
+    "/campaigns/hongdae-nail-studio.webp",
+    "/campaigns/jamsil-fitness-lounge.webp",
   ];
   const index = id == null ? 0 : Math.abs(id - 1) % thumbnails.length;
 
@@ -180,7 +147,8 @@ export function mapCampaignStatus(status: CampaignResponse["status"]): CampaignS
     case "IN_PROGRESS":
     case "FULL":
     case "full":
-      return "full";
+    case "in_progress":
+      return "in_progress";
     case "CLOSED":
     case "closed":
       return "closed";

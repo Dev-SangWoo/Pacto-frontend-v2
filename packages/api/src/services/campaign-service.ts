@@ -32,10 +32,6 @@ export type CreateCampaignPayload = {
   totalSlots: number;
 };
 
-export type UpdateCampaignStatusPayload = {
-  status: CampaignStatusResponse;
-};
-
 export async function getCampaigns(
   params: GetCampaignsParams = {},
   token?: string,
@@ -75,30 +71,38 @@ export async function createCampaign(payload: CreateCampaignPayload, token?: str
   return adaptCreateCampaign(unwrapCommonResponse<CreateCampaignResponse>(response));
 }
 
-export async function updateCampaignStatus(
+export async function uploadCampaignThumbnail(
   campaignId: number,
-  payload: UpdateCampaignStatusPayload,
+  file: File,
   token?: string,
-) {
-  const response = await apiRequest<CreateCampaignResponse | UpdateCampaignStatusPayload>(
-    `/api/v1/campaigns/${campaignId}/status`,
-    {
-      body: payload,
-      method: "PATCH",
-      token,
-    },
-  );
-  const result = unwrapCommonResponse<CreateCampaignResponse | UpdateCampaignStatusPayload>(
-    response,
-  );
+): Promise<void> {
+  const body = new FormData();
+  body.append("file", file);
 
-  return {
-    id:
-      "campaign_id" in result || "campaignId" in result
-        ? adaptCreateCampaign(result).id
-        : campaignId,
-    status: mapCampaignStatus(result.status),
-  };
+  await apiRequest(`/api/v1/campaigns/${campaignId}/thumbnail`, {
+    body,
+    method: "POST",
+    token,
+  });
+}
+
+export async function uploadCampaignGuidelineImages(
+  campaignId: number,
+  files: File[],
+  token?: string,
+): Promise<void> {
+  if (files.length === 0) {
+    return;
+  }
+
+  const body = new FormData();
+  files.forEach((file) => body.append("files", file));
+
+  await apiRequest(`/api/v1/campaigns/${campaignId}/guideline-images`, {
+    body,
+    method: "POST",
+    token,
+  });
 }
 
 export async function closeCampaign(campaignId: number, token?: string) {
@@ -109,17 +113,13 @@ export async function proceedCampaign(campaignId: number, token?: string) {
   return transitionCampaign(campaignId, "proceed", token);
 }
 
-export async function completeCampaign(campaignId: number, token?: string) {
-  return transitionCampaign(campaignId, "complete", token);
-}
-
 export async function cancelCampaign(campaignId: number, token?: string) {
   return transitionCampaign(campaignId, "cancel", token);
 }
 
 async function transitionCampaign(
   campaignId: number,
-  action: "cancel" | "close" | "complete" | "proceed",
+  action: "cancel" | "close" | "proceed",
   token?: string,
 ) {
   const response = await apiRequest<CreateCampaignResponse>(

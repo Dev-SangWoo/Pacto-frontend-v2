@@ -1,10 +1,10 @@
-import { getCampaignDetail, getMyApplicationResponses, getMyMissions } from "@pacto/api";
+import { getCampaignDetail } from "@pacto/api";
 import type { ApplicationResponse, Campaign, Mission } from "@pacto/types";
-import { formatPoint } from "@pacto/utils";
 import { redirect } from "next/navigation";
 
 import { MissionBoard } from "../../_components/mission-board";
-import { redirectOnAuthError } from "../../_lib/auth-error";
+import { fallbackOnNonAuthError } from "../../_lib/auth-error";
+import { getBloggerActivity } from "../../_lib/blogger-activity";
 import { getBloggerSession } from "../../_lib/session";
 
 export const dynamic = "force-dynamic";
@@ -16,10 +16,13 @@ export default async function MissionsPage() {
     redirect("/login");
   }
 
-  const [missions, applications] = await Promise.all([
-    getMyMissions({}, session.accessToken),
-    getMyApplicationResponses(session.accessToken),
-  ]).catch(redirectOnAuthError);
+  const { applications, missions } = await getBloggerActivity(session.accessToken).catch(
+    (error: unknown) =>
+      fallbackOnNonAuthError<{ applications: ApplicationResponse[]; missions: Mission[] }>(error, {
+        applications: [],
+        missions: [],
+      }),
+  );
   const campaignMap = await getCampaignMap([...missions, ...applications], session.accessToken);
   const enrichedMissions = missions.map((mission) => enrichMission(mission, campaignMap));
   const enrichedApplications = applications.map((application) =>
@@ -36,27 +39,14 @@ export default async function MissionsPage() {
     .reduce((sum, mission) => sum + mission.rewardPoint, 0);
 
   return (
-    <section className="screen-stack" aria-labelledby="missions-title">
-      <section className="task-hero mission-home-hero">
-        <div>
-          <p className="section-label">미션 관리</p>
-          <h1 id="missions-title">오늘 처리할 미션</h1>
-          <p>신청, 제출, 정산까지 지금 내 상태를 한눈에 확인하세요.</p>
-        </div>
-        <div className="mission-hero-stats" aria-label="미션 요약">
-          <span>
-            진행 중 <strong>{activeMissionCount}건</strong>
-          </span>
-          <span>
-            예상 보상 <strong>{formatPoint(expectedReward)}</strong>
-          </span>
-          <span>
-            승인 대기 <strong>{pendingApplicationCount}건</strong>
-          </span>
-        </div>
-      </section>
-
-      <MissionBoard applications={enrichedApplications} missions={enrichedMissions} />
+    <section className="screen-stack mobile-system-page mission-system-page" aria-label="내 미션">
+      <MissionBoard
+        activeMissionCount={activeMissionCount}
+        applications={enrichedApplications}
+        expectedReward={expectedReward}
+        missions={enrichedMissions}
+        pendingApplicationCount={pendingApplicationCount}
+      />
     </section>
   );
 }

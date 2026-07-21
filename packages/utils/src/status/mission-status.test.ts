@@ -8,7 +8,7 @@ describe("mission status policy", () => {
   });
 
   it("submitted mission is displayed as submitted", () => {
-    expect(getMissionStatusView("submitted")).toEqual({ label: "검수 대기", tone: "grey" });
+    expect(getMissionStatusView("submitted")).toEqual({ label: "검수 대기", tone: "amber" });
   });
 
   it("approved mission is displayed as settled", () => {
