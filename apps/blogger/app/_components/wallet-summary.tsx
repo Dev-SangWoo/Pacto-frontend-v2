@@ -33,6 +33,12 @@ export function WalletSummary({
 
   return (
     <section className="wallet-hero" aria-labelledby="wallet-title">
+      <img
+        alt=""
+        aria-hidden="true"
+        className="wallet-summary-illustration"
+        src="/illustrations/wallet-cashback.webp"
+      />
       <div className="wallet-brief">
         <p className="section-label">내 지갑</p>
         <h1 id="wallet-title">출금 가능 포인트</h1>

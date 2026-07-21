@@ -61,6 +61,12 @@ export default async function MissionsPage() {
             승인 대기<strong>{pendingApplicationCount}건</strong>
           </span>
         </div>
+        <img
+          alt=""
+          aria-hidden="true"
+          className="mobile-summary-illustration mission-summary-illustration"
+          src="/illustrations/mission-cta-action.webp"
+        />
       </section>
       <MissionBoard applications={enrichedApplications} missions={enrichedMissions} />
     </section>

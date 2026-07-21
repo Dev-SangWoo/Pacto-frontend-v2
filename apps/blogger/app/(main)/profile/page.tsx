@@ -52,6 +52,15 @@ export default async function ProfilePage() {
         </div>
       </section>
 
+      <a className="profile-image-cta" href="#profile-edit-title">
+        <span>
+          <small>프로필 완성하기</small>
+          <strong>활동 정보와 정산 계좌를 확인해 주세요</strong>
+          <em>정보 수정하기</em>
+        </span>
+        <img alt="" aria-hidden="true" src="/illustrations/goal-mountain.webp" />
+      </a>
+
       <section className="profile-section" aria-labelledby="profile-edit-title">
         <div className="section-head">
           <div>

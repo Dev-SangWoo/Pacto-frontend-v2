@@ -2989,10 +2989,35 @@ dd {
 }
 
 .mobile-summary-panel {
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--color-primary-border);
   border-radius: 12px;
   background: var(--color-primary-soft);
   padding: 16px;
+}
+
+.mobile-summary-illustration {
+  position: absolute;
+  right: 2px;
+  bottom: -5px;
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.mission-summary-panel .mobile-summary-grid {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - 92px);
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.mission-summary-panel .mobile-summary-grid span {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
 }
 
 .mobile-summary-grid {
@@ -3170,8 +3195,20 @@ dd {
   display: none;
 }
 
+.wallet-system-page .wallet-summary-illustration {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 1;
+  width: 132px;
+  height: 118px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
 .wallet-system-page .wallet-brief {
   gap: 4px;
+  padding-right: 116px;
 }
 
 .wallet-system-page .wallet-brief h1 {
@@ -3303,6 +3340,63 @@ dd {
   gap: 12px;
 }
 
+.profile-image-cta {
+  position: relative;
+  display: grid;
+  min-height: 112px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--color-primary-border);
+  border-radius: 12px;
+  background: linear-gradient(105deg, #f4f8ff, var(--color-primary-soft));
+  padding: 16px;
+}
+
+.profile-image-cta > span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 68%;
+  gap: 4px;
+}
+
+.profile-image-cta small {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.profile-image-cta strong {
+  color: var(--color-text-strong);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.profile-image-cta em {
+  width: fit-content;
+  margin-top: 4px;
+  border-radius: 6px;
+  background: var(--color-primary);
+  padding: 6px 9px;
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.profile-image-cta img {
+  position: absolute;
+  right: 4px;
+  bottom: -4px;
+  width: 126px;
+  height: 112px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
 .profile-system-page .profile-card,
 .profile-system-page .profile-edit-form,
 .profile-system-page .profile-action-list {
@@ -3428,8 +3522,28 @@ dd {
     padding: 12px;
   }
 
+  .mobile-summary-illustration {
+    right: -8px;
+    width: 92px;
+    height: 92px;
+  }
+
   .mobile-summary-grid {
     gap: 8px;
+  }
+
+  .wallet-system-page .wallet-summary-illustration {
+    width: 112px;
+    height: 104px;
+  }
+
+  .wallet-system-page .wallet-brief {
+    padding-right: 96px;
+  }
+
+  .profile-image-cta img {
+    right: -8px;
+    width: 108px;
   }
 
   .mission-page-tabs button {
