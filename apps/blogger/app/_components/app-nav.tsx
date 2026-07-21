@@ -20,7 +20,7 @@ const navItems: Array<{
 
 const rootPaths = new Set(navItems.map((item) => item.href));
 
-export function AppHeaderStart() {
+export function AppHeaderStart({ bloggerName }: { bloggerName?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const parentHref = getParentHref(pathname);
@@ -32,6 +32,9 @@ export function AppHeaderStart() {
         <span className="campaign-app-mark" aria-hidden="true">
           <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
         </span>
+        {bloggerName != null ? (
+          <small className="campaign-app-blogger-name">{bloggerName}</small>
+        ) : null}
       </Link>
     );
   }

@@ -1,3 +1,5 @@
+import { getMe } from "@pacto/api";
+
 import { AppHeaderStart, BottomNav, TopActions } from "../_components/app-nav";
 import { getBloggerActivity } from "../_lib/blogger-activity";
 import { buildBloggerNotifications, getUnreadNotificationCount } from "../_lib/notifications";
@@ -8,18 +10,34 @@ type MainLayoutProps = {
 };
 
 export default async function MainLayout({ children }: MainLayoutProps) {
-  const notificationCount = await getNotificationCount();
+  const [bloggerName, notificationCount] = await Promise.all([
+    getBloggerName(),
+    getNotificationCount(),
+  ]);
 
   return (
     <main className="mobile-shell">
       <header className="app-top">
-        <AppHeaderStart />
+        <AppHeaderStart bloggerName={bloggerName} />
         <TopActions notificationCount={notificationCount} />
       </header>
       <div className="screen-content">{children}</div>
       <BottomNav />
     </main>
   );
+}
+
+async function getBloggerName() {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    return undefined;
+  }
+
+  const user = await getMe(session.accessToken).catch(() => undefined);
+  const name = user?.bloggerProfile?.nickname?.trim() || user?.bloggerProfile?.name?.trim();
+
+  return name || undefined;
 }
 
 async function getNotificationCount() {

@@ -1658,10 +1658,10 @@ dd {
 }
 
 .campaign-app-title {
-  display: inline-flex;
+  display: inline-grid;
   min-width: 0;
   align-items: center;
-  gap: 8px;
+  gap: 0;
 }
 
 .campaign-app-mark {
@@ -1684,6 +1684,17 @@ dd {
   font-size: 18px;
   font-weight: 700;
   line-height: 24px;
+}
+
+.campaign-app-blogger-name {
+  overflow: hidden;
+  max-width: 150px;
+  color: #8a94a6;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-top:has(.campaign-app-title) .top-actions {
