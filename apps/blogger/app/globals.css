@@ -1653,11 +1653,19 @@ dd {
 }
 
 .app-top:has(.campaign-app-title) {
+  position: relative;
+  top: auto;
+  z-index: auto;
   min-height: 52px;
+  border-bottom: 0;
+  background: transparent;
   padding: 4px 10px 4px 16px;
+  backdrop-filter: none;
 }
 
 .campaign-app-title {
+  position: relative;
+  z-index: 1;
   display: inline-grid;
   min-width: 0;
   align-items: center;
