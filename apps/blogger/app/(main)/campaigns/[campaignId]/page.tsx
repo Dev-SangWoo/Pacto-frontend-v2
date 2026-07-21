@@ -11,7 +11,7 @@ import {
 } from "@pacto/utils";
 
 import { CampaignApplyAction } from "../../../_components/mock-actions";
-import { redirectOnAuthError } from "../../../_lib/auth-error";
+import { fallbackOnNonAuthError, redirectOnAuthError } from "../../../_lib/auth-error";
 import { getBloggerActivity } from "../../../_lib/blogger-activity";
 import { getBloggerSession } from "../../../_lib/session";
 
@@ -37,7 +37,9 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
     notFound();
   }
 
-  const { applications, missions } = await getBloggerActivity(session.accessToken);
+  const { applications, missions } = await getBloggerActivity(session.accessToken).catch(
+    (error: unknown) => fallbackOnNonAuthError(error, { applications: [], missions: [] }),
+  );
   const myApplication = applications.find((application) => application.campaignId === campaign.id);
   const myCampaignMission = missions.find((mission) => mission.campaignId === campaign.id);
   const statusView = getCampaignStatusView(campaign.status);

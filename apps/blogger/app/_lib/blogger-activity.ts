@@ -8,8 +8,8 @@ export const getBloggerActivity = cache(async (token?: string) => {
   }
 
   const [missions, applications] = await Promise.all([
-    getMyMissions({}, token).catch(() => []),
-    getMyApplicationResponses(token).catch(() => []),
+    getMyMissions({}, token),
+    getMyApplicationResponses(token),
   ]);
 
   return { applications, missions };

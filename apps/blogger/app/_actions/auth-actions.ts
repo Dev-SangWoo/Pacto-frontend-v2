@@ -10,12 +10,6 @@ type AuthActionResult = {
   ok: boolean;
 };
 
-const TEST_EMAIL = "testtest@gmail.com";
-const TEST_PASSWORD = "1234";
-const TEST_PREVIEW_PASSWORD = "12345678";
-const TEST_ACCESS_TOKEN = "local-preview-token";
-const TEST_BLOGGER_ID = 1;
-
 function getApiErrorMessage(error: unknown, fallbackMessage: string): string {
   return error instanceof ApiError ? error.message : fallbackMessage;
 }
@@ -31,16 +25,6 @@ async function saveAuthenticatedSession(accessToken: string, email: string) {
 }
 
 export async function loginAction(email: string, password: string): Promise<AuthActionResult> {
-  if (email === TEST_EMAIL && (password === TEST_PASSWORD || password === TEST_PREVIEW_PASSWORD)) {
-    await setBloggerSession({
-      accessToken: TEST_ACCESS_TOKEN,
-      bloggerId: TEST_BLOGGER_ID,
-      email,
-    });
-
-    return { ok: true };
-  }
-
   try {
     const result = await login({ email, password, role: "BLOGGER" });
 

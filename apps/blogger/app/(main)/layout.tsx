@@ -1,6 +1,7 @@
 import { getMe } from "@pacto/api";
 
 import { AppHeaderStart, BottomNav, TopActions } from "../_components/app-nav";
+import { fallbackOnNonAuthError } from "../_lib/auth-error";
 import { getBloggerActivity } from "../_lib/blogger-activity";
 import { buildBloggerNotifications, getUnreadNotificationCount } from "../_lib/notifications";
 import { getBloggerSession } from "../_lib/session";
@@ -47,7 +48,9 @@ async function getNotificationCount() {
     return 0;
   }
 
-  const { applications, missions } = await getBloggerActivity(session.accessToken);
+  const { applications, missions } = await getBloggerActivity(session.accessToken).catch(
+    (error: unknown) => fallbackOnNonAuthError(error, { applications: [], missions: [] }),
+  );
 
   return getUnreadNotificationCount(buildBloggerNotifications({ applications, missions }));
 }

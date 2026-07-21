@@ -4,6 +4,7 @@ import { formatKoreanDate } from "@pacto/utils";
 import { redirect } from "next/navigation";
 
 import { getBloggerActivity } from "../../_lib/blogger-activity";
+import { fallbackOnNonAuthError } from "../../_lib/auth-error";
 import { buildBloggerNotifications } from "../../_lib/notifications";
 import { getBloggerSession } from "../../_lib/session";
 
@@ -16,7 +17,9 @@ export default async function NotificationsPage() {
     redirect("/login");
   }
 
-  const { applications, missions } = await getBloggerActivity(session.accessToken);
+  const { applications, missions } = await getBloggerActivity(session.accessToken).catch(
+    (error: unknown) => fallbackOnNonAuthError(error, { applications: [], missions: [] }),
+  );
   const campaignMap = await getCampaignMap([...missions, ...applications], session.accessToken);
   const notifications = buildBloggerNotifications({ applications, campaignMap, missions });
 

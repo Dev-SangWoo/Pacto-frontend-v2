@@ -154,24 +154,22 @@ export function MissionBoard({
 
   return (
     <section className="mission-board" aria-label="미션 목록">
-      {totalItems > 0 ? (
-        <div className="mission-page-tabs" aria-label="미션 상태" role="tablist">
-          {tabItems.map((tab) => (
-            <button
-              aria-controls={`mission-tab-panel-${tab.key}`}
-              aria-selected={selectedTab === tab.key}
-              className={selectedTab === tab.key ? "active" : undefined}
-              key={tab.key}
-              onClick={() => setSelectedTab(tab.key)}
-              role="tab"
-              type="button"
-            >
-              <span>{tab.label}</span>
-              <strong>{tab.count}</strong>
-            </button>
-          ))}
-        </div>
-      ) : null}
+      <div className="mission-page-tabs" aria-label="미션 상태" role="tablist">
+        {tabItems.map((tab) => (
+          <button
+            aria-controls={`mission-tab-panel-${tab.key}`}
+            aria-selected={selectedTab === tab.key}
+            className={selectedTab === tab.key ? "active" : undefined}
+            key={tab.key}
+            onClick={() => setSelectedTab(tab.key)}
+            role="tab"
+            type="button"
+          >
+            <span>{tab.label}</span>
+            <strong>{tab.count}</strong>
+          </button>
+        ))}
+      </div>
       <MissionSummary
         activeMissionCount={activeMissionCount}
         expectedReward={expectedReward}
