@@ -3022,8 +3022,15 @@ dd {
   position: relative;
   z-index: 1;
   width: calc(100% - 92px);
+  margin-left: 92px;
   grid-template-columns: 1fr;
   gap: 8px;
+}
+
+.mission-summary-panel .mission-summary-illustration {
+  right: auto;
+  left: 2px;
+  transform: scaleX(-1);
 }
 
 .mission-summary-panel .mobile-summary-grid span {
@@ -3537,6 +3544,11 @@ dd {
     right: -8px;
     width: 92px;
     height: 92px;
+  }
+
+  .mission-summary-panel .mission-summary-illustration {
+    right: auto;
+    left: -8px;
   }
 
   .mobile-summary-grid {
