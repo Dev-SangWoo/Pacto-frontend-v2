@@ -2946,7 +2946,7 @@ dd {
 /* Common mobile design system: mission, wallet, settings */
 .mobile-system-page {
   gap: 24px;
-  padding-top: 20px;
+  padding-top: 8px;
   color: var(--color-text);
 }
 
