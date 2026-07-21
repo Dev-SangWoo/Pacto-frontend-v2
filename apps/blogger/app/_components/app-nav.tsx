@@ -150,6 +150,10 @@ function getParentHref(pathname: string) {
     return "/campaigns";
   }
 
+  if (pathname.startsWith("/profile/")) {
+    return "/profile";
+  }
+
   return "/campaigns";
 }
 

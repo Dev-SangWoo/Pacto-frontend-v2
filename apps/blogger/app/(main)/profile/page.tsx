@@ -1,7 +1,6 @@
 import { getMe } from "@pacto/api";
 
 import { logoutAction } from "../../_actions/auth-actions";
-import { ProfileEditForm } from "../../_components/profile-edit-form";
 import { getBloggerSession } from "../../_lib/session";
 
 export default async function ProfilePage() {
@@ -50,9 +49,15 @@ export default async function ProfilePage() {
             <span>블로거 ID #{session.bloggerId}</span>
           </div>
         </div>
+        <div className="profile-action-list">
+          <a href="/profile/edit">
+            <span>내 정보 수정</span>
+            <strong>프로필과 정산 계좌 관리</strong>
+          </a>
+        </div>
       </section>
 
-      <a className="profile-image-cta" href="#profile-edit-title">
+      <a className="profile-image-cta" href="/profile/edit">
         <span>
           <small>프로필 완성하기</small>
           <strong>활동 정보와 정산 계좌를 확인해 주세요</strong>
@@ -60,16 +65,6 @@ export default async function ProfilePage() {
         </span>
         <img alt="" aria-hidden="true" src="/illustrations/goal-mountain.webp" />
       </a>
-
-      <section className="profile-section" aria-labelledby="profile-edit-title">
-        <div className="section-head">
-          <div>
-            <p className="section-label">기본 정보</p>
-            <h2 id="profile-edit-title">프로필 수정</h2>
-          </div>
-        </div>
-        <ProfileEditForm profile={profile} />
-      </section>
 
       <section className="profile-section" aria-labelledby="payout-profile-title">
         <div className="section-head">

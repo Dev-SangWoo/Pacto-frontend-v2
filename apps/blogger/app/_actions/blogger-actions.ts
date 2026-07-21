@@ -40,6 +40,7 @@ export async function updateBloggerProfileAction(
       session.accessToken,
     );
     revalidatePath("/profile");
+    revalidatePath("/profile/edit");
 
     return { message: "프로필 정보를 저장했어요.", ok: true };
   } catch (error) {
