@@ -45,6 +45,10 @@ export async function updateAdvertiserProfileAction(
       redirect("/login");
     }
 
+    if (error instanceof ApiError && error.statusCode === 403) {
+      redirect("/forbidden");
+    }
+
     return {
       message:
         error instanceof Error && error.message.length > 0

@@ -24,6 +24,7 @@ export function LoginForm() {
           placeholder="비밀번호를 입력하세요"
           type="password"
         />
+        <small>베타 기간에는 실제 사용하는 비밀번호 대신 테스트용 비밀번호를 사용해 주세요.</small>
       </label>
       {state.message != null ? (
         <p className="form-error" role="alert">

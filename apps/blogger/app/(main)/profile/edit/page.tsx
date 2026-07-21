@@ -2,6 +2,7 @@ import { getMe } from "@pacto/api";
 import { redirect } from "next/navigation";
 
 import { ProfileEditForm } from "../../../_components/profile-edit-form";
+import { redirectOnAuthError } from "../../../_lib/auth-error";
 import { getBloggerSession } from "../../../_lib/session";
 
 export default async function ProfileEditPage() {
@@ -11,7 +12,7 @@ export default async function ProfileEditPage() {
     redirect("/login");
   }
 
-  const user = await getMe(session.accessToken).catch(() => undefined);
+  const user = await getMe(session.accessToken).catch(redirectOnAuthError);
 
   return (
     <section
