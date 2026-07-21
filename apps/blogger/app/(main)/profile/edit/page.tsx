@@ -19,9 +19,7 @@ export default async function ProfileEditPage() {
       aria-labelledby="profile-edit-page-title"
     >
       <header className="mobile-page-heading">
-        <p className="section-label">계정 설정</p>
         <h1 id="profile-edit-page-title">내 정보 수정</h1>
-        <p>블로그 활동 정보와 보상 정산 계좌를 수정할 수 있어요.</p>
       </header>
 
       <section className="profile-section" aria-labelledby="profile-edit-form-title">

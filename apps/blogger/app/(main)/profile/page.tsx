@@ -19,9 +19,7 @@ export default async function ProfilePage() {
       aria-labelledby="profile-title"
     >
       <header className="profile-title-block mobile-page-heading">
-        <p className="section-label">내 정보</p>
         <h1 id="profile-title">계정 설정</h1>
-        <p>블로그 활동 정보와 정산 계좌를 관리하세요.</p>
       </header>
 
       <section className="profile-section" aria-labelledby="account-profile-title">

@@ -45,9 +45,7 @@ export default async function MissionsPage() {
       aria-labelledby="missions-title"
     >
       <header className="mobile-page-heading">
-        <p className="section-label">미션 관리</p>
         <h1 id="missions-title">내 미션</h1>
-        <p>신청부터 제출, 정산까지 진행 상태를 확인하세요.</p>
       </header>
       <section className="mobile-summary-panel mission-summary-panel" aria-label="미션 요약">
         <div className="mobile-summary-grid">
