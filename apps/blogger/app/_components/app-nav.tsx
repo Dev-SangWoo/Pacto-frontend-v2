@@ -75,12 +75,8 @@ export function AppHeader({ bloggerName, notificationCount = 0 }: AppHeaderProps
           aria-label={hasNotifications ? `${notificationCount}개의 새 알림 열기` : "알림 열기"}
         >
           <Bell aria-hidden="true" size={21} strokeWidth={2.25} />
-          {hasNotifications && isCampaignHome ? (
-            <span className="campaign-notification-dot" aria-hidden="true" />
-          ) : hasNotifications ? (
-            <span aria-label={`${notificationCount}개의 새 알림`}>
-              {notificationCount > 9 ? "9+" : notificationCount}
-            </span>
+          {hasNotifications ? (
+            <span className="header-notification-dot" aria-hidden="true" />
           ) : null}
         </Link>
         {isCampaignHome ? (
