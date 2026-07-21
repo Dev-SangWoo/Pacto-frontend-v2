@@ -231,16 +231,27 @@ function MissionSummary({
 }) {
   return (
     <section className="mobile-summary-panel mission-summary-panel" aria-label="미션 요약">
-      <div className="mobile-summary-grid">
-        <span>
-          진행 중<strong>{activeMissionCount}건</strong>
-        </span>
-        <span>
-          예상 보상 <strong>{formatPoint(expectedReward)}</strong>
-        </span>
-        <span>
-          승인 대기<strong>{pendingApplicationCount}건</strong>
-        </span>
+      <div className="mission-summary-copy">
+        <span className="mission-summary-eyebrow">나의 미션 현황</span>
+        <strong className="mission-summary-headline">
+          {activeMissionCount > 0 ? (
+            <>
+              진행 중인 미션이 <em>{activeMissionCount}건</em> 있어요
+            </>
+          ) : (
+            <>새로운 미션을 시작해 보세요</>
+          )}
+        </strong>
+        <div className="mission-summary-stats">
+          <span>
+            <small>예상 보상</small>
+            <strong>{formatPoint(expectedReward)}</strong>
+          </span>
+          <span>
+            <small>승인 대기</small>
+            <strong>{pendingApplicationCount}건</strong>
+          </span>
+        </div>
       </div>
       <img
         alt=""
