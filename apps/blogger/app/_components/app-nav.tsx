@@ -32,7 +32,6 @@ export function AppHeaderStart() {
         <span className="campaign-app-mark" aria-hidden="true">
           <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
         </span>
-        <strong>캠페인</strong>
       </Link>
     );
   }
