@@ -4,6 +4,7 @@ import type { Campaign } from "@pacto/types";
 
 import {
   getCampaignDiscoveryBadge,
+  getCampaignGuidelineText,
   getCampaignSummaryText,
   matchesCampaignDiscoveryCategory,
   matchesCampaignSearch,
@@ -52,6 +53,45 @@ describe("campaign discovery presentation", () => {
 
   it("빈 가이드는 안전한 기본 미션 문구를 반환한다", () => {
     expect(getCampaignSummaryText("  ")).toBe("캠페인 상세에서 수행 미션을 확인해 주세요.");
+  });
+
+  it("Tiptap JSON 가이드는 카드에 일반 텍스트로 표시한다", () => {
+    const tiptapGuidelines = JSON.stringify({
+      editor: "tiptap",
+      version: 1,
+      content: {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              { type: "text", text: "제품을 체험한 뒤 " },
+              { type: "text", text: "블로그 리뷰를 작성해 주세요." },
+            ],
+          },
+          {
+            type: "bulletList",
+            content: [
+              {
+                type: "listItem",
+                content: [{ type: "paragraph", content: [{ type: "text", text: "사진 10장" }] }],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(getCampaignGuidelineText(tiptapGuidelines)).toBe(
+      "제품을 체험한 뒤 블로그 리뷰를 작성해 주세요. 사진 10장",
+    );
+    expect(getCampaignSummaryText(tiptapGuidelines)).toBe(
+      "제품을 체험한 뒤 블로그 리뷰를 작성해 주세요.",
+    );
+  });
+
+  it("깨진 JSON은 기존 문자열로 안전하게 표시한다", () => {
+    expect(getCampaignGuidelineText('{"editor":"tiptap"')).toBe('{"editor":"tiptap"');
   });
 
   it("푸드 키워드로 카테고리를 분류한다", () => {

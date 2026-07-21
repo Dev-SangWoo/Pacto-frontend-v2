@@ -3,6 +3,7 @@ export { formatPoint, formatWon } from "./format/money";
 export {
   CAMPAIGN_DISCOVERY_CATEGORIES,
   getCampaignDiscoveryBadge,
+  getCampaignGuidelineText,
   getCampaignSummaryText,
   matchesCampaignDiscoveryCategory,
   matchesCampaignSearch,

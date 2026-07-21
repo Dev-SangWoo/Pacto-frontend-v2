@@ -42,7 +42,7 @@ export function getCampaignDiscoveryBadge(
 }
 
 export function getCampaignSummaryText(guidelines: string): string {
-  const normalized = guidelines.replace(/\s+/g, " ").trim();
+  const normalized = getCampaignGuidelineText(guidelines);
 
   if (!normalized) {
     return FALLBACK_MISSION_COPY;
@@ -50,6 +50,14 @@ export function getCampaignSummaryText(guidelines: string): string {
 
   const firstSentence = normalized.match(/^.*?[.!?](?:\s|$)/)?.[0]?.trim();
   return firstSentence ?? normalized;
+}
+
+export function getCampaignGuidelineText(guidelines: string): string {
+  const parsedGuidelines = parseTiptapGuidelines(guidelines);
+  const source =
+    parsedGuidelines == null ? guidelines : extractTiptapText(parsedGuidelines.content);
+
+  return source.replace(/\s+/g, " ").trim();
 }
 
 export function matchesCampaignDiscoveryCategory(
@@ -60,7 +68,8 @@ export function matchesCampaignDiscoveryCategory(
     return true;
   }
 
-  const haystack = `${campaign.title} ${campaign.brandName} ${campaign.guidelines}`.toLowerCase();
+  const haystack =
+    `${campaign.title} ${campaign.brandName} ${getCampaignGuidelineText(campaign.guidelines)}`.toLowerCase();
 
   return CATEGORY_KEYWORDS[category].some((keyword) => haystack.includes(keyword.toLowerCase()));
 }
@@ -72,7 +81,63 @@ export function matchesCampaignSearch(campaign: Campaign, query: string): boolea
     return true;
   }
 
-  return [campaign.title, campaign.brandName, campaign.guidelines].some((value) =>
-    value.toLowerCase().includes(normalizedQuery),
+  return [campaign.title, campaign.brandName, getCampaignGuidelineText(campaign.guidelines)].some(
+    (value) => value.toLowerCase().includes(normalizedQuery),
   );
+}
+
+type TiptapNode = {
+  content?: TiptapNode[];
+  text?: string;
+  type?: string;
+};
+
+type TiptapGuidelines = {
+  content: TiptapNode;
+  editor: "tiptap";
+};
+
+function parseTiptapGuidelines(value: string): TiptapGuidelines | undefined {
+  if (!value.trimStart().startsWith("{")) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "editor" in parsed &&
+      "content" in parsed &&
+      parsed.editor === "tiptap" &&
+      typeof parsed.content === "object" &&
+      parsed.content !== null
+    ) {
+      return parsed as TiptapGuidelines;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+}
+
+function extractTiptapText(node: TiptapNode): string {
+  if (typeof node.text === "string") {
+    return node.text;
+  }
+
+  if (node.type === "hardBreak") {
+    return "\n";
+  }
+
+  const childText = (node.content ?? []).map(extractTiptapText).filter(Boolean);
+  const separator = isTiptapBlockNode(node.type) ? "\n" : " ";
+
+  return childText.join(separator);
+}
+
+function isTiptapBlockNode(type?: string) {
+  return type === "doc" || type === "paragraph" || type === "heading" || type === "listItem";
 }
