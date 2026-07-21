@@ -1652,46 +1652,17 @@ dd {
   font-weight: 600;
 }
 
-.app-top:has(.campaign-app-title) {
-  position: relative;
-  top: auto;
-  z-index: auto;
-  min-height: 52px;
-  border-bottom: 0;
-  background: transparent;
-  padding: 4px 10px 4px 16px;
-  backdrop-filter: none;
-}
-
-.campaign-app-title {
-  position: relative;
-  z-index: 1;
-  display: inline-grid;
+.campaign-home-brand {
+  display: grid;
   min-width: 0;
-  align-items: center;
+  align-content: center;
+  justify-items: start;
   gap: 0;
 }
 
-.campaign-app-mark {
-  display: block;
-  width: 24px;
-  height: 24px;
-  overflow: hidden;
-  border-radius: 6px;
-}
-
-.campaign-app-mark img {
-  display: block;
-  width: auto;
-  max-width: none;
-  height: 24px;
-}
-
-.campaign-app-title strong {
-  color: #182033;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 24px;
+.campaign-home-brand .app-brand-mark {
+  width: 108px;
+  height: 30px;
 }
 
 .campaign-app-blogger-name {
@@ -1705,17 +1676,17 @@ dd {
   white-space: nowrap;
 }
 
-.app-top:has(.campaign-app-title) .top-actions {
+.app-top:has(.campaign-home-brand) .top-actions {
   gap: 4px;
 }
 
-.app-top:has(.campaign-app-title) .icon-button {
+.app-top:has(.campaign-home-brand) .icon-button {
   width: 44px;
   height: 44px;
   color: #182033;
 }
 
-.app-top:has(.campaign-app-title) .notification-button > .campaign-notification-dot {
+.app-top:has(.campaign-home-brand) .notification-button > .campaign-notification-dot {
   top: 7px;
   right: 7px;
   width: 7px;

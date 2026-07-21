@@ -28,8 +28,8 @@ export function AppHeaderStart({ bloggerName }: { bloggerName?: string }) {
 
   if (pathname === "/campaigns") {
     return (
-      <Link className="campaign-app-title" href="/campaigns" aria-label="Pacto 캠페인 홈">
-        <span className="campaign-app-mark" aria-hidden="true">
+      <Link className="app-brand campaign-home-brand" href="/campaigns" aria-label="Pacto 홈">
+        <span className="app-brand-mark" aria-hidden="true">
           <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
         </span>
         {bloggerName != null ? (
