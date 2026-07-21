@@ -22,6 +22,7 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
   const [selectedApplicantId, setSelectedApplicantId] = useState<number | undefined>(
     initialApplicants[0]?.applicationId,
   );
+  const [processingApplicantId, setProcessingApplicantId] = useState<number>();
   const [isApprovingAll, startApproveAllTransition] = useTransition();
   const router = useRouter();
   const selectedApplicant =
@@ -32,7 +33,10 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
   const rejectedCount = applicants.filter((applicant) => applicant.status === "REJECTED").length;
 
   const handleApprove = async (applicantId: number) => {
-    const result = await approveApplicantAction(campaignId, applicantId);
+    setProcessingApplicantId(applicantId);
+    const result = await approveApplicantAction(campaignId, applicantId).finally(() =>
+      setProcessingApplicantId(undefined),
+    );
 
     if (result.ok) {
       setApplicants((prev) =>
@@ -44,11 +48,15 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
       );
     } else {
       alert(result.message);
+      router.refresh();
     }
   };
 
   const handleReject = async (applicantId: number) => {
-    const result = await rejectApplicantAction(campaignId, applicantId);
+    setProcessingApplicantId(applicantId);
+    const result = await rejectApplicantAction(campaignId, applicantId).finally(() =>
+      setProcessingApplicantId(undefined),
+    );
 
     if (result.ok) {
       setApplicants((prev) =>
@@ -60,6 +68,7 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
       );
     } else {
       alert(result.message);
+      router.refresh();
     }
   };
 
@@ -98,7 +107,9 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
           <button
             className="primary-button"
             disabled={
-              isApprovingAll || applicants.every((applicant) => applicant.status !== "PENDING")
+              isApprovingAll ||
+              processingApplicantId != null ||
+              applicants.every((applicant) => applicant.status !== "PENDING")
             }
             onClick={handleApproveAll}
             type="button"
@@ -210,17 +221,23 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
                   <div className="applicant-decision-actions">
                     <button
                       className="primary-button"
+                      disabled={processingApplicantId != null || isApprovingAll}
                       onClick={() => handleApprove(selectedApplicant.applicationId)}
                       type="button"
                     >
-                      승인
+                      {processingApplicantId === selectedApplicant.applicationId
+                        ? "처리 중..."
+                        : "승인"}
                     </button>
                     <button
                       className="small-button muted danger"
+                      disabled={processingApplicantId != null || isApprovingAll}
                       onClick={() => handleReject(selectedApplicant.applicationId)}
                       type="button"
                     >
-                      반려
+                      {processingApplicantId === selectedApplicant.applicationId
+                        ? "처리 중..."
+                        : "반려"}
                     </button>
                   </div>
                 ) : (

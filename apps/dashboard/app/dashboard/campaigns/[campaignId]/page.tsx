@@ -19,6 +19,7 @@ import {
 import { getDashboardSession } from "../../../_lib/session";
 import { CampaignTransitionActions } from "../_components/campaign-transition-actions";
 import { isOwnedCampaign } from "../_lib/campaign-ownership";
+import { CampaignImageUploadForm } from "./_components/campaign-image-upload-form";
 import { CampaignStepProgress } from "./_components/campaign-step-progress";
 
 type CampaignDetailPageProps = {
@@ -231,6 +232,11 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
               <strong>{campaignEscrows.length}</strong>
             </div>
           </div>
+          <CampaignImageUploadForm
+            campaignId={campaign.id}
+            guidelineImageCount={campaign.guidelineImageUrls?.length ?? 0}
+            thumbnailUrl={campaign.thumbnailUrl}
+          />
         </aside>
       </section>
 

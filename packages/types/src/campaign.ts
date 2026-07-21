@@ -21,6 +21,7 @@ export type Campaign = {
   totalSlots: number;
   remainingSlots: number;
   guidelines: string;
+  guidelineImageUrls?: string[];
   deadline: string;
   status: CampaignStatus;
   applicants?: ApplicationResponse[];

@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  ApiError,
   approveApplicant,
   approveMission,
   cancelCampaign,
@@ -27,6 +28,11 @@ export type CampaignCreateState = {
 
 export type CampaignTransitionState = {
   message?: string;
+};
+
+export type CampaignImageUploadState = {
+  message?: string;
+  ok: boolean;
 };
 
 type CampaignTransitionAction = "cancel" | "close" | "proceed";
@@ -86,8 +92,10 @@ export async function approveApplicantAction(campaignId: number, applicantId: nu
     revalidatePath(`/dashboard/campaigns/${campaignId}/settlements`);
     revalidatePath("/dashboard/payments");
     return { ok: true };
-  } catch {
-    return { message: "지원자 승인에 실패했어요.", ok: false };
+  } catch (error) {
+    redirectDashboardAuthError(error);
+    revalidatePath(`/dashboard/campaigns/${campaignId}/applicants`);
+    return { message: getApplicantDecisionErrorMessage("승인", error), ok: false };
   }
 }
 
@@ -98,8 +106,10 @@ export async function rejectApplicantAction(campaignId: number, applicantId: num
     await rejectApplicant(campaignId, applicantId, session.accessToken);
     revalidatePath(`/dashboard/campaigns/${campaignId}/applicants`);
     return { ok: true };
-  } catch {
-    return { message: "지원자 반려에 실패했어요.", ok: false };
+  } catch (error) {
+    redirectDashboardAuthError(error);
+    revalidatePath(`/dashboard/campaigns/${campaignId}/applicants`);
+    return { message: getApplicantDecisionErrorMessage("반려", error), ok: false };
   }
 }
 
@@ -112,7 +122,8 @@ export async function approveMissionAction(campaignId: number, missionId: number
     revalidatePath(`/dashboard/campaigns/${campaignId}/settlements`);
     revalidatePath("/dashboard/payments");
     return { ok: true };
-  } catch {
+  } catch (error) {
+    redirectDashboardAuthError(error);
     return { message: "미션 승인에 실패했어요.", ok: false };
   }
 }
@@ -125,7 +136,8 @@ export async function rejectMissionAction(campaignId: number, missionId: number)
     revalidatePath(`/dashboard/campaigns/${campaignId}/missions`);
     revalidatePath(`/dashboard/campaigns/${campaignId}/settlements`);
     return { ok: true };
-  } catch {
+  } catch (error) {
+    redirectDashboardAuthError(error);
     return { message: "미션 반려에 실패했어요.", ok: false };
   }
 }
@@ -223,6 +235,57 @@ export async function createCampaignAction(
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/campaigns");
   redirect("/dashboard/campaigns");
+}
+
+export async function uploadCampaignImagesAction(
+  campaignId: number,
+  _previousState: CampaignImageUploadState,
+  formData: FormData,
+): Promise<CampaignImageUploadState> {
+  const session = await getDashboardSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  const thumbnail = readImageFile(formData.get("thumbnail"));
+  const guidelineImages = formData
+    .getAll("guidelineImages")
+    .map(readImageFile)
+    .filter((file): file is File => file != null);
+
+  if (thumbnail == null && guidelineImages.length === 0) {
+    return { message: "업로드할 이미지를 선택해 주세요.", ok: false };
+  }
+
+  const validationMessage = validateCampaignImages(thumbnail, guidelineImages);
+
+  if (validationMessage != null) {
+    return { message: validationMessage, ok: false };
+  }
+
+  let thumbnailUploaded = false;
+
+  try {
+    if (thumbnail != null) {
+      await uploadCampaignThumbnail(campaignId, thumbnail, session.accessToken);
+      thumbnailUploaded = true;
+    }
+
+    await uploadCampaignGuidelineImages(campaignId, guidelineImages, session.accessToken);
+  } catch (error) {
+    redirectDashboardAuthError(error);
+    return {
+      message: thumbnailUploaded
+        ? `썸네일은 반영됐지만 가이드 이미지를 업로드하지 못했어요. ${getCreateCampaignErrorMessage(error)}`
+        : getCreateCampaignErrorMessage(error),
+      ok: false,
+    };
+  }
+
+  revalidatePath("/dashboard/campaigns");
+  revalidatePath(`/dashboard/campaigns/${campaignId}`);
+  return { message: "캠페인 이미지를 저장했어요.", ok: true };
 }
 
 function parseGuidelines(value: string): string[] {
@@ -348,6 +411,30 @@ function isApiErrorLike(error: unknown): error is { message: string; statusCode:
     typeof (error as { message?: unknown }).message === "string" &&
     typeof (error as { statusCode?: unknown }).statusCode === "number"
   );
+}
+
+function redirectDashboardAuthError(error: unknown) {
+  if (error instanceof ApiError && error.statusCode === 401) {
+    redirect("/login");
+  }
+
+  if (error instanceof ApiError && error.statusCode === 403) {
+    redirect("/forbidden");
+  }
+}
+
+function getApplicantDecisionErrorMessage(actionLabel: string, error: unknown) {
+  if (isApiErrorLike(error)) {
+    if (error.statusCode === 409) {
+      return `다른 요청에서 이미 처리됐거나 모집 인원이 마감됐어요. 목록을 새로고침한 뒤 상태를 확인해 주세요.`;
+    }
+
+    if (error.message.length > 0) {
+      return error.message;
+    }
+  }
+
+  return `지원자 ${actionLabel}에 실패했어요. 잠시 후 다시 시도해 주세요.`;
 }
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;

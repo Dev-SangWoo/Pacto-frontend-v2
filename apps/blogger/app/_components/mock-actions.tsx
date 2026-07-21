@@ -1,6 +1,6 @@
 "use client";
 
-import type { ApplicationStatusResponse } from "@pacto/types";
+import type { ApplicationStatusResponse, CampaignStatus, MissionStatus } from "@pacto/types";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
@@ -8,16 +8,20 @@ import { acceptCampaignAction, submitMissionAction } from "../_actions/blogger-a
 
 type CampaignApplyActionProps = {
   applicationStatus?: ApplicationStatusResponse;
+  campaignStatus: CampaignStatus;
   campaignId: number;
   enabled: boolean;
   missionId?: number;
+  missionStatus?: MissionStatus;
 };
 
 export function CampaignApplyAction({
   applicationStatus,
+  campaignStatus,
   campaignId,
   enabled,
   missionId,
+  missionStatus,
 }: CampaignApplyActionProps) {
   const [currentStatus, setCurrentStatus] = useState<ApplicationStatusResponse | undefined>(
     applicationStatus,
@@ -27,12 +31,33 @@ export function CampaignApplyAction({
 
   if (currentStatus != null) {
     if (currentStatus === "ACCEPTED") {
+      const missionHref = missionId == null ? "/missions" : `/missions/${missionId}`;
+
+      if (campaignStatus === "closed") {
+        return (
+          <div className="cta-stack">
+            <Link className="primary-button weak-button" href={missionHref}>
+              선정 완료 · 미션 시작 대기
+            </Link>
+            <p>광고주가 캠페인을 시작하면 리뷰 URL을 제출할 수 있어요.</p>
+          </div>
+        );
+      }
+
+      if (campaignStatus !== "in_progress" || missionStatus !== "in_progress") {
+        return (
+          <div className="cta-stack">
+            <Link className="primary-button weak-button" href={missionHref}>
+              미션 상태 확인하기
+            </Link>
+            <p>선정된 캠페인의 진행 및 정산 상태를 확인해 주세요.</p>
+          </div>
+        );
+      }
+
       return (
         <div className="cta-stack">
-          <Link
-            className="primary-button"
-            href={missionId == null ? "/missions" : `/missions/${missionId}`}
-          >
+          <Link className="primary-button" href={missionHref}>
             미션 제출하기
           </Link>
           <p>선정이 완료됐어요. 리뷰 URL을 제출해 주세요.</p>

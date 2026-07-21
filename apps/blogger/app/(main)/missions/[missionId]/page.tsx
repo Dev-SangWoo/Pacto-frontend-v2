@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 
 import { getCampaignDetail, getMissionDetail } from "@pacto/api";
 import type { MissionStatus } from "@pacto/types";
@@ -11,6 +12,7 @@ import {
 } from "@pacto/utils";
 
 import { MissionSubmitAction } from "../../../_components/mock-actions";
+import { fallbackOnNonAuthError, redirectOnAuthError } from "../../../_lib/auth-error";
 import { getBloggerSession } from "../../../_lib/session";
 
 type MissionDetailPageProps = {
@@ -27,14 +29,16 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
     redirect("/login");
   }
 
-  const mission = await getMissionDetail(Number(missionId), {}, session.accessToken);
+  const mission = await getMissionDetail(Number(missionId), {}, session.accessToken).catch(
+    redirectOnAuthError,
+  );
 
   if (mission == null) {
     notFound();
   }
 
   const campaign = await getCampaignDetail(mission.campaignId, session.accessToken).catch(
-    () => undefined,
+    (error: unknown) => fallbackOnNonAuthError(error, undefined),
   );
   const displayMission =
     campaign == null
@@ -48,7 +52,10 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
           thumbnailUrl: campaign.thumbnailUrl ?? mission.thumbnailUrl,
         };
   const statusView = getMissionStatusView(displayMission.status);
-  const isSubmitEnabled = canSubmitMission(displayMission.status);
+  const isSubmitEnabled =
+    canSubmitMission(displayMission.status) && campaign?.status === "in_progress";
+  const isWaitingForCampaignStart =
+    canSubmitMission(displayMission.status) && campaign?.status !== "in_progress";
 
   return (
     <section className="screen-stack detail-screen" aria-labelledby="mission-detail-title">
@@ -90,7 +97,16 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
       </section>
 
       <div className="fixed-cta">
-        <MissionSubmitAction enabled={isSubmitEnabled} missionId={displayMission.id} />
+        {isWaitingForCampaignStart ? (
+          <div className="cta-stack">
+            <Link className="primary-button weak-button" href="/missions">
+              선정 완료 · 미션 시작 대기
+            </Link>
+            <p>광고주가 캠페인을 시작하면 리뷰 URL을 제출할 수 있어요.</p>
+          </div>
+        ) : (
+          <MissionSubmitAction enabled={isSubmitEnabled} missionId={displayMission.id} />
+        )}
       </div>
     </section>
   );

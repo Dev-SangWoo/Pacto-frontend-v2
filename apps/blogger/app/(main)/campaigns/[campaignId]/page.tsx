@@ -94,14 +94,28 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
             </article>
           ))}
         </div>
+        {(campaign.guidelineImageUrls?.length ?? 0) > 0 ? (
+          <div className="campaign-guideline-gallery" aria-label="캠페인 가이드 이미지">
+            {(campaign.guidelineImageUrls ?? []).map((imageUrl, index) => (
+              <img
+                alt={`${campaign.title} 가이드 이미지 ${index + 1}`}
+                key={imageUrl}
+                loading="lazy"
+                src={imageUrl}
+              />
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <div className="fixed-cta">
         <CampaignApplyAction
           applicationStatus={myApplication?.status}
+          campaignStatus={campaign.status}
           campaignId={campaign.id}
           enabled={isApplyEnabled}
           missionId={myCampaignMission?.id}
+          missionStatus={myCampaignMission?.status}
         />
       </div>
     </section>

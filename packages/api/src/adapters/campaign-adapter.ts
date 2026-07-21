@@ -21,6 +21,8 @@ export type CampaignResponse = {
   campaignId?: number;
   deadline?: string;
   guidelines?: unknown;
+  guidelineImageUrls?: string[];
+  guideline_image_urls?: string[];
   id?: number;
   advertiserName?: string;
   brandName?: string;
@@ -74,6 +76,7 @@ export function adaptCampaign(response: CampaignResponse): Campaign {
     totalSlots,
     remainingSlots,
     guidelines: normalizeGuidelines(response.guidelines),
+    guidelineImageUrls: response.guidelineImageUrls ?? response.guideline_image_urls ?? [],
     deadline: response.deadline ?? new Date().toISOString(),
     status: mapCampaignStatus(response.status),
   };

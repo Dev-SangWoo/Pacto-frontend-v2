@@ -3056,6 +3056,46 @@ td strong {
   white-space: nowrap;
 }
 
+.campaign-image-retry-form {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid var(--grey-200);
+  padding: 18px;
+}
+
+.campaign-image-retry-preview {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.campaign-image-retry-preview img {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.campaign-image-retry-preview p,
+.campaign-image-retry-form label span {
+  color: var(--grey-500);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.campaign-image-retry-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.campaign-image-retry-form .form-success {
+  margin: 0;
+  color: var(--green-500);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .form-error.inline-error a {
   display: block;
   margin-top: 5px;
