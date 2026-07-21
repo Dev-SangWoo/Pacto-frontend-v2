@@ -119,7 +119,10 @@ export default async function WalletPage() {
   const pendingMissionAmount = pendingMissionItems.reduce((sum, item) => sum + item.amount, 0);
 
   return (
-    <section className="screen-stack detail-screen" aria-labelledby="wallet-title">
+    <section
+      className="screen-stack detail-screen mobile-system-page wallet-system-page"
+      aria-labelledby="wallet-title"
+    >
       <WalletSummary
         availableBalance={wallet.availableBalance}
         latestSettlement={latestSettlement}

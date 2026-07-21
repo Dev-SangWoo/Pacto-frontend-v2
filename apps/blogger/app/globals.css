@@ -1,5 +1,23 @@
 :root {
   color-scheme: light;
+  --color-primary: #1677f2;
+  --color-primary-pressed: #0d64d5;
+  --color-primary-soft: #eef5ff;
+  --color-primary-border: #cfe1ff;
+  --color-text-strong: #172033;
+  --color-text: #394357;
+  --color-text-muted: #8a94a6;
+  --color-icon-muted: #aab4c3;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f7f9fc;
+  --color-border: #e7ecf2;
+  --color-success: #2fc690;
+  --color-success-soft: #e8faf4;
+  --color-warning: #e9a23b;
+  --color-warning-soft: #fff5df;
+  --color-info: #438df5;
+  --color-info-soft: #eaf3ff;
+  --color-danger: #f05261;
   --ink: #101318;
   --ink-soft: #2f3a4a;
   --muted: #667085;
@@ -2935,6 +2953,443 @@ dd {
   background: var(--red-soft);
 }
 
+/* Common mobile design system: mission, wallet, settings */
+.mobile-system-page {
+  gap: 24px;
+  padding-top: 20px;
+  color: var(--color-text);
+}
+
+.mobile-system-page .section-label {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.mobile-page-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.mobile-page-heading h1,
+.profile-title-block.mobile-page-heading h1 {
+  color: var(--color-text-strong);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.mobile-page-heading > p:not(.section-label),
+.profile-title-block.mobile-page-heading > p:not(.section-label) {
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+}
+
+.mobile-summary-panel {
+  border: 1px solid var(--color-primary-border);
+  border-radius: 12px;
+  background: var(--color-primary-soft);
+  padding: 16px;
+}
+
+.mobile-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mobile-summary-grid span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+.mobile-summary-grid strong {
+  overflow: hidden;
+  color: var(--color-primary);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-system-page .mission-board {
+  gap: 20px;
+}
+
+.mission-page-tabs {
+  position: sticky;
+  top: 68px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+}
+
+.mission-page-tabs button {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  padding: 0 2px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mission-page-tabs button::after {
+  position: absolute;
+  right: 18%;
+  bottom: -1px;
+  left: 18%;
+  height: 2px;
+  border-radius: 999px;
+  background: transparent;
+  content: "";
+}
+
+.mission-page-tabs button strong {
+  color: inherit;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.mission-page-tabs button.active {
+  color: var(--color-primary);
+}
+
+.mission-page-tabs button.active::after {
+  background: var(--color-primary);
+}
+
+.mission-system-page .mission-view-panel {
+  gap: 24px;
+}
+
+.mission-system-page .mission-group {
+  gap: 12px;
+}
+
+.mission-system-page .mission-group-head h2,
+.wallet-system-page .section-head h2,
+.profile-system-page .section-head h2 {
+  color: var(--color-text-strong);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.mission-system-page .mission-group-head > span,
+.wallet-system-page .section-head > span {
+  border-radius: 6px;
+  background: var(--color-surface-subtle);
+  padding: 4px 7px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.mission-system-page .mission-list {
+  gap: 12px;
+}
+
+.mission-system-page .mission-card {
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 10px rgba(25, 47, 78, 0.05);
+}
+
+.mission-system-page .mission-card img {
+  width: 80px;
+  border-radius: 8px;
+}
+
+.mission-system-page .mission-card h3 {
+  color: var(--color-text-strong);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.mission-system-page .mission-card p {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.mission-system-page .mission-card .ticket-topline strong {
+  color: var(--color-primary);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.mission-system-page .mission-card .mission-facts div {
+  min-height: 30px;
+  border-radius: 8px;
+  background: var(--color-surface-subtle);
+}
+
+.mission-system-page .empty-state.compact {
+  border: 1px dashed var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-subtle);
+  padding: 20px 14px;
+}
+
+.wallet-system-page .wallet-hero {
+  gap: 20px;
+  border: 1px solid var(--color-primary-border);
+  border-radius: 12px;
+  background: var(--color-primary-soft);
+  padding: 16px;
+  box-shadow: none;
+}
+
+.wallet-system-page .wallet-hero::after {
+  display: none;
+}
+
+.wallet-system-page .wallet-brief {
+  gap: 4px;
+}
+
+.wallet-system-page .wallet-brief h1 {
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+}
+
+.wallet-system-page .wallet-brief > strong {
+  background: none;
+  color: var(--color-primary);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 42px;
+}
+
+.wallet-system-page .wallet-brief p:not(.section-label) {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.wallet-system-page .wallet-hero-meta {
+  gap: 8px;
+}
+
+.wallet-system-page .wallet-hero-meta a,
+.wallet-system-page .wallet-hero-meta button,
+.wallet-system-page .wallet-hero-meta span {
+  min-height: 76px;
+  border: 1px solid rgba(207, 225, 255, 0.9);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 12px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.wallet-system-page .wallet-hero-meta strong {
+  color: var(--color-text-strong);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.wallet-system-page .wallet-hero-meta em {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+.wallet-system-page .wallet-ledger-filters {
+  gap: 8px;
+  scrollbar-width: none;
+}
+
+.wallet-system-page .wallet-ledger-filters button {
+  min-height: 32px;
+  border: 1px solid var(--color-border);
+  padding: 0 13px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wallet-system-page .wallet-ledger-filters button.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.wallet-system-page .wallet-ledger-list {
+  border-color: var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(25, 47, 78, 0.05);
+}
+
+.wallet-system-page .wallet-ledger-day > p {
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.wallet-system-page .wallet-ledger-list article {
+  min-height: 72px;
+}
+
+.wallet-system-page .wallet-ledger-list strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.wallet-system-page .wallet-modal {
+  border-color: var(--color-border);
+  border-radius: 12px;
+}
+
+.wallet-system-page .fixed-cta .primary-button,
+.profile-system-page .primary-button {
+  min-height: 44px;
+  border-radius: 8px;
+  background: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wallet-system-page .fixed-cta .primary-button:hover,
+.profile-system-page .primary-button:hover {
+  background: var(--color-primary-pressed);
+}
+
+.profile-system-page .primary-button.weak-button {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  color: var(--color-danger);
+}
+
+.profile-system-page .primary-button.weak-button:hover {
+  border-color: rgba(240, 82, 97, 0.22);
+  background: #fff4f5;
+}
+
+.profile-system-page .profile-section {
+  gap: 12px;
+}
+
+.profile-system-page .profile-card,
+.profile-system-page .profile-edit-form,
+.profile-system-page .profile-action-list {
+  border-color: var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(25, 47, 78, 0.05);
+}
+
+.profile-system-page .profile-card {
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+
+.profile-system-page .profile-photo-preview {
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.profile-system-page .profile-card-copy strong {
+  color: var(--color-text-strong);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.profile-system-page .profile-card-copy span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.profile-system-page .profile-edit-form {
+  gap: 20px;
+  padding: 16px;
+}
+
+.profile-system-page .profile-form-grid {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.profile-system-page .profile-form-grid label > span,
+.profile-system-page .profile-form-heading strong {
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.profile-system-page .profile-form-grid input {
+  min-height: 44px;
+  border-color: var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+}
+
+.profile-system-page .profile-form-grid input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(22, 119, 242, 0.1);
+}
+
+.profile-system-page .profile-action-list a {
+  min-height: 64px;
+  padding: 0 16px;
+}
+
+.profile-system-page .profile-action-list span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.profile-system-page .profile-action-list strong {
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
 .auth-switch-button {
   justify-self: center;
   margin-top: 2px;
@@ -2965,8 +3420,29 @@ dd {
 
 @media (max-width: 360px) {
   .screen-content {
-    padding-right: 15px;
-    padding-left: 15px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .mobile-summary-panel {
+    padding: 12px;
+  }
+
+  .mobile-summary-grid {
+    gap: 8px;
+  }
+
+  .mission-page-tabs button {
+    gap: 2px;
+    font-size: 12px;
+  }
+
+  .mission-system-page .mission-card {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .mission-system-page .mission-card img {
+    width: 72px;
   }
 
   .screen-content:has(.campaign-discovery-screen) {

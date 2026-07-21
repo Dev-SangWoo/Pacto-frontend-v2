@@ -15,12 +15,15 @@ export default async function ProfilePage() {
   const avatarLabel = getAvatarLabel(profile?.nickname ?? profile?.name ?? email);
 
   return (
-    <section className="screen-stack" aria-labelledby="profile-title">
-      <section className="profile-title-block">
+    <section
+      className="screen-stack mobile-system-page profile-system-page"
+      aria-labelledby="profile-title"
+    >
+      <header className="profile-title-block mobile-page-heading">
         <p className="section-label">내 정보</p>
         <h1 id="profile-title">계정 설정</h1>
         <p>블로그 활동 정보와 정산 계좌를 관리하세요.</p>
-      </section>
+      </header>
 
       <section className="profile-section" aria-labelledby="account-profile-title">
         <div className="section-head">

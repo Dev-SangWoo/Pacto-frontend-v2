@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
 import type {
   ApplicationResponse,
@@ -45,6 +46,7 @@ type MissionGroupConfig = {
 };
 
 type MissionViewKey = "closed" | "in-progress" | "pending-applications" | "settled" | "submitted";
+type MissionTabKey = "applications" | "closed" | "in-progress" | "settled" | "submitted";
 
 const pendingApplicationGroup: ApplicationGroupConfig = {
   key: "pending-applications",
@@ -108,37 +110,117 @@ export function MissionBoard({ applications, missions }: MissionBoardProps) {
       application.status !== "ACCEPTED" || !missionCampaignIds.has(application.campaignId),
   );
   const totalItems = visibleApplications.length + missions.length;
+  const tabItems: Array<{ count: number; key: MissionTabKey; label: string }> = [
+    {
+      count: filterApplications(visibleApplications, ["PENDING", "ACCEPTED"]).length,
+      key: "applications",
+      label: "신청",
+    },
+    {
+      count: filterMissions(missions, ["in_progress"]).length,
+      key: "in-progress",
+      label: "진행",
+    },
+    {
+      count: filterMissions(missions, ["submitted"]).length,
+      key: "submitted",
+      label: "검수",
+    },
+    {
+      count: filterMissions(missions, ["approved"]).length,
+      key: "settled",
+      label: "완료",
+    },
+    {
+      count:
+        filterMissions(missions, ["rejected", "cancelled"]).length +
+        filterApplications(visibleApplications, ["REJECTED", "CANCELLED"]).length,
+      key: "closed",
+      label: "종료",
+    },
+  ];
+  const [selectedTab, setSelectedTab] = useState<MissionTabKey>(() =>
+    getInitialMissionTab(tabItems),
+  );
 
   return (
     <section className="mission-board" aria-label="미션 목록">
-      <div className="mission-view-panel">
-        <ApplicationGroup
-          applications={filterApplications(visibleApplications, pendingApplicationGroup.statuses)}
-          config={pendingApplicationGroup}
-        />
-        <ApplicationGroup
-          applications={filterApplications(visibleApplications, acceptedApplicationGroup.statuses)}
-          config={acceptedApplicationGroup}
-        />
-        {missionGroups
-          .filter((group) => group.key !== "closed")
-          .map((group) => (
-            <MissionGroup
-              config={group}
-              key={group.key}
-              missions={filterMissions(missions, group.statuses)}
-            />
-          ))}
-        <ClosedMissionGroup applications={visibleApplications} missions={missions} />
-      </div>
-
       {totalItems === 0 ? (
         <div className="empty-state">
           <strong>아직 참여한 미션이 없어요</strong>
           <p>캠페인을 신청하면 승인 대기와 미션 진행 상태가 여기에 모여요.</p>
         </div>
-      ) : null}
+      ) : (
+        <>
+          <div className="mission-page-tabs" aria-label="미션 상태" role="tablist">
+            {tabItems.map((tab) => (
+              <button
+                aria-controls={`mission-tab-panel-${tab.key}`}
+                aria-selected={selectedTab === tab.key}
+                className={selectedTab === tab.key ? "active" : undefined}
+                key={tab.key}
+                onClick={() => setSelectedTab(tab.key)}
+                role="tab"
+                type="button"
+              >
+                <span>{tab.label}</span>
+                <strong>{tab.count}</strong>
+              </button>
+            ))}
+          </div>
+          <div
+            className="mission-view-panel"
+            id={`mission-tab-panel-${selectedTab}`}
+            role="tabpanel"
+          >
+            {selectedTab === "applications" ? (
+              <>
+                <ApplicationGroup
+                  applications={filterApplications(
+                    visibleApplications,
+                    pendingApplicationGroup.statuses,
+                  )}
+                  config={pendingApplicationGroup}
+                />
+                <ApplicationGroup
+                  applications={filterApplications(
+                    visibleApplications,
+                    acceptedApplicationGroup.statuses,
+                  )}
+                  config={acceptedApplicationGroup}
+                />
+              </>
+            ) : null}
+            {missionGroups
+              .filter((group) => group.key === selectedTab)
+              .map((group) => (
+                <MissionGroup
+                  config={group}
+                  key={group.key}
+                  missions={filterMissions(missions, group.statuses)}
+                />
+              ))}
+            {selectedTab === "closed" ? (
+              <ClosedMissionGroup applications={visibleApplications} missions={missions} />
+            ) : null}
+          </div>
+        </>
+      )}
     </section>
+  );
+}
+
+function getInitialMissionTab(tabs: Array<{ count: number; key: MissionTabKey }>): MissionTabKey {
+  const priority: MissionTabKey[] = [
+    "in-progress",
+    "submitted",
+    "applications",
+    "settled",
+    "closed",
+  ];
+
+  return (
+    priority.find((key) => tabs.some((tab) => tab.key === key && tab.count > 0)) ?? "applications"
   );
 }
 

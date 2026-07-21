@@ -35,9 +35,9 @@ export function WalletSummary({
     <section className="wallet-hero" aria-labelledby="wallet-title">
       <div className="wallet-brief">
         <p className="section-label">내 지갑</p>
-        <h1 id="wallet-title">출금 가능한 보상</h1>
+        <h1 id="wallet-title">출금 가능 포인트</h1>
         <strong>{formatPoint(availableBalance)}</strong>
-        <p>{formatKoreanDate(updatedAt)} 기준으로 바로 출금 신청할 수 있는 금액이에요.</p>
+        <p>{formatKoreanDate(updatedAt)} 기준 · 바로 출금 신청할 수 있어요.</p>
       </div>
       <div className="wallet-hero-meta" aria-label="지갑 요약">
         <button type="button" onClick={() => setIsLockedModalOpen(true)}>
