@@ -1582,7 +1582,7 @@ dd {
 
 .campaign-mission-panel {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   border-radius: 10px;
   background: var(--campaign-mission);
   padding: 8px;
@@ -1605,7 +1605,7 @@ dd {
 
 .campaign-mission-panel > a {
   display: grid;
-  min-height: 44px;
+  min-height: 38px;
   place-items: center;
   border-radius: 6px;
   background: var(--campaign-primary);
