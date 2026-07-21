@@ -9,13 +9,17 @@ import {
   listenForForegroundPush,
   requestFirebasePushToken,
 } from "../_lib/firebase-client";
+import { isIosDevice, isStandalonePwa } from "../_lib/pwa-client";
 
 export function PushNotificationSetting() {
   const [message, setMessage] = useState<string>();
+  const [requiresHomeScreenInstall, setRequiresHomeScreenInstall] = useState(false);
   const [isPending, startTransition] = useTransition();
   const isConfigured = isFirebasePushConfigured();
 
   useEffect(() => {
+    setRequiresHomeScreenInstall(isIosDevice() && !isStandalonePwa());
+
     let unsubscribe: () => void = () => undefined;
 
     void listenForForegroundPush((payload) => {
@@ -43,7 +47,7 @@ export function PushNotificationSetting() {
       <p>캠페인 선정과 미션 검수 결과를 브라우저 알림으로 알려드려요.</p>
       <button
         className="primary-button weak-button full-width"
-        disabled={!isConfigured || isPending}
+        disabled={!isConfigured || isPending || requiresHomeScreenInstall}
         onClick={() => {
           setMessage(undefined);
           startTransition(async () => {
@@ -58,8 +62,15 @@ export function PushNotificationSetting() {
         }}
         type="button"
       >
-        {isPending ? "알림 설정 중..." : "푸시 알림 받기"}
+        {isPending
+          ? "알림 설정 중..."
+          : requiresHomeScreenInstall
+            ? "홈 화면에 추가 후 알림 받기"
+            : "푸시 알림 받기"}
       </button>
+      {requiresHomeScreenInstall ? (
+        <small>iPhone과 iPad에서는 홈 화면에 추가한 Pacto 앱에서 알림을 설정해 주세요.</small>
+      ) : null}
       {!isConfigured ? (
         <small>VAPID 키를 포함한 Firebase 환경변수를 설정하면 사용할 수 있어요.</small>
       ) : null}

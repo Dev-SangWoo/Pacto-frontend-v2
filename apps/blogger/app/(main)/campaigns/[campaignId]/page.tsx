@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { getCampaignDetail } from "@pacto/api";
+import { CalendarDays, Coins, FileText, UserRoundCheck, UsersRound } from "lucide-react";
 import {
   canApplyToCampaign,
   formatDeadlineDday,
@@ -49,41 +50,59 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
   const missionGuideItems = parseMissionGuide(campaign.guidelines);
 
   return (
-    <section className="screen-stack detail-screen" aria-labelledby="campaign-detail-title">
-      <section className="campaign-detail-hero">
-        <img src={campaign.thumbnailUrl} alt={`${campaign.title} 대표 이미지`} />
-        <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
+    <section
+      className="screen-stack detail-screen campaign-detail-page"
+      aria-labelledby="campaign-detail-title"
+    >
+      <section className="campaign-detail-hero" aria-label="캠페인 요약">
+        <div className="campaign-detail-cover">
+          <img src={campaign.thumbnailUrl} alt={`${campaign.title} 대표 이미지`} />
+          <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
+        </div>
         <div className="campaign-detail-hero-copy">
+          <p className="section-label">{campaign.brandName}</p>
           <div className="campaign-detail-heading">
-            <p className="section-label">{campaign.brandName}</p>
             <h1 id="campaign-detail-title">{campaign.title}</h1>
-            <span>{formatPoint(campaign.rewardPoint)}</span>
+            <div className="campaign-detail-reward">
+              <Coins aria-hidden="true" size={17} strokeWidth={2} />
+              <span>
+                <small>완료 보상</small>
+                <strong>{formatPoint(campaign.rewardPoint)}</strong>
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="ticket-facts detail-facts" aria-label="캠페인 조건">
-        <div>
-          <dt>남은 모집</dt>
-          <dd>{remainingSlots}명</dd>
-        </div>
-        <div>
-          <dt>지원자</dt>
-          <dd>{campaign.applicantCount}명</dd>
-        </div>
-        <div>
-          <dt>마감</dt>
-          <dd>
-            {formatKoreanDate(campaign.deadline)}
-            <em>{formatDeadlineDday(campaign.deadline)}</em>
-          </dd>
-        </div>
+      <section className="campaign-detail-metrics" aria-label="캠페인 조건">
+        <article>
+          <UsersRound aria-hidden="true" size={18} strokeWidth={1.9} />
+          <span>남은 자리</span>
+          <strong>{remainingSlots}명</strong>
+        </article>
+        <article>
+          <UserRoundCheck aria-hidden="true" size={18} strokeWidth={1.9} />
+          <span>신청 현황</span>
+          <strong>{campaign.applicantCount}명</strong>
+        </article>
+        <article>
+          <CalendarDays aria-hidden="true" size={18} strokeWidth={1.9} />
+          <span>모집 마감</span>
+          <strong>{formatDeadlineDday(campaign.deadline)}</strong>
+          <small>{formatKoreanDate(campaign.deadline)}</small>
+        </article>
       </section>
 
       <section className="section-block mission-guide-panel" aria-labelledby="campaign-guide-title">
         <div className="section-head">
-          <div>
-            <h2 id="campaign-guide-title">미션 조건</h2>
+          <div className="detail-section-heading">
+            <span aria-hidden="true">
+              <FileText size={18} strokeWidth={2} />
+            </span>
+            <div>
+              <p className="section-label">선정 후 진행할 내용</p>
+              <h2 id="campaign-guide-title">미션 가이드</h2>
+            </div>
           </div>
         </div>
         <div className="mission-guide-list">
