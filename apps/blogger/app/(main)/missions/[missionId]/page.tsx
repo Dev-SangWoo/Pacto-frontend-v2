@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { getCampaignDetail, getMissionDetail } from "@pacto/api";
 import type { MissionStatus } from "@pacto/types";
+import { CalendarDays, CircleCheck, Coins, Link2 } from "lucide-react";
 import {
   canSubmitMission,
   formatDeadlineDday,
@@ -58,42 +59,84 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
     canSubmitMission(displayMission.status) && campaign?.status !== "in_progress";
 
   return (
-    <section className="screen-stack detail-screen" aria-labelledby="mission-detail-title">
-      <section className="task-hero">
-        <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
-        <p className="section-label">{displayMission.brandName}</p>
-        <h1 id="mission-detail-title">{displayMission.campaignTitle}</h1>
+    <section
+      className="screen-stack detail-screen mission-detail-page"
+      aria-labelledby="mission-detail-title"
+    >
+      <section className="mission-detail-overview" aria-label="미션 요약">
+        <img
+          src={displayMission.thumbnailUrl}
+          alt={`${displayMission.campaignTitle} 대표 이미지`}
+        />
+        <div>
+          <div className="mission-detail-badges">
+            <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
+            <span>내 미션</span>
+          </div>
+          <p className="section-label">{displayMission.brandName}</p>
+          <h1 id="mission-detail-title">{displayMission.campaignTitle}</h1>
+        </div>
       </section>
 
-      <section className="mission-command" aria-label="미션 수행 정보">
+      <section className="mission-detail-metrics" aria-label="미션 수행 정보">
         <article>
-          <span>리뷰 등록 마감</span>
-          <strong>{formatKoreanDate(displayMission.dueDate)}</strong>
-          <em>{formatDeadlineDday(displayMission.dueDate)}</em>
+          <CalendarDays aria-hidden="true" size={19} strokeWidth={1.9} />
+          <div>
+            <span>리뷰 등록 마감</span>
+            <strong>{formatDeadlineDday(displayMission.dueDate)}</strong>
+            <small>{formatKoreanDate(displayMission.dueDate)}</small>
+          </div>
         </article>
         <article>
-          <span>목표 포인트</span>
-          <strong>{formatPoint(displayMission.rewardPoint)}</strong>
+          <Coins aria-hidden="true" size={19} strokeWidth={1.9} />
+          <div>
+            <span>완료 보상</span>
+            <strong>{formatPoint(displayMission.rewardPoint)}</strong>
+            <small>승인 후 지갑에 적립</small>
+          </div>
         </article>
       </section>
 
       <section className="mission-journey-panel mission-detail-status" aria-label="미션 현황">
-        <div>
-          <p className="section-label">미션 현황</p>
-          <h2>현재 진행 단계</h2>
-          <strong>{getMissionStatusDescription(displayMission.status)}</strong>
+        <div className="mission-detail-status-copy">
+          <span aria-hidden="true">
+            <CircleCheck size={18} strokeWidth={2} />
+          </span>
+          <div>
+            <p className="section-label">현재 진행 단계</p>
+            <h2>{statusView.label}</h2>
+            <strong>{getMissionStatusDescription(displayMission.status)}</strong>
+          </div>
         </div>
         <MissionDetailStatusFlow status={displayMission.status} />
       </section>
 
-      <section className="section-block">
-        <div className="section-head">
+      <section className="section-block mission-review-card">
+        <div className="section-head mission-review-heading">
           <div>
-            <p className="section-label">리뷰 등록 상태</p>
-            <h2>리뷰 URL</h2>
+            <span aria-hidden="true">
+              <Link2 size={18} strokeWidth={2} />
+            </span>
+            <div>
+              <p className="section-label">제출한 콘텐츠</p>
+              <h2>리뷰 URL</h2>
+            </div>
           </div>
+          <span>{displayMission.submittedUrl == null ? "등록 전" : "등록 완료"}</span>
         </div>
-        <p className="body-copy">{displayMission.submittedUrl ?? "아직 등록 전입니다."}</p>
+        {displayMission.submittedUrl == null ? (
+          <p className="body-copy">아직 등록된 리뷰가 없어요.</p>
+        ) : (
+          <a
+            className="mission-review-link"
+            href={displayMission.submittedUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <span>{displayMission.submittedUrl}</span>
+            <Link2 aria-hidden="true" size={16} strokeWidth={2} />
+          </a>
+        )}
       </section>
 
       <div className="fixed-cta">

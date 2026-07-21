@@ -2,6 +2,7 @@ import { getMe } from "@pacto/api";
 
 import { PushNotificationSetting } from "../../_components/push-notification-setting";
 import { PushAwareLogoutButton } from "../../_components/push-aware-logout-button";
+import { PwaInstallSetting } from "../../_components/pwa-install-setting";
 import { getBloggerSession } from "../../_lib/session";
 
 export default async function ProfilePage() {
@@ -76,6 +77,8 @@ export default async function ProfilePage() {
           </a>
         </div>
       </section>
+
+      <PwaInstallSetting />
 
       <PushNotificationSetting />
 
