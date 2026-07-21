@@ -1,6 +1,6 @@
 import { getMe } from "@pacto/api";
 
-import { AppHeaderStart, BottomNav, TopActions } from "../_components/app-nav";
+import { AppHeader, BottomNav } from "../_components/app-nav";
 import { fallbackOnNonAuthError } from "../_lib/auth-error";
 import { getBloggerActivity } from "../_lib/blogger-activity";
 import { buildBloggerNotifications, getUnreadNotificationCount } from "../_lib/notifications";
@@ -18,10 +18,7 @@ export default async function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <main className="mobile-shell">
-      <header className="app-top">
-        <AppHeaderStart bloggerName={bloggerName} />
-        <TopActions notificationCount={notificationCount} />
-      </header>
+      <AppHeader bloggerName={bloggerName} notificationCount={notificationCount} />
       <div className="screen-content">{children}</div>
       <BottomNav />
     </main>

@@ -20,61 +20,17 @@ const navItems: Array<{
 
 const rootPaths = new Set(navItems.map((item) => item.href));
 
-export function AppHeaderStart({ bloggerName }: { bloggerName?: string }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const parentHref = getParentHref(pathname);
-  const isRootPath = rootPaths.has(pathname);
-
-  if (pathname === "/campaigns") {
-    return (
-      <Link className="app-brand campaign-home-brand" href="/campaigns" aria-label="Pacto 홈">
-        <span className="app-brand-mark" aria-hidden="true">
-          <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
-        </span>
-        {bloggerName != null ? (
-          <small className="campaign-app-blogger-name">{bloggerName}</small>
-        ) : null}
-      </Link>
-    );
-  }
-
-  if (!isRootPath) {
-    return (
-      <button
-        aria-label="이전 화면으로 이동"
-        className="app-back-button"
-        onClick={() => {
-          if (window.history.length > 1) {
-            router.back();
-            return;
-          }
-
-          router.push(parentHref);
-        }}
-        type="button"
-      >
-        <ArrowLeft aria-hidden="true" size={24} strokeWidth={2.25} />
-      </button>
-    );
-  }
-
-  return (
-    <Link className="app-brand" href="/campaigns" aria-label="Pacto 홈">
-      <span className="app-brand-mark" aria-hidden="true">
-        <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
-      </span>
-    </Link>
-  );
-}
-
-type TopActionsProps = {
+type AppHeaderProps = {
+  bloggerName?: string;
   notificationCount?: number;
 };
 
-export function TopActions({ notificationCount = 0 }: TopActionsProps) {
+export function AppHeader({ bloggerName, notificationCount = 0 }: AppHeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const parentHref = getParentHref(pathname);
+  const isRootPath = rootPaths.has(pathname);
   const hasNotifications = notificationCount > 0;
   const isCampaignHome = pathname === "/campaigns";
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -87,51 +43,77 @@ export function TopActions({ notificationCount = 0 }: TopActionsProps) {
   }, [isSearchOpen]);
 
   return (
-    <div className="top-actions">
-      <Link
-        className="icon-button notification-button"
-        href="/notifications"
-        aria-label={hasNotifications ? `${notificationCount}개의 새 알림 열기` : "알림 열기"}
-      >
-        <Bell aria-hidden="true" size={21} strokeWidth={2.25} />
-        {hasNotifications && isCampaignHome ? (
-          <span className="campaign-notification-dot" aria-hidden="true" />
-        ) : hasNotifications ? (
-          <span aria-label={`${notificationCount}개의 새 알림`}>
-            {notificationCount > 9 ? "9+" : notificationCount}
+    <header className="app-top">
+      {isRootPath ? (
+        <Link className="app-brand" href="/campaigns" aria-label="Pacto 홈">
+          <span className="app-brand-mark" aria-hidden="true">
+            <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
           </span>
-        ) : null}
-      </Link>
-      {isCampaignHome ? (
+          {bloggerName != null ? <small className="app-blogger-name">{bloggerName}</small> : null}
+        </Link>
+      ) : (
         <button
-          aria-expanded={isSearchOpen}
-          aria-label={isSearchOpen ? "캠페인 검색 닫기" : "캠페인 검색 열기"}
-          className="icon-button campaign-search-toggle"
-          onClick={() => setIsSearchOpen((open) => !open)}
+          aria-label="이전 화면으로 이동"
+          className="app-back-button"
+          onClick={() => {
+            if (window.history.length > 1) {
+              router.back();
+              return;
+            }
+
+            router.push(parentHref);
+          }}
           type="button"
         >
-          <Search aria-hidden="true" size={22} strokeWidth={2} />
+          <ArrowLeft aria-hidden="true" size={24} strokeWidth={2.25} />
         </button>
-      ) : (
-        <Link className="icon-button profile" href="/profile" aria-label="내 정보">
-          <UserCircle aria-hidden="true" size={23} strokeWidth={2.25} />
-        </Link>
       )}
-      {isCampaignHome && isSearchOpen ? (
-        <form action="/campaigns" className="campaign-header-search" method="get">
-          <Search aria-hidden="true" size={18} />
-          <input
-            aria-label="캠페인 검색어"
-            defaultValue={searchParams.get("q") ?? ""}
-            name="q"
-            placeholder="캠페인명, 브랜드, 미션 검색"
-            ref={searchInputRef}
-            type="search"
-          />
-          <button type="submit">검색</button>
-        </form>
-      ) : null}
-    </div>
+      <div className="top-actions">
+        <Link
+          className="icon-button notification-button"
+          href="/notifications"
+          aria-label={hasNotifications ? `${notificationCount}개의 새 알림 열기` : "알림 열기"}
+        >
+          <Bell aria-hidden="true" size={21} strokeWidth={2.25} />
+          {hasNotifications && isCampaignHome ? (
+            <span className="campaign-notification-dot" aria-hidden="true" />
+          ) : hasNotifications ? (
+            <span aria-label={`${notificationCount}개의 새 알림`}>
+              {notificationCount > 9 ? "9+" : notificationCount}
+            </span>
+          ) : null}
+        </Link>
+        {isCampaignHome ? (
+          <button
+            aria-expanded={isSearchOpen}
+            aria-label={isSearchOpen ? "캠페인 검색 닫기" : "캠페인 검색 열기"}
+            className="icon-button campaign-search-toggle"
+            onClick={() => setIsSearchOpen((open) => !open)}
+            type="button"
+          >
+            <Search aria-hidden="true" size={22} strokeWidth={2} />
+          </button>
+        ) : (
+          <Link className="icon-button profile" href="/profile" aria-label="내 정보">
+            <UserCircle aria-hidden="true" size={23} strokeWidth={2.25} />
+          </Link>
+        )}
+        {isCampaignHome && isSearchOpen ? (
+          <form action="/campaigns" className="campaign-header-search" method="get">
+            <Search aria-hidden="true" size={18} />
+            <input
+              aria-label="캠페인 검색어"
+              defaultValue={searchParams.get("q") ?? ""}
+              name="q"
+              placeholder="캠페인명, 브랜드, 미션 검색"
+              ref={searchInputRef}
+              type="search"
+            />
+            <button type="submit">검색</button>
+          </form>
+        ) : null}
+      </div>
+    </header>
   );
 }
 
