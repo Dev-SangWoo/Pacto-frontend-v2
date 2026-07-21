@@ -10,10 +10,9 @@ const navItems: Array<{
   href: string;
   icon: LucideIcon;
   label: string;
-  notify?: boolean;
 }> = [
   { href: "/campaigns", icon: House, label: "홈" },
-  { href: "/missions", icon: Target, label: "미션", notify: true },
+  { href: "/missions", icon: Target, label: "미션" },
   { href: "/wallet", icon: WalletCards, label: "지갑" },
   { href: "/profile", icon: UserCircle, label: "내 정보" },
 ];
@@ -155,7 +154,6 @@ export function BottomNav() {
           >
             <span className="bottom-nav-icon">
               <Icon aria-hidden="true" size={21} strokeWidth={2.25} />
-              {item.notify ? <span className="nav-dot" aria-hidden="true" /> : null}
             </span>
             <span>{item.label}</span>
           </Link>

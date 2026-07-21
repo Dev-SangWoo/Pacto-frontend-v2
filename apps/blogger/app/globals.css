@@ -2816,6 +2816,11 @@ dd {
 }
 
 .notification-card {
+  width: 100%;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
   display: grid;
   gap: 8px;
   border: 1px solid var(--line);
@@ -2823,6 +2828,32 @@ dd {
   background: var(--surface);
   padding: 15px;
   box-shadow: 0 12px 28px rgba(16, 19, 24, 0.05);
+}
+
+.campaign-guideline-gallery {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.campaign-guideline-gallery img {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  border-radius: 10px;
+  object-fit: contain;
+  background: var(--surface-soft);
+}
+
+.push-setting {
+  gap: 12px;
+}
+
+.push-setting > p,
+.push-setting > small {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .notification-card > span {
@@ -2892,6 +2923,36 @@ dd {
 .notification-card.red > span {
   color: var(--red);
   background: var(--red-soft);
+}
+
+.notification-pagination {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 13px;
+  text-align: center;
+}
+
+.notification-pagination a,
+.notification-pagination span {
+  display: grid;
+  min-height: 40px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.notification-pagination a {
+  color: var(--blue);
+  background: var(--surface);
+  font-weight: 800;
+}
+
+.notification-pagination span {
+  color: var(--muted);
+  background: var(--surface-soft);
 }
 
 /* Common mobile design system: mission, wallet, settings */
@@ -3055,7 +3116,7 @@ dd {
 }
 
 .mission-system-page .mission-board {
-  gap: 20px;
+  gap: 12px;
 }
 
 .mission-page-tabs {
@@ -3073,10 +3134,10 @@ dd {
   position: relative;
   display: flex;
   min-width: 0;
-  min-height: 48px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   border: 0;
   background: transparent;
   padding: 0 2px;

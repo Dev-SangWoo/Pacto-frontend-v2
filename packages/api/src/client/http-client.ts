@@ -4,7 +4,7 @@ import { getApiEnv } from "./env";
 
 const DEFAULT_API_BASE_URL = "";
 
-type HttpMethod = "GET" | "POST" | "PATCH";
+type HttpMethod = "DELETE" | "GET" | "POST" | "PATCH";
 
 interface NextFetchRequestConfig {
   revalidate?: number | false;

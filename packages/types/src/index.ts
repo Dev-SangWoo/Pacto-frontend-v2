@@ -16,3 +16,9 @@ export type {
   ApplicationStatusResponse,
   CampaignApplicant,
 } from "./application";
+export type {
+  Notification,
+  NotificationPage,
+  NotificationType,
+  PushRegistrationType,
+} from "./notification";

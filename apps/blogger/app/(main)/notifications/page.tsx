@@ -1,27 +1,36 @@
-import { getCampaignDetail } from "@pacto/api";
-import type { ApplicationResponse, Campaign, Mission } from "@pacto/types";
+import { getMyNotifications } from "@pacto/api";
+import type { NotificationType } from "@pacto/types";
 import { formatKoreanDate } from "@pacto/utils";
 import { redirect } from "next/navigation";
 
-import { getBloggerActivity } from "../../_lib/blogger-activity";
+import { readNotificationAction } from "../../_actions/blogger-actions";
 import { fallbackOnNonAuthError } from "../../_lib/auth-error";
-import { buildBloggerNotifications } from "../../_lib/notifications";
 import { getBloggerSession } from "../../_lib/session";
 
 export const dynamic = "force-dynamic";
 
-export default async function NotificationsPage() {
+type NotificationsPageProps = {
+  searchParams: Promise<{
+    page?: string;
+  }>;
+};
+
+export default async function NotificationsPage({ searchParams }: NotificationsPageProps) {
   const session = await getBloggerSession();
 
   if (session.accessToken == null) {
     redirect("/login");
   }
 
-  const { applications, missions } = await getBloggerActivity(session.accessToken).catch(
-    (error: unknown) => fallbackOnNonAuthError(error, { applications: [], missions: [] }),
+  const { page: pageParam } = await searchParams;
+  const requestedPage = Math.max(Number.parseInt(pageParam ?? "1", 10) || 1, 1);
+  const notificationPage = await getMyNotifications(session.accessToken, {
+    page: requestedPage,
+    size: 20,
+  }).catch((error: unknown) =>
+    fallbackOnNonAuthError(error, { content: [], currentPage: 1, totalPages: 0 }),
   );
-  const campaignMap = await getCampaignMap([...missions, ...applications], session.accessToken);
-  const notifications = buildBloggerNotifications({ applications, campaignMap, missions });
+  const notifications = notificationPage.content;
 
   return (
     <section className="screen-stack" aria-labelledby="notifications-title">
@@ -34,16 +43,20 @@ export default async function NotificationsPage() {
       {notifications.length > 0 ? (
         <div className="notification-list">
           {notifications.map((notification) => (
-            <a
-              className={`notification-card ${notification.tone}`}
-              href={notification.href}
+            <form
+              action={readNotificationAction.bind(null, notification.id, notification.targetUrl)}
               key={notification.id}
             >
-              <span>{notification.isUnread ? "새 알림" : "확인됨"}</span>
-              <strong>{notification.title}</strong>
-              <p>{notification.message}</p>
-              <em>{formatKoreanDate(notification.createdAt)}</em>
-            </a>
+              <button
+                className={`notification-card ${getNotificationTone(notification.type)}`}
+                type="submit"
+              >
+                <span>{notification.read ? "확인됨" : "새 알림"}</span>
+                <strong>{notification.title}</strong>
+                <p>{notification.content}</p>
+                <em>{formatKoreanDate(notification.createdAt)}</em>
+              </button>
+            </form>
           ))}
         </div>
       ) : (
@@ -52,26 +65,34 @@ export default async function NotificationsPage() {
           <p>캠페인 선정 결과나 제출할 미션이 생기면 여기에 표시돼요.</p>
         </div>
       )}
+      {notificationPage.totalPages > 1 ? (
+        <nav className="notification-pagination" aria-label="알림 페이지">
+          {notificationPage.currentPage > 1 ? (
+            <a href={`/notifications?page=${notificationPage.currentPage - 1}`}>이전</a>
+          ) : (
+            <span aria-disabled="true">이전</span>
+          )}
+          <strong>
+            {notificationPage.currentPage} / {notificationPage.totalPages}
+          </strong>
+          {notificationPage.currentPage < notificationPage.totalPages ? (
+            <a href={`/notifications?page=${notificationPage.currentPage + 1}`}>다음</a>
+          ) : (
+            <span aria-disabled="true">다음</span>
+          )}
+        </nav>
+      ) : null}
     </section>
   );
 }
 
-function getCampaignId(item: Mission | ApplicationResponse) {
-  return item.campaignId;
-}
-
-async function getCampaignMap(
-  items: Array<Mission | ApplicationResponse>,
-  token?: string,
-): Promise<Map<number, Campaign>> {
-  const campaignIds = Array.from(new Set(items.map(getCampaignId).filter((id) => id > 0)));
-  const campaigns = await Promise.all(
-    campaignIds.map((campaignId) => getCampaignDetail(campaignId, token).catch(() => undefined)),
-  );
-
-  return new Map(
-    campaigns
-      .filter((campaign): campaign is Campaign => campaign != null)
-      .map((campaign) => [campaign.id, campaign]),
-  );
+function getNotificationTone(type: NotificationType) {
+  switch (type) {
+    case "APPLICATION_ACCEPTED":
+    case "MISSION_APPROVED":
+      return "green";
+    case "APPLICATION_REJECTED":
+    case "MISSION_REJECTED":
+      return "red";
+  }
 }

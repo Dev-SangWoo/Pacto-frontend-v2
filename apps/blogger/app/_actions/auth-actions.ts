@@ -1,9 +1,9 @@
 "use server";
 
-import { ApiError, getMe, login, signup } from "@pacto/api";
+import { ApiError, getMe, login, signup, unregisterPushSubscription } from "@pacto/api";
 import { redirect } from "next/navigation";
 
-import { clearBloggerSession, setBloggerSession } from "../_lib/session";
+import { clearBloggerSession, getBloggerSession, setBloggerSession } from "../_lib/session";
 
 type AuthActionResult = {
   message?: string;
@@ -57,6 +57,17 @@ export async function signupAction(email: string, password: string): Promise<Aut
 }
 
 export async function logoutAction() {
+  await clearBloggerSession();
+  redirect("/login");
+}
+
+export async function logoutWithPushAction(registrationId?: string) {
+  const session = await getBloggerSession();
+
+  if (registrationId != null && session.accessToken != null) {
+    await unregisterPushSubscription(registrationId, session.accessToken).catch(() => undefined);
+  }
+
   await clearBloggerSession();
   redirect("/login");
 }

@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { ApiError, applyToCampaign, submitMission, updateMyProfile } from "@pacto/api";
+import {
+  ApiError,
+  applyToCampaign,
+  markNotificationAsRead,
+  registerPushSubscription,
+  submitMission,
+  updateMyProfile,
+} from "@pacto/api";
 
 import { getBloggerSession } from "../_lib/session";
 
@@ -99,6 +106,40 @@ export async function submitMissionAction(
   }
 }
 
+export async function readNotificationAction(notificationId: number, targetUrl?: string) {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    await markNotificationAsRead(notificationId, session.accessToken);
+    revalidatePath("/notifications");
+    revalidatePath("/", "layout");
+  } catch (error) {
+    redirectIfAuthError(error);
+  }
+
+  redirect(getSafeNotificationTarget(targetUrl));
+}
+
+export async function registerPushTokenAction(registrationId: string): Promise<ActionResult> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    await registerPushSubscription(registrationId, session.accessToken);
+    return { message: "푸시 알림을 설정했어요.", ok: true };
+  } catch (error) {
+    redirectIfAuthError(error);
+    return { message: "푸시 알림을 설정하지 못했어요. 잠시 후 다시 시도해 주세요.", ok: false };
+  }
+}
+
 function redirectIfAuthError(error: unknown) {
   if (error instanceof ApiError && error.statusCode === 401) {
     redirect("/logout?reason=session-expired");
@@ -148,4 +189,12 @@ function getProfileUpdateErrorMessage(error: unknown) {
   }
 
   return "프로필 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.";
+}
+
+function getSafeNotificationTarget(targetUrl?: string) {
+  if (targetUrl?.startsWith("/") && !targetUrl.startsWith("//")) {
+    return targetUrl;
+  }
+
+  return "/notifications";
 }

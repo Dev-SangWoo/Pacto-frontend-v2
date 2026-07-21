@@ -1,6 +1,7 @@
 import { getMe } from "@pacto/api";
 
-import { logoutAction } from "../../_actions/auth-actions";
+import { PushNotificationSetting } from "../../_components/push-notification-setting";
+import { PushAwareLogoutButton } from "../../_components/push-aware-logout-button";
 import { getBloggerSession } from "../../_lib/session";
 
 export default async function ProfilePage() {
@@ -76,11 +77,9 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <form action={logoutAction}>
-        <button className="primary-button weak-button full-width" type="submit">
-          로그아웃
-        </button>
-      </form>
+      <PushNotificationSetting />
+
+      <PushAwareLogoutButton />
     </section>
   );
 }
