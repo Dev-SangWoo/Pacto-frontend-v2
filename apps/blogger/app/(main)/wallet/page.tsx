@@ -20,17 +20,17 @@ export default async function WalletPage() {
     lockedBalance: 0,
     updatedAt: new Date().toISOString(),
   };
-  const [wallet, pointHistories] = await Promise.all([
+  const [wallet, pointHistories, missions] = await Promise.all([
     getMyWallet(session.accessToken).catch((error: unknown) =>
       fallbackOnNonAuthError(error, fallbackWallet),
     ),
     getMyPointHistories({}, session.accessToken).catch((error: unknown) =>
       fallbackOnNonAuthError<PointHistory[]>(error, []),
     ),
+    getMyMissions({}, session.accessToken).catch((error: unknown) =>
+      fallbackOnNonAuthError<Mission[]>(error, []),
+    ),
   ]);
-  const missions = await getMyMissions({}, session.accessToken).catch((error: unknown) =>
-    fallbackOnNonAuthError<Mission[]>(error, []),
-  );
   const campaignMap = await getCampaignMap(missions, session.accessToken);
   const missionByEscrowId = new Map(missions.map((mission) => [mission.escrowId, mission]));
   const pendingMissionItems = missions

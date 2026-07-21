@@ -1,6 +1,7 @@
 import { getCampaigns } from "@pacto/api";
 import type { Campaign } from "@pacto/types";
 import { matchesCampaignSearch } from "@pacto/utils";
+import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { CampaignExplorer } from "../../_components/campaign-explorer";
@@ -19,12 +20,7 @@ export default async function CampaignsPage({ searchParams }: CampaignsPageProps
     redirect("/login");
   }
 
-  const campaignResult = await getCampaigns({
-    page: 0,
-    size: 24,
-    sort: "campaignId,desc",
-    status: "RECRUITING",
-  }).then(
+  const campaignResult = await getCachedRecruitingCampaigns().then(
     (campaigns) => ({
       campaigns: campaigns
         .filter(isCurrentlyApplicableCampaign)
@@ -45,6 +41,18 @@ export default async function CampaignsPage({ searchParams }: CampaignsPageProps
     />
   );
 }
+
+const getCachedRecruitingCampaigns = unstable_cache(
+  () =>
+    getCampaigns({
+      page: 0,
+      size: 24,
+      sort: "campaignId,desc",
+      status: "RECRUITING",
+    }),
+  ["blogger-recruiting-campaigns-v1"],
+  { revalidate: 30, tags: ["blogger-campaigns"] },
+);
 
 function isCurrentlyApplicableCampaign(campaign: Campaign) {
   const remainingSlots =

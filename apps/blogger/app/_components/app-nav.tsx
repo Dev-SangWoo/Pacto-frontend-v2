@@ -151,6 +151,7 @@ export function BottomNav() {
             className={isActive ? "active" : undefined}
             href={item.href}
             key={item.href}
+            prefetch={true}
           >
             <span className="bottom-nav-icon">
               <Icon aria-hidden="true" size={21} strokeWidth={2.25} />

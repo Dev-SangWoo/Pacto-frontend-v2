@@ -10,9 +10,10 @@ type MainLayoutProps = {
 };
 
 export default async function MainLayout({ children }: MainLayoutProps) {
+  const session = await getBloggerSession();
   const [bloggerName, notificationCount] = await Promise.all([
-    getBloggerName(),
-    getNotificationCount(),
+    getBloggerName(session.accessToken),
+    getNotificationCount(session.accessToken),
   ]);
 
   return (
@@ -25,34 +26,29 @@ export default async function MainLayout({ children }: MainLayoutProps) {
   );
 }
 
-async function getBloggerName() {
-  const session = await getBloggerSession();
-
-  if (session.accessToken == null) {
+async function getBloggerName(accessToken?: string) {
+  if (accessToken == null) {
     return undefined;
   }
 
-  const user = await getMe(session.accessToken).catch(() => undefined);
+  const user = await getMe(accessToken).catch(() => undefined);
   const name = user?.bloggerProfile?.nickname?.trim() || user?.bloggerProfile?.name?.trim();
 
   return name || undefined;
 }
 
-async function getNotificationCount() {
-  const session = await getBloggerSession();
-
-  if (session.accessToken == null) {
+async function getNotificationCount(accessToken?: string) {
+  if (accessToken == null) {
     return 0;
   }
 
-  const firstPage = await getMyNotifications(session.accessToken, { size: 100 }).catch(
-    (error: unknown) =>
-      fallbackOnNonAuthError(error, { content: [], currentPage: 1, totalPages: 0 }),
+  const firstPage = await getMyNotifications(accessToken, { size: 100 }).catch((error: unknown) =>
+    fallbackOnNonAuthError(error, { content: [], currentPage: 1, totalPages: 0 }),
   );
   const remainingPages = await Promise.all(
     Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) => index + 2).map(
       (page) =>
-        getMyNotifications(session.accessToken, { page, size: 100 }).catch((error: unknown) =>
+        getMyNotifications(accessToken, { page, size: 100 }).catch((error: unknown) =>
           fallbackOnNonAuthError(error, { content: [], currentPage: page, totalPages: 0 }),
         ),
     ),

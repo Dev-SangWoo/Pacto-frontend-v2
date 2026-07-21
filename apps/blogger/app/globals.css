@@ -259,6 +259,89 @@ dd {
   padding-top: 18px;
 }
 
+.tab-loading {
+  display: grid;
+  gap: 14px;
+  padding-top: 18px;
+}
+
+.tab-loading-hero,
+.tab-loading-tabs,
+.tab-loading-card span,
+.tab-loading-card i {
+  background: linear-gradient(100deg, #eef2f7 20%, #f8fafc 38%, #eef2f7 56%);
+  background-size: 240% 100%;
+  animation: tab-loading-shimmer 1.25s ease-in-out infinite;
+}
+
+.tab-loading-hero {
+  height: 116px;
+  border-radius: 12px;
+}
+
+.tab-loading-tabs {
+  width: 72%;
+  height: 36px;
+  border-radius: 999px;
+}
+
+.tab-loading-card {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 92px;
+}
+
+.tab-loading-card > span {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+}
+
+.tab-loading-card > div {
+  display: grid;
+  gap: 9px;
+}
+
+.tab-loading-card i {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.tab-loading-card i:nth-child(1) {
+  width: 68%;
+  height: 16px;
+}
+
+.tab-loading-card i:nth-child(2) {
+  width: 92%;
+}
+
+.tab-loading-card i:nth-child(3) {
+  width: 52%;
+}
+
+@keyframes tab-loading-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-loading-hero,
+  .tab-loading-tabs,
+  .tab-loading-card span,
+  .tab-loading-card i {
+    animation: none;
+  }
+}
+
 .detail-screen {
   padding-bottom: 152px;
 }
