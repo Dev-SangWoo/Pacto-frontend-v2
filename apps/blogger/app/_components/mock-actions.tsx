@@ -4,10 +4,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ApplicationStatusResponse, CampaignStatus, MissionStatus } from "@pacto/types";
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 
-import { acceptCampaignAction, submitMissionAction } from "../_actions/blogger-actions";
+import {
+  acceptCampaignAction,
+  cancelCampaignApplicationAction,
+  submitMissionAction,
+} from "../_actions/blogger-actions";
+import { FlowCompletion } from "./flow-completion";
 
 type CampaignApplyActionProps = {
+  applicationId?: number;
   applicationStatus?: ApplicationStatusResponse;
   campaignStatus: CampaignStatus;
   campaignId: number;
@@ -17,6 +24,7 @@ type CampaignApplyActionProps = {
 };
 
 export function CampaignApplyAction({
+  applicationId,
   applicationStatus,
   campaignStatus,
   campaignId,
@@ -29,9 +37,114 @@ export function CampaignApplyAction({
     applicationStatus,
   );
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [isCancelConfirming, setIsCancelConfirming] = useState(false);
+  const [isApplicationComplete, setIsApplicationComplete] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  if (isApplicationComplete) {
+    return (
+      <FlowCompletion
+        actions={
+          <>
+            <Link className="primary-button" href="/missions">
+              신청 상태 확인하기
+            </Link>
+            <Link className="text-link-button" href="/campaigns">
+              다른 캠페인 보기
+            </Link>
+          </>
+        }
+        description="광고주가 신청 내용을 확인하면 선정 결과를 알려드릴게요."
+        eyebrow="캠페인 신청 완료"
+        title="신청이 완료되었습니다!"
+        variant="compact"
+      />
+    );
+  }
+
   if (currentStatus != null) {
+    if (currentStatus === "PENDING") {
+      return (
+        <div className="cta-stack">
+          {errorMessage != null ? <p className="form-error">{errorMessage}</p> : null}
+          <button className="primary-button weak-button" disabled type="button">
+            지원 완료 · 선정 대기 중
+          </button>
+          {applicationId != null ? (
+            <>
+              <button
+                className="text-link-button application-cancel-button"
+                onClick={() => setIsCancelConfirming(true)}
+                type="button"
+              >
+                지원 취소
+              </button>
+              {isCancelConfirming
+                ? createPortal(
+                    <div
+                      className="application-cancel-modal-backdrop"
+                      onClick={() => {
+                        if (!isPending) {
+                          setIsCancelConfirming(false);
+                        }
+                      }}
+                    >
+                      <section
+                        aria-labelledby="application-cancel-title"
+                        aria-modal="true"
+                        className="application-cancel-modal"
+                        onClick={(event) => event.stopPropagation()}
+                        role="dialog"
+                      >
+                        <h2 id="application-cancel-title">지원 취소할까요?</h2>
+                        <p>지원 취소 후에는 다시 신청하지 못할 수 있어요.</p>
+                        <div>
+                          <button
+                            className="application-cancel-confirm-button"
+                            disabled={isPending}
+                            onClick={() => {
+                              setErrorMessage(undefined);
+                              startTransition(async () => {
+                                const result = await cancelCampaignApplicationAction(
+                                  applicationId,
+                                  campaignId,
+                                );
+
+                                if (result.ok) {
+                                  setCurrentStatus("CANCELLED");
+                                  setIsCancelConfirming(false);
+                                  await queryClient.invalidateQueries({
+                                    queryKey: ["blogger", "missions"],
+                                  });
+                                } else {
+                                  setErrorMessage(result.message);
+                                }
+                              });
+                            }}
+                            type="button"
+                          >
+                            {isPending ? "취소 중..." : "지원 취소하기"}
+                          </button>
+                          <button
+                            className="application-cancel-dismiss-button"
+                            disabled={isPending}
+                            onClick={() => setIsCancelConfirming(false)}
+                            type="button"
+                          >
+                            유지하기
+                          </button>
+                        </div>
+                      </section>
+                    </div>,
+                    document.body,
+                  )
+                : null}
+            </>
+          ) : null}
+        </div>
+      );
+    }
+
     if (currentStatus === "ACCEPTED") {
       const missionHref = missionId == null ? "/missions" : `/missions/${missionId}`;
 
@@ -100,6 +213,7 @@ export function CampaignApplyAction({
 
             if (result.ok) {
               setCurrentStatus("PENDING");
+              setIsApplicationComplete(true);
               await queryClient.invalidateQueries({ queryKey: ["blogger", "missions"] });
             } else {
               setErrorMessage(result.message);
@@ -137,12 +251,17 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
 
   if (isSubmitted) {
     return (
-      <div className="cta-stack">
-        <p>리뷰 URL을 제출했어요. 미션 목록에서 검수 상태를 확인할 수 있어요.</p>
-        <Link className="primary-button" href="/missions">
-          내 미션으로 돌아가기
-        </Link>
-      </div>
+      <FlowCompletion
+        actions={
+          <Link className="primary-button" href="/missions">
+            내 미션으로 돌아가기
+          </Link>
+        }
+        description="제출한 리뷰를 검수하면 상태가 업데이트되고 알림으로 알려드릴게요."
+        eyebrow="리뷰 제출 완료"
+        title="미션 제출이 완료되었습니다!"
+        variant="compact"
+      />
     );
   }
 

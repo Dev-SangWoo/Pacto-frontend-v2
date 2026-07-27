@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import {
   ApiError,
   applyToCampaign,
+  cancelApplication,
   getCampaignDetail,
   getMe,
   getMyNotifications,
@@ -105,6 +106,29 @@ export async function acceptCampaignAction(campaignId: number): Promise<ActionRe
     redirectIfAuthError(error);
 
     return { message: getAcceptCampaignErrorMessage(error), ok: false };
+  }
+}
+
+export async function cancelCampaignApplicationAction(
+  applicationId: number,
+  campaignId: number,
+): Promise<ActionResult> {
+  try {
+    const session = await getBloggerSession();
+
+    if (session.accessToken == null) {
+      redirect("/login");
+    }
+
+    await cancelApplication(applicationId, session.accessToken);
+    revalidatePath(`/campaigns/${campaignId}`);
+    revalidatePath("/missions");
+
+    return { ok: true };
+  } catch (error) {
+    redirectIfAuthError(error);
+
+    return { message: getCancelCampaignApplicationErrorMessage(error), ok: false };
   }
 }
 
@@ -295,6 +319,18 @@ function getAcceptCampaignErrorMessage(error: unknown) {
   }
 
   return "신청에 실패했어요. 잠시 후 다시 시도해 주세요.";
+}
+
+function getCancelCampaignApplicationErrorMessage(error: unknown) {
+  if (isApiErrorLike(error) && error.message.length > 0) {
+    return error.message;
+  }
+
+  if (error instanceof Error && error.message.length > 0) {
+    return error.message;
+  }
+
+  return "지원 취소에 실패했어요. 잠시 후 다시 시도해 주세요.";
 }
 
 function isApiErrorLike(error: unknown): error is { message: string; statusCode: number } {
