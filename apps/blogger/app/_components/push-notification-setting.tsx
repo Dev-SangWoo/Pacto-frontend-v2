@@ -96,11 +96,20 @@ export function PushNotificationSetting({ compact = false }: PushNotificationSet
           <ChevronRight aria-hidden="true" size={19} />
         </button>
         {visibleMessage != null ? (
-          <p className="profile-setting-guide" role="status">
-            {visibleMessage}
-          </p>
-        ) : null}
-        {!isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
+          <div className="profile-push-status-message" role="status">
+            <p className="profile-setting-guide">{visibleMessage}</p>
+            {!isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
+              <button
+                className="text-link-button"
+                disabled={isPushStatusLoading || isPushPending}
+                onClick={() => void refreshPushStatus()}
+                type="button"
+              >
+                상태 다시 확인
+              </button>
+            ) : null}
+          </div>
+        ) : !isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
           <button
             className="text-link-button"
             disabled={isPushStatusLoading || isPushPending}
@@ -152,8 +161,21 @@ export function PushNotificationSetting({ compact = false }: PushNotificationSet
       {!isConfigured ? (
         <small>VAPID 키를 포함한 Firebase 환경변수를 설정하면 사용할 수 있어요.</small>
       ) : null}
-      {visibleMessage != null ? <small role="status">{visibleMessage}</small> : null}
-      {!isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
+      {visibleMessage != null ? (
+        <div className="push-status-message" role="status">
+          <small>{visibleMessage}</small>
+          {!isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
+            <button
+              className="text-link-button"
+              disabled={isPushStatusLoading || isPushPending}
+              onClick={() => void refreshPushStatus()}
+              type="button"
+            >
+              상태 다시 확인
+            </button>
+          ) : null}
+        </div>
+      ) : !isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
         <button
           className="text-link-button"
           disabled={isPushStatusLoading || isPushPending}

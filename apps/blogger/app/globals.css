@@ -3622,6 +3622,12 @@ dd {
   transform: translateY(-1px);
 }
 
+.primary-button:active:not(:disabled):not(.disabled) {
+  filter: saturate(1.02);
+  box-shadow: 0 8px 18px rgba(20, 92, 255, 0.2);
+  transform: scale(0.96);
+}
+
 .weak-button {
   color: var(--blue);
   background: var(--blue-soft);
@@ -4303,6 +4309,33 @@ dd {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.push-status-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--color-primary-border);
+  border-radius: 10px;
+  background: var(--color-primary-soft);
+  padding: 9px 10px 9px 12px;
+}
+
+.push-status-message small {
+  min-width: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.push-status-message .text-link-button {
+  min-height: 30px;
+  flex: 0 0 auto;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .notification-card > span {
@@ -5321,11 +5354,18 @@ dd {
   padding: 13px 16px;
   color: var(--color-primary);
   text-align: left;
+  transition:
+    background-color 140ms ease,
+    transform 140ms ease;
 }
 
 .profile-setting-row:hover:not(:disabled),
 .profile-setting-row:focus-visible:not(:disabled) {
   background: var(--color-surface-subtle);
+}
+
+.profile-setting-row:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 .profile-setting-row:disabled {
@@ -5370,6 +5410,32 @@ dd {
 
 .profile-setting-guide.error {
   color: var(--color-danger);
+}
+
+.profile-push-status-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  padding: 9px 16px 9px 54px;
+}
+
+.profile-push-status-message .profile-setting-guide {
+  flex: 1 1 auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.profile-push-status-message .text-link-button {
+  min-height: 30px;
+  flex: 0 0 auto;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .profile-image-cta {
@@ -5447,6 +5513,11 @@ dd {
   border-color: var(--color-primary-border);
   background: var(--color-primary-soft);
   color: var(--color-primary);
+}
+
+.profile-system-page .profile-photo-preview.image {
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: -1px;
 }
 
 .profile-system-page .profile-card-copy strong {
@@ -5582,6 +5653,16 @@ dd {
   .auth-intro,
   .auth-form-panel {
     transition: none;
+  }
+
+  .primary-button,
+  .profile-setting-row {
+    transition: none;
+  }
+
+  .primary-button:active:not(:disabled):not(.disabled),
+  .profile-setting-row:active:not(:disabled) {
+    transform: none;
   }
 
   .profile-edit-page .mobile-page-heading,

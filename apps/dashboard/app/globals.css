@@ -650,6 +650,48 @@ h2 {
   font-weight: 800;
 }
 
+.primary-button,
+.secondary-button,
+.small-button {
+  cursor: pointer;
+  transition:
+    box-shadow 140ms ease,
+    filter 140ms ease,
+    transform 140ms ease;
+}
+
+.primary-button:hover:not(:disabled),
+.primary-button:focus-visible:not(:disabled),
+.secondary-button:hover:not(:disabled),
+.secondary-button:focus-visible:not(:disabled),
+.small-button:hover:not(:disabled),
+.small-button:focus-visible:not(:disabled) {
+  filter: brightness(0.97) saturate(1.04);
+  box-shadow: 0 8px 18px rgba(49, 130, 246, 0.16);
+}
+
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.small-button:focus-visible {
+  outline: 3px solid rgba(49, 130, 246, 0.24);
+  outline-offset: 2px;
+}
+
+.primary-button:active:not(:disabled),
+.secondary-button:active:not(:disabled),
+.small-button:active:not(:disabled) {
+  box-shadow: none;
+  filter: brightness(0.95);
+  transform: scale(0.96);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled,
+.small-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .primary-button {
   min-height: 44px;
   padding: 0 18px;
@@ -3416,6 +3458,20 @@ td strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-button,
+  .secondary-button,
+  .small-button {
+    transition: none;
+  }
+
+  .primary-button:active:not(:disabled),
+  .secondary-button:active:not(:disabled),
+  .small-button:active:not(:disabled) {
+    transform: none;
+  }
 }
 
 .empty-panel {
