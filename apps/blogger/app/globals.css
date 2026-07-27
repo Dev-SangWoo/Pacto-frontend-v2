@@ -401,6 +401,186 @@ dd {
   padding-top: 18px;
 }
 
+.first-login-setup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  width: min(100%, var(--shell-width));
+  margin: 0 auto;
+  align-items: end;
+  background: rgba(16, 24, 40, 0.48);
+  padding: 18px;
+  backdrop-filter: blur(4px);
+  animation: first-login-backdrop-enter 180ms ease-out;
+}
+
+.first-login-setup {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  border: 1px solid rgba(219, 228, 239, 0.9);
+  border-radius: 20px;
+  background: var(--color-surface);
+  padding: 24px 18px 16px;
+  box-shadow: 0 24px 70px rgba(16, 24, 40, 0.26);
+  animation: first-login-setup-enter 220ms ease-out;
+}
+
+.first-login-setup-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
+}
+
+.first-login-setup-heading {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 2px 28px 0;
+  text-align: center;
+}
+
+.first-login-setup-heading > span {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.first-login-setup-heading > p {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.first-login-setup-heading h2 {
+  color: var(--color-text-strong);
+  font-size: 21px;
+  letter-spacing: -0.035em;
+  line-height: 1.25;
+}
+
+.first-login-setup-heading small {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.first-login-setup-options {
+  display: grid;
+  gap: 10px;
+}
+
+.first-login-setup-options article {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-subtle);
+  padding: 13px;
+}
+
+.first-login-setup-options article.is-complete {
+  border-color: rgba(47, 198, 144, 0.28);
+  background: var(--color-success-soft);
+}
+
+.first-login-setup-options article > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.first-login-setup-options article.is-complete > span {
+  color: var(--color-success);
+}
+
+.first-login-setup-options article > div {
+  display: grid;
+  gap: 3px;
+}
+
+.first-login-setup-options strong {
+  color: var(--color-text-strong);
+  font-size: 14px;
+}
+
+.first-login-setup-options p {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.first-login-setup-options article > button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--color-primary);
+  padding: 0 10px;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.first-login-setup-options article > button:disabled {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.first-login-setup-message {
+  border-radius: 10px;
+  background: var(--color-primary-soft);
+  padding: 10px 12px;
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.first-login-setup-later {
+  min-height: 42px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+@keyframes first-login-backdrop-enter {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes first-login-setup-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
 .tab-loading {
   display: grid;
   gap: 14px;
@@ -495,6 +675,8 @@ dd {
 
 @media (prefers-reduced-motion: reduce) {
   .refresh-button.is-refreshing svg,
+  .first-login-setup,
+  .first-login-setup-backdrop,
   .floating-notification-card,
   .floating-notification-timer,
   .tab-loading-hero,
@@ -3512,16 +3694,6 @@ dd {
   line-height: 1.35;
 }
 
-.auth-beta-note {
-  max-width: 280px;
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.45;
-  text-align: center;
-}
-
 .auth-entry-actions {
   display: grid;
   justify-items: center;
@@ -3591,6 +3763,21 @@ dd {
   color: var(--ink);
   font-size: 13px;
   font-weight: 850;
+}
+
+.modern-login-form .auth-label-with-help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 3px 10px;
+}
+
+.modern-login-form .auth-label-with-help small {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .input-shell {

@@ -11,7 +11,9 @@ export type LoginPayload = {
   role: User["role"];
 };
 
-export type SignupPayload = LoginPayload;
+export type SignupPayload = LoginPayload & {
+  name?: string;
+};
 
 export type ProfileUpdatePayload = {
   advertiserProfile?: AdvertiserProfile;

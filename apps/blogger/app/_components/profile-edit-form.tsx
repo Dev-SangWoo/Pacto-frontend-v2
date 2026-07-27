@@ -1,10 +1,13 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import type { BloggerProfile } from "@pacto/types";
 
 import { updateBloggerProfileAction, type ProfileUpdateState } from "../_actions/blogger-actions";
 import { KOREAN_BANKS } from "../_lib/banks";
+import { profilePageQueryKey } from "./blogger-query-provider";
 
 const initialState: ProfileUpdateState = { ok: false };
 
@@ -16,12 +19,21 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const [state, formAction, isPending] = useActionState(updateBloggerProfileAction, initialState);
   const [localImagePreviewUrl, setLocalImagePreviewUrl] = useState<string>();
   const [selectedImageName, setSelectedImageName] = useState("");
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const profileImageUrl = profile?.profileImageDownloadUrl ?? profile?.profileImageUrl;
   const imagePreviewUrl = localImagePreviewUrl ?? profileImageUrl;
   const currentBankName = profile?.bankName ?? "";
   const hasUnlistedBank =
     currentBankName.length > 0 &&
     !KOREAN_BANKS.includes(currentBankName as (typeof KOREAN_BANKS)[number]);
+
+  useEffect(() => {
+    if (state.ok) {
+      void queryClient.invalidateQueries({ queryKey: profilePageQueryKey });
+      router.replace("/profile");
+    }
+  }, [queryClient, router, state.ok]);
 
   useEffect(() => {
     return () => {

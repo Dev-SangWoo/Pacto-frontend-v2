@@ -3,9 +3,14 @@
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { getMissionPageDataAction, getWalletPageDataAction } from "../_actions/blogger-actions";
+import {
+  getMissionPageDataAction,
+  getProfilePageDataAction,
+  getWalletPageDataAction,
+} from "../_actions/blogger-actions";
 
 export const missionPageQueryKey = ["blogger", "missions"] as const;
+export const profilePageQueryKey = ["blogger", "profile"] as const;
 export const walletPageQueryKey = ["blogger", "wallet"] as const;
 
 type BloggerQueryProviderProps = {
@@ -48,6 +53,10 @@ function BloggerQueryPrefetch() {
         queryClient.prefetchQuery({
           queryFn: getWalletPageDataAction,
           queryKey: walletPageQueryKey,
+        }),
+        queryClient.prefetchQuery({
+          queryFn: getProfilePageDataAction,
+          queryKey: profilePageQueryKey,
         }),
       ]);
     }, 800);

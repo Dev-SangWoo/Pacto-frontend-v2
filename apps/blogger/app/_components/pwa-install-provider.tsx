@@ -13,7 +13,7 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 type PwaInstallContextValue = {
-  install: () => Promise<void>;
+  install: () => Promise<"accepted" | "dismissed" | "unavailable">;
   isInstalled: boolean;
   isIos: boolean;
   isPromptAvailable: boolean;
@@ -59,7 +59,7 @@ export function PwaInstallProvider({ children }: { children: React.ReactNode }) 
     () => ({
       install: async () => {
         if (installPrompt == null) {
-          return;
+          return "unavailable";
         }
 
         await installPrompt.prompt();
@@ -70,6 +70,7 @@ export function PwaInstallProvider({ children }: { children: React.ReactNode }) 
             ? "설치를 시작했어요."
             : "설치가 취소됐어요. 브라우저 메뉴에서 다시 설치할 수 있어요.",
         );
+        return choice.outcome;
       },
       isInstalled,
       isIos,

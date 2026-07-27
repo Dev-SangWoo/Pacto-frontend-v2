@@ -7,6 +7,7 @@ import {
   ApiError,
   applyToCampaign,
   getCampaignDetail,
+  getMe,
   getMyNotifications,
   markNotificationAsRead,
   registerPushSubscription,
@@ -191,6 +192,21 @@ export async function getWalletPageDataAction(): Promise<WalletPageData> {
 
   try {
     return await getWalletPageData(session.accessToken);
+  } catch (error) {
+    redirectIfAuthError(error);
+    throw error;
+  }
+}
+
+export async function getProfilePageDataAction() {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    return await getMe(session.accessToken);
   } catch (error) {
     redirectIfAuthError(error);
     throw error;
