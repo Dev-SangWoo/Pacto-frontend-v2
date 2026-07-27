@@ -42,14 +42,17 @@ export function getCampaignDiscoveryBadge(
 }
 
 export function getCampaignSummaryText(guidelines: string): string {
-  const normalized = getCampaignGuidelineText(guidelines);
+  const parsedGuidelines = parseTiptapGuidelines(guidelines);
+  const normalized =
+    parsedGuidelines == null
+      ? getFirstMarkdownGuidelineLine(guidelines)
+      : extractFirstTiptapGuidelineLine(parsedGuidelines.content);
 
   if (!normalized) {
     return FALLBACK_MISSION_COPY;
   }
 
-  const firstSentence = normalized.match(/^.*?[.!?](?:\s|$)/)?.[0]?.trim();
-  return firstSentence ?? normalized;
+  return normalized;
 }
 
 export function getCampaignGuidelineText(guidelines: string): string {
@@ -136,6 +139,39 @@ function extractTiptapText(node: TiptapNode): string {
   const separator = isTiptapBlockNode(node.type) ? "\n" : " ";
 
   return childText.join(separator);
+}
+
+function extractFirstTiptapGuidelineLine(node: TiptapNode): string {
+  for (const child of node.content ?? []) {
+    const text = extractTiptapText(child).replace(/\s+/g, " ").trim();
+    if (text) {
+      return text;
+    }
+  }
+
+  return extractTiptapText(node).replace(/\s+/g, " ").trim();
+}
+
+function getFirstMarkdownGuidelineLine(guidelines: string): string {
+  const line = guidelines
+    .split(/\r?\n/)
+    .map((candidate) => candidate.trim())
+    .find((candidate) => candidate.length > 0);
+
+  if (line == null) {
+    return "";
+  }
+
+  return line
+    .replace(/^#{1,6}\s+/, "")
+    .replace(/^>\s?/, "")
+    .replace(/^[-*+]\s+/, "")
+    .replace(/^\d+\.\s+/, "")
+    .replace(/^!\[([^\]]*)\]\([^)]*\)$/, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/\*\*|__|\*|_/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function isTiptapBlockNode(type?: string) {

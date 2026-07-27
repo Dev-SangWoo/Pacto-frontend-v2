@@ -1,15 +1,10 @@
 "use client";
 
 import { BellRing, ChevronRight } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
-import { registerPushTokenAction } from "../_actions/blogger-actions";
-import {
-  isFirebasePushConfigured,
-  listenForForegroundPush,
-  requestFirebasePushToken,
-} from "../_lib/firebase-client";
-import { isIosDevice, isStandalonePwa } from "../_lib/pwa-client";
+import { isFirebasePushConfigured, listenForForegroundPush } from "../_lib/firebase-client";
+import { useDeviceSetup } from "./device-setup-provider";
 
 type PushNotificationSettingProps = {
   compact?: boolean;
@@ -17,13 +12,18 @@ type PushNotificationSettingProps = {
 
 export function PushNotificationSetting({ compact = false }: PushNotificationSettingProps) {
   const [message, setMessage] = useState<string>();
-  const [requiresHomeScreenInstall, setRequiresHomeScreenInstall] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const {
+    enablePushNotifications: requestPushNotifications,
+    isPushEnabled,
+    isPushPending,
+    isPushStatusLoading,
+    pushStatusMessage,
+    refreshPushStatus,
+    requiresHomeScreenInstall,
+  } = useDeviceSetup();
   const isConfigured = isFirebasePushConfigured();
 
   useEffect(() => {
-    setRequiresHomeScreenInstall(isIosDevice() && !isStandalonePwa());
-
     let unsubscribe: () => void = () => undefined;
 
     void listenForForegroundPush((payload) => {
@@ -39,49 +39,85 @@ export function PushNotificationSetting({ compact = false }: PushNotificationSet
     return () => unsubscribe();
   }, []);
 
-  const enablePushNotifications = () => {
+  const handleEnablePushNotifications = () => {
     setMessage(undefined);
-    startTransition(async () => {
-      try {
-        const token = await requestFirebasePushToken();
-        const result = await registerPushTokenAction(token);
-        setMessage(result.message);
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : "푸시 알림을 설정하지 못했어요.");
-      }
-    });
+    void requestPushNotifications().then((result) =>
+      setMessage(
+        result.message ??
+          (result.ok ? "푸시 알림을 설정했어요." : "푸시 알림을 설정하지 못했어요."),
+      ),
+    );
   };
+  const visibleMessage = message ?? pushStatusMessage;
 
   if (compact) {
-    const isDisabled = !isConfigured || isPending || requiresHomeScreenInstall;
+    const isDisabled =
+      !isConfigured ||
+      isPushPending ||
+      isPushStatusLoading ||
+      requiresHomeScreenInstall ||
+      isPushEnabled;
 
     return (
       <div className="profile-setting-row-group">
         <button
           aria-label={
-            isPending
-              ? "푸시 알림 설정 중"
-              : requiresHomeScreenInstall
-                ? "앱 설치 후 푸시 알림 설정 가능"
-                : isConfigured
-                  ? "푸시 알림 설정"
-                  : "푸시 알림 사용 불가"
+            isPushStatusLoading
+              ? "푸시 상태 확인 중"
+              : isPushPending
+                ? "푸시 알림 설정 중"
+                : isPushEnabled
+                  ? "푸시 알림 등록 완료"
+                  : requiresHomeScreenInstall
+                    ? "앱 설치 후 푸시 알림 설정 가능"
+                    : isConfigured
+                      ? "푸시 알림 설정"
+                      : "푸시 알림 사용 불가"
           }
           className="profile-setting-row"
           disabled={isDisabled}
-          onClick={enablePushNotifications}
+          onClick={handleEnablePushNotifications}
           type="button"
         >
           <BellRing aria-hidden="true" size={21} strokeWidth={2.1} />
           <span>
-            <strong>{isPending ? "푸시 알림 설정 중..." : "푸시 알림"}</strong>
+            <strong>
+              {isPushStatusLoading
+                ? "푸시 상태 확인 중..."
+                : isPushPending
+                  ? "푸시 알림 설정 중..."
+                  : isPushEnabled
+                    ? "푸시 알림 등록 완료"
+                    : visibleMessage != null
+                      ? "푸시 알림 다시 시도"
+                      : "푸시 알림"}
+            </strong>
           </span>
           <ChevronRight aria-hidden="true" size={19} />
         </button>
-        {message != null ? (
-          <p className="profile-setting-guide" role="status">
-            {message}
-          </p>
+        {visibleMessage != null ? (
+          <div className="profile-push-status-message" role="status">
+            <p className="profile-setting-guide">{visibleMessage}</p>
+            {!isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
+              <button
+                className="text-link-button"
+                disabled={isPushStatusLoading || isPushPending}
+                onClick={() => void refreshPushStatus()}
+                type="button"
+              >
+                상태 다시 확인
+              </button>
+            ) : null}
+          </div>
+        ) : !isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
+          <button
+            className="text-link-button"
+            disabled={isPushStatusLoading || isPushPending}
+            onClick={() => void refreshPushStatus()}
+            type="button"
+          >
+            상태 다시 확인
+          </button>
         ) : null}
       </div>
     );
@@ -99,15 +135,25 @@ export function PushNotificationSetting({ compact = false }: PushNotificationSet
       <p>캠페인 선정과 미션 검수 결과를 브라우저 알림으로 알려드려요.</p>
       <button
         className="primary-button weak-button full-width"
-        disabled={!isConfigured || isPending || requiresHomeScreenInstall}
-        onClick={enablePushNotifications}
+        disabled={
+          !isConfigured ||
+          isPushPending ||
+          isPushStatusLoading ||
+          requiresHomeScreenInstall ||
+          isPushEnabled
+        }
+        onClick={handleEnablePushNotifications}
         type="button"
       >
-        {isPending
-          ? "알림 설정 중..."
-          : requiresHomeScreenInstall
-            ? "홈 화면에 추가 후 알림 받기"
-            : "푸시 알림 받기"}
+        {isPushStatusLoading
+          ? "푸시 상태 확인 중..."
+          : isPushPending
+            ? "알림 설정 중..."
+            : isPushEnabled
+              ? "푸시 알림 등록 완료"
+              : requiresHomeScreenInstall
+                ? "홈 화면에 추가 후 알림 받기"
+                : "푸시 알림 받기"}
       </button>
       {requiresHomeScreenInstall ? (
         <small>iPhone과 iPad에서는 홈 화면에 추가한 Pacto 앱에서 알림을 설정해 주세요.</small>
@@ -115,7 +161,30 @@ export function PushNotificationSetting({ compact = false }: PushNotificationSet
       {!isConfigured ? (
         <small>VAPID 키를 포함한 Firebase 환경변수를 설정하면 사용할 수 있어요.</small>
       ) : null}
-      {message != null ? <small role="status">{message}</small> : null}
+      {visibleMessage != null ? (
+        <div className="push-status-message" role="status">
+          <small>{visibleMessage}</small>
+          {!isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
+            <button
+              className="text-link-button"
+              disabled={isPushStatusLoading || isPushPending}
+              onClick={() => void refreshPushStatus()}
+              type="button"
+            >
+              상태 다시 확인
+            </button>
+          ) : null}
+        </div>
+      ) : !isPushEnabled && isConfigured && !requiresHomeScreenInstall ? (
+        <button
+          className="text-link-button"
+          disabled={isPushStatusLoading || isPushPending}
+          onClick={() => void refreshPushStatus()}
+          type="button"
+        >
+          상태 다시 확인
+        </button>
+      ) : null}
     </section>
   );
 }

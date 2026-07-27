@@ -35,6 +35,11 @@ export default async function NotificationsPage({ searchParams }: NotificationsP
   return (
     <section className="screen-stack" aria-labelledby="notifications-title">
       <section className="profile-title-block">
+        <img
+          className="notifications-brand-logo"
+          src="/brand/logo-bg-rm-cropped.webp"
+          alt="Pacto"
+        />
         <p className="section-label">알림</p>
         <h1 id="notifications-title">내 활동 알림</h1>
         <p>선정 결과, 제출할 미션, 검수 상태를 한곳에서 확인하세요.</p>

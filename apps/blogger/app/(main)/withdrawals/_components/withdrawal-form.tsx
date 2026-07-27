@@ -1,11 +1,12 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { formatPoint } from "@pacto/utils";
 
 import { requestWithdrawalAction } from "../../../_actions/blogger-actions";
+import { FlowCompletion } from "../../../_components/flow-completion";
 import { KOREAN_BANKS } from "../../../_lib/banks";
 
 type WithdrawalFormProps = {
@@ -17,7 +18,10 @@ export function WithdrawalForm({ availableBalance }: WithdrawalFormProps) {
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const [completedWithdrawal, setCompletedWithdrawal] = useState<{
+    amount: number;
+    bankName: string;
+  }>();
   const queryClient = useQueryClient();
   const numericAmount = amount === "" ? 0 : Number(amount);
 
@@ -48,9 +52,7 @@ export function WithdrawalForm({ availableBalance }: WithdrawalFormProps) {
       }
 
       await queryClient.invalidateQueries({ queryKey: ["blogger", "wallet"] });
-      alert("출금 신청이 완료되었습니다.");
-      router.push("/wallet");
-      router.refresh();
+      setCompletedWithdrawal({ amount: numericAmount, bankName });
     } catch {
       alert("출금 신청 중 오류가 발생했습니다. 잔액을 확인해 주세요.");
     } finally {
@@ -71,6 +73,38 @@ export function WithdrawalForm({ availableBalance }: WithdrawalFormProps) {
     }
 
     setAmount(String(Math.min(Math.floor(nextAmount), availableBalance)));
+  }
+
+  if (completedWithdrawal != null) {
+    return (
+      <FlowCompletion
+        actions={
+          <>
+            <Link className="primary-button full-width" href="/wallet">
+              지갑에서 확인하기
+            </Link>
+            <Link className="text-link-button" href="/campaigns">
+              캠페인으로 돌아가기
+            </Link>
+          </>
+        }
+        description="신청 내역을 확인한 뒤 등록한 계좌로 출금을 진행할게요."
+        detail={
+          <dl className="flow-completion-summary">
+            <div>
+              <dt>신청 금액</dt>
+              <dd>{formatPoint(completedWithdrawal.amount)}</dd>
+            </div>
+            <div>
+              <dt>받을 은행</dt>
+              <dd>{completedWithdrawal.bankName}</dd>
+            </div>
+          </dl>
+        }
+        eyebrow="출금 신청 완료"
+        title="신청이 완료되었습니다!"
+      />
+    );
   }
 
   return (
@@ -161,7 +195,7 @@ export function WithdrawalForm({ availableBalance }: WithdrawalFormProps) {
         </div>
         <button
           type="submit"
-          className="primary-button"
+          className="primary-button withdrawal-button"
           disabled={
             isLoading ||
             numericAmount <= 0 ||

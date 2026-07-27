@@ -12,11 +12,10 @@ import { PushNotificationSetting } from "./push-notification-setting";
 import { PwaInstallSetting } from "./pwa-install-setting";
 
 type ProfilePageClientProps = {
-  bloggerId: number;
   fallbackEmail?: string;
 };
 
-export function ProfilePageClient({ bloggerId, fallbackEmail }: ProfilePageClientProps) {
+export function ProfilePageClient({ fallbackEmail }: ProfilePageClientProps) {
   const profileQuery = useQuery({
     queryFn: getProfilePageDataAction,
     queryKey: profilePageQueryKey,
@@ -42,6 +41,7 @@ export function ProfilePageClient({ bloggerId, fallbackEmail }: ProfilePageClien
   const email = user.email || fallbackEmail || "이메일 정보 없음";
   const profile = user.bloggerProfile;
   const profileImageUrl = profile?.profileImageDownloadUrl ?? profile?.profileImageUrl;
+  const blogUrl = profile?.blogUrl?.trim();
   const avatarLabel = getAvatarLabel(profile?.nickname ?? profile?.name ?? email);
 
   return (
@@ -63,7 +63,7 @@ export function ProfilePageClient({ bloggerId, fallbackEmail }: ProfilePageClien
           <div className="profile-card-copy">
             <h2 id="account-profile-title">{profile?.nickname || profile?.name || email}</h2>
             <span>{email}</span>
-            <span>블로거 ID #{bloggerId}</span>
+            <span className="profile-blog-url">{blogUrl || "블로그 주소 없음"}</span>
           </div>
         </div>
         <Link className="profile-edit-link" href="/profile/edit">

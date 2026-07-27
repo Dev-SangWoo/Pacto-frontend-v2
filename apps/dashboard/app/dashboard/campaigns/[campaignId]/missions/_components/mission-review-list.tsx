@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ExternalLink } from "lucide-react";
 
 import type { Mission } from "@pacto/types";
 import { formatKoreanDate, getMissionStatusView } from "@pacto/utils";
@@ -68,6 +69,7 @@ export function MissionReviewList({ campaignId, initialMissions }: MissionReview
         {missions.length > 0 ? (
           missions.map((mission) => {
             const statusView = getMissionStatusView(mission.status);
+            const submittedUrl = getExternalUrl(mission.submittedUrl);
 
             return (
               <article className="review-item" key={mission.id}>
@@ -78,7 +80,19 @@ export function MissionReviewList({ campaignId, initialMissions }: MissionReview
                   </h2>
                   <p>{formatKoreanDate(mission.dueDate)}까지 제출</p>
                   <div>
-                    <strong>{mission.submittedUrl ?? "제출 URL 대기 중"}</strong>
+                    {submittedUrl != null ? (
+                      <a
+                        className="submitted-url-link"
+                        href={submittedUrl}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        <span>{submittedUrl}</span>
+                        <ExternalLink aria-hidden="true" size={15} strokeWidth={2.2} />
+                      </a>
+                    ) : (
+                      <strong>{mission.submittedUrl ?? "제출 URL 대기 중"}</strong>
+                    )}
                   </div>
                 </div>
                 <div className="action-row">
@@ -112,4 +126,18 @@ export function MissionReviewList({ campaignId, initialMissions }: MissionReview
       </div>
     </section>
   );
+}
+
+function getExternalUrl(value?: string | null) {
+  const url = value?.trim();
+  if (url == null || url.length === 0) {
+    return undefined;
+  }
+
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? url : undefined;
+  } catch {
+    return undefined;
+  }
 }

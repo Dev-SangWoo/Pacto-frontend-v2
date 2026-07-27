@@ -1,106 +1,82 @@
 "use client";
 
 import { BellRing, Check, Download, Smartphone, X } from "lucide-react";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
-import { registerPushTokenAction } from "../_actions/blogger-actions";
-import { usePwaInstall } from "./pwa-install-provider";
+import { useDeviceSetup } from "./device-setup-provider";
 
-type FirstLoginSetupProps = {
-  bloggerId: number;
-};
-
-export function FirstLoginSetup({ bloggerId }: FirstLoginSetupProps) {
-  const { install, isInstalled, isIos, isPromptAvailable } = usePwaInstall();
-  const [isOpen, setIsOpen] = useState(false);
-  const [installAccepted, setInstallAccepted] = useState(false);
-  const [notificationEnabled, setNotificationEnabled] = useState(false);
+export function FirstLoginSetup() {
+  const {
+    dismissSetup,
+    enablePushNotifications,
+    installPwa,
+    isIos,
+    isPwaInstalled,
+    isPushEnabled,
+    isPushPending,
+    isPromptAvailable,
+    isReady,
+    isSetupDismissed,
+    requiresHomeScreenInstall,
+  } = useDeviceSetup();
   const [message, setMessage] = useState<string>();
-  const [isInstalling, startInstall] = useTransition();
-  const [isEnablingNotifications, startNotifications] = useTransition();
-  const storageKey = useMemo(() => `pacto:first-login-setup:v1:${bloggerId}`, [bloggerId]);
-  const isInstallComplete = isInstalled || installAccepted;
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const permissionGranted =
-      typeof Notification !== "undefined" && Notification.permission === "granted";
-    setNotificationEnabled(permissionGranted);
-
-    if (window.localStorage.getItem(storageKey) === "done") {
+    if (!isReady || isSetupDismissed) {
+      setIsVisible(false);
       return;
     }
 
-    const openTimer = window.setTimeout(() => {
-      setIsOpen(true);
-    }, 600);
-
-    return () => {
-      window.clearTimeout(openTimer);
-    };
-  }, [storageKey]);
+    const openTimer = window.setTimeout(() => setIsVisible(true), 600);
+    return () => window.clearTimeout(openTimer);
+  }, [isReady, isSetupDismissed]);
 
   useEffect(() => {
-    if (isOpen && isInstallComplete && notificationEnabled) {
-      window.localStorage.setItem(storageKey, "done");
-      setIsOpen(false);
+    if (isReady && !isSetupDismissed && isPwaInstalled && isPushEnabled) {
+      dismissSetup();
     }
-  }, [isInstallComplete, isOpen, notificationEnabled, storageKey]);
+  }, [dismissSetup, isPwaInstalled, isPushEnabled, isReady, isSetupDismissed]);
 
   function closeSetup() {
-    window.localStorage.setItem(storageKey, "done");
-    setIsOpen(false);
+    dismissSetup();
   }
 
-  function requestInstall() {
+  async function requestInstall() {
     setMessage(undefined);
-    startInstall(async () => {
-      const outcome = await install();
+    const outcome = await installPwa();
 
-      if (outcome === "accepted") {
-        setInstallAccepted(true);
-        setMessage("앱 설치를 시작했어요. 이어서 알림도 설정해 주세요.");
-        return;
-      }
+    if (outcome === "accepted") {
+      setMessage("앱 설치를 시작했어요. 이어서 알림도 설정해 주세요.");
+      return;
+    }
 
-      if (outcome === "dismissed") {
-        setMessage("설치를 취소했어요. 내 정보에서 언제든 다시 설치할 수 있어요.");
-        return;
-      }
+    if (outcome === "dismissed") {
+      setMessage("설치를 취소했어요. 내 정보에서 언제든 다시 설치할 수 있어요.");
+      return;
+    }
 
-      setMessage(
-        isIos
-          ? "Safari 공유 메뉴에서 ‘홈 화면에 추가’를 선택해 주세요."
-          : "브라우저 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 선택해 주세요.",
-      );
-    });
+    setMessage(
+      isIos
+        ? "Safari 공유 메뉴에서 ‘홈 화면에 추가’를 선택해 주세요."
+        : "브라우저 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 선택해 주세요.",
+    );
   }
 
-  function enableNotifications() {
+  async function enableNotifications() {
     setMessage(undefined);
-    startNotifications(async () => {
-      try {
-        const { requestFirebasePushToken } = await import("../_lib/firebase-client");
-        const token = await requestFirebasePushToken();
-        const result = await registerPushTokenAction(token);
-
-        if (!result.ok) {
-          setMessage(result.message ?? "알림을 설정하지 못했어요.");
-          return;
-        }
-
-        setNotificationEnabled(true);
-        setMessage("알림 설정이 완료됐어요.");
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : "알림을 설정하지 못했어요.");
-      }
-    });
+    const result = await enablePushNotifications();
+    setMessage(
+      result.ok ? "알림 등록이 완료됐어요." : (result.message ?? "알림을 설정하지 못했어요."),
+    );
   }
 
-  if (!isOpen) {
+  if (!isReady || isSetupDismissed || !isVisible) {
     return null;
   }
 
-  const requiresIosInstall = isIos && !isInstallComplete;
+  const isInstallComplete = isPwaInstalled;
+  const notificationEnabled = isPushEnabled;
 
   return (
     <div className="first-login-setup-backdrop">
@@ -142,11 +118,24 @@ export function FirstLoginSetup({ bloggerId }: FirstLoginSetupProps) {
               </p>
             </div>
             {!isInstallComplete ? (
-              <button disabled={isInstalling} onClick={requestInstall} type="button">
-                {isInstalling ? "설치 확인 중" : isPromptAvailable ? "설치하기" : "설치 방법"}
+              <button onClick={() => void requestInstall()} type="button">
+                {isPromptAvailable ? "설치하기" : "설치 방법"}
               </button>
             ) : null}
           </article>
+
+          {!isInstallComplete ? (
+            <div className="first-login-install-guides" aria-label="기기별 앱 설치 방법">
+              <div>
+                <strong>iPhone · iPad</strong>
+                <p>Safari 하단의 공유 버튼을 누르고 ‘홈 화면에 추가’를 선택해 주세요.</p>
+              </div>
+              <div>
+                <strong>Galaxy · Android</strong>
+                <p>Chrome 오른쪽 위 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 선택해 주세요.</p>
+              </div>
+            </div>
+          ) : null}
 
           <article className={notificationEnabled ? "is-complete" : undefined}>
             <span aria-hidden="true">
@@ -158,13 +147,13 @@ export function FirstLoginSetup({ bloggerId }: FirstLoginSetupProps) {
             </div>
             {!notificationEnabled ? (
               <button
-                disabled={isEnablingNotifications || requiresIosInstall}
-                onClick={enableNotifications}
+                disabled={isPushPending || requiresHomeScreenInstall}
+                onClick={() => void enableNotifications()}
                 type="button"
               >
-                {isEnablingNotifications
+                {isPushPending
                   ? "설정 중"
-                  : requiresIosInstall
+                  : requiresHomeScreenInstall
                     ? "설치 후 가능"
                     : "알림 허용"}
               </button>

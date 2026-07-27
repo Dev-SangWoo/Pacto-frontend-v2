@@ -3,9 +3,9 @@ import type { Notification } from "@pacto/types";
 
 import { BottomNav } from "../_components/app-nav";
 import { BloggerQueryProvider } from "../_components/blogger-query-provider";
+import { DeviceSetupProvider } from "../_components/device-setup-provider";
 import { FirstLoginSetup } from "../_components/first-login-setup";
 import { NotificationExperience } from "../_components/notification-experience";
-import { PushRegistrationSync } from "../_components/push-registration-sync";
 import { fallbackOnNonAuthError } from "../_lib/auth-error";
 import { getBloggerSession } from "../_lib/session";
 
@@ -20,11 +20,12 @@ export default async function MainLayout({ children }: MainLayoutProps) {
   return (
     <main className="mobile-shell">
       <BloggerQueryProvider>
-        <FirstLoginSetup bloggerId={session.bloggerId} />
-        <PushRegistrationSync />
-        <NotificationExperience initialNotifications={unreadNotifications} />
-        <div className="screen-content">{children}</div>
-        <BottomNav />
+        <DeviceSetupProvider bloggerId={session.bloggerId}>
+          <FirstLoginSetup />
+          <NotificationExperience initialNotifications={unreadNotifications} />
+          <div className="screen-content">{children}</div>
+          <BottomNav />
+        </DeviceSetupProvider>
       </BloggerQueryProvider>
     </main>
   );
