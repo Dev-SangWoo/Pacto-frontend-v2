@@ -3832,7 +3832,7 @@ dd {
   gap: 3px;
   place-items: center;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 850;
   line-height: 1.2;
 }
@@ -4979,9 +4979,9 @@ dd {
 .withdrawal-field-helper {
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 17px;
+  line-height: 18px;
 }
 
 .withdrawal-field-label,
@@ -5364,8 +5364,8 @@ dd {
   background: var(--color-surface-subtle);
   padding: 10px 16px 10px 54px;
   color: var(--color-text-muted);
-  font-size: 11px;
-  line-height: 17px;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .profile-setting-guide.error {
