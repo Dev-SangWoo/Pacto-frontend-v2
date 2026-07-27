@@ -77,7 +77,12 @@ export async function getExistingFirebasePushToken() {
 }
 
 export async function listenForForegroundPush(
-  listener: (payload: { body?: string; title?: string }) => void,
+  listener: (payload: {
+    body?: string;
+    notificationId?: number;
+    targetUrl?: string;
+    title?: string;
+  }) => void,
 ) {
   if (!isFirebasePushConfigured() || !(await isSupported())) {
     return () => undefined;
@@ -85,6 +90,17 @@ export async function listenForForegroundPush(
 
   const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   return onMessage(getMessaging(app), (payload) => {
-    listener({ body: payload.notification?.body, title: payload.notification?.title });
+    const rawNotificationId = payload.data?.notificationId ?? payload.data?.id;
+    const notificationId =
+      rawNotificationId == null || Number.isNaN(Number(rawNotificationId))
+        ? undefined
+        : Number(rawNotificationId);
+
+    listener({
+      body: payload.notification?.body ?? payload.data?.body ?? payload.data?.content,
+      notificationId,
+      targetUrl: payload.data?.targetUrl,
+      title: payload.notification?.title ?? payload.data?.title,
+    });
   });
 }

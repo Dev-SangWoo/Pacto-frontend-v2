@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import {
   ApiError,
   applyToCampaign,
+  getMyNotifications,
   markNotificationAsRead,
   registerPushSubscription,
   submitMission,
@@ -14,6 +15,7 @@ import {
 } from "@pacto/api";
 
 import { getBloggerSession } from "../_lib/session";
+import type { Notification } from "@pacto/types";
 
 type ActionResult = {
   message?: string;
@@ -139,6 +141,30 @@ export async function readNotificationAction(notificationId: number, targetUrl?:
   }
 
   redirect(getSafeNotificationTarget(targetUrl));
+}
+
+export async function getUnreadNotificationsAction(): Promise<Notification[]> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    return [];
+  }
+
+  try {
+    const firstPage = await getMyNotifications(session.accessToken, { size: 100 });
+    const remainingPages = await Promise.all(
+      Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) => index + 2).map(
+        (page) => getMyNotifications(session.accessToken, { page, size: 100 }),
+      ),
+    );
+
+    return [firstPage, ...remainingPages]
+      .flatMap((page) => page.content)
+      .filter((notification) => !notification.read);
+  } catch (error) {
+    redirectIfAuthError(error);
+    return [];
+  }
 }
 
 export async function registerPushTokenAction(registrationId: string): Promise<ActionResult> {

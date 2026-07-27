@@ -1,6 +1,8 @@
 import { getMyNotifications } from "@pacto/api";
+import type { Notification } from "@pacto/types";
 
-import { AppHeader, BottomNav } from "../_components/app-nav";
+import { BottomNav } from "../_components/app-nav";
+import { NotificationExperience } from "../_components/notification-experience";
 import { PushRegistrationSync } from "../_components/push-registration-sync";
 import { fallbackOnNonAuthError } from "../_lib/auth-error";
 import { getBloggerSession } from "../_lib/session";
@@ -11,21 +13,21 @@ type MainLayoutProps = {
 
 export default async function MainLayout({ children }: MainLayoutProps) {
   const session = await getBloggerSession();
-  const notificationCount = await getNotificationCount(session.accessToken);
+  const unreadNotifications = await getUnreadNotifications(session.accessToken);
 
   return (
     <main className="mobile-shell">
       <PushRegistrationSync />
-      <AppHeader notificationCount={notificationCount} />
+      <NotificationExperience initialNotifications={unreadNotifications} />
       <div className="screen-content">{children}</div>
       <BottomNav />
     </main>
   );
 }
 
-async function getNotificationCount(accessToken?: string) {
+async function getUnreadNotifications(accessToken?: string): Promise<Notification[]> {
   if (accessToken == null) {
-    return 0;
+    return [];
   }
 
   const firstPage = await getMyNotifications(accessToken, { size: 100 }).catch((error: unknown) =>
@@ -41,5 +43,5 @@ async function getNotificationCount(accessToken?: string) {
   );
   const notifications = [firstPage, ...remainingPages].flatMap((page) => page.content);
 
-  return notifications.filter((notification) => !notification.read).length;
+  return notifications.filter((notification) => !notification.read);
 }
