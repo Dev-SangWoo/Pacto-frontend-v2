@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, useTransition } from "react";
 import { ChevronRight, LogOut } from "lucide-react";
 
@@ -13,12 +14,14 @@ type PushAwareLogoutButtonProps = {
 export function PushAwareLogoutButton({ compact = false }: PushAwareLogoutButtonProps) {
   const [message, setMessage] = useState<string>();
   const [isPending, startTransition] = useTransition();
+  const queryClient = useQueryClient();
 
   const logout = () => {
     setMessage(undefined);
     startTransition(async () => {
       try {
         const token = await getExistingFirebasePushToken();
+        queryClient.clear();
         await logoutWithPushAction(token);
       } catch {
         setMessage("로그아웃하지 못했어요. 잠시 후 다시 시도해 주세요.");

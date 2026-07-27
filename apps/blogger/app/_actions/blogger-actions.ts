@@ -6,15 +6,23 @@ import { redirect } from "next/navigation";
 import {
   ApiError,
   applyToCampaign,
+  getCampaignDetail,
   getMyNotifications,
   markNotificationAsRead,
   registerPushSubscription,
+  requestWithdraw,
   submitMission,
   uploadProfileImage,
   updateMyProfile,
 } from "@pacto/api";
 
 import { getBloggerSession } from "../_lib/session";
+import {
+  getMissionPageData,
+  getWalletPageData,
+  type MissionPageData,
+  type WalletPageData,
+} from "../_lib/blogger-page-data";
 import type { Notification } from "@pacto/types";
 
 type ActionResult = {
@@ -151,19 +159,81 @@ export async function getUnreadNotificationsAction(): Promise<Notification[]> {
   }
 
   try {
-    const firstPage = await getMyNotifications(session.accessToken, { size: 100 });
-    const remainingPages = await Promise.all(
-      Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) => index + 2).map(
-        (page) => getMyNotifications(session.accessToken, { page, size: 100 }),
-      ),
-    );
-
-    return [firstPage, ...remainingPages]
-      .flatMap((page) => page.content)
-      .filter((notification) => !notification.read);
+    const notificationPage = await getMyNotifications(session.accessToken, { size: 100 });
+    return notificationPage.content.filter((notification) => !notification.read);
   } catch (error) {
     redirectIfAuthError(error);
     return [];
+  }
+}
+
+export async function getMissionPageDataAction(): Promise<MissionPageData> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    return await getMissionPageData(session.accessToken);
+  } catch (error) {
+    redirectIfAuthError(error);
+    throw error;
+  }
+}
+
+export async function getWalletPageDataAction(): Promise<WalletPageData> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    return await getWalletPageData(session.accessToken);
+  } catch (error) {
+    redirectIfAuthError(error);
+    throw error;
+  }
+}
+
+export async function requestWithdrawalAction(input: {
+  accountNumber: string;
+  amount: number;
+  bankName: string;
+}): Promise<ActionResult> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    await requestWithdraw(input, session.accessToken);
+    revalidatePath("/wallet");
+    revalidatePath("/withdrawals");
+    return { ok: true };
+  } catch (error) {
+    redirectIfAuthError(error);
+    return { message: "출금 신청에 실패했어요. 잔액과 계좌 정보를 확인해 주세요.", ok: false };
+  }
+}
+
+export async function getFreshCampaignThumbnailAction(
+  campaignId: number,
+): Promise<string | undefined> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    return undefined;
+  }
+
+  try {
+    const campaign = await getCampaignDetail(campaignId, session.accessToken);
+    return campaign?.thumbnailUrl;
+  } catch (error) {
+    redirectIfAuthError(error);
+    return undefined;
   }
 }
 

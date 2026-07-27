@@ -12,8 +12,10 @@ import {
 } from "@pacto/utils";
 
 import { CampaignApplyAction } from "../../../_components/mock-actions";
+import { ResilientCampaignImage } from "../../../_components/resilient-campaign-image";
 import { fallbackOnNonAuthError, redirectOnAuthError } from "../../../_lib/auth-error";
 import { getBloggerActivity } from "../../../_lib/blogger-activity";
+import { getFallbackCampaignThumbnail } from "../../../_lib/campaign-thumbnail";
 import { getBloggerSession } from "../../../_lib/session";
 
 type CampaignDetailPageProps = {
@@ -56,7 +58,12 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
     >
       <section className="campaign-detail-hero" aria-label="캠페인 요약">
         <div className="campaign-detail-cover">
-          <img src={campaign.thumbnailUrl} alt={`${campaign.title} 대표 이미지`} />
+          <ResilientCampaignImage
+            alt={`${campaign.title} 대표 이미지`}
+            campaignId={campaign.id}
+            fallbackSrc={getFallbackCampaignThumbnail(campaign.id)}
+            src={campaign.thumbnailUrl ?? getFallbackCampaignThumbnail(campaign.id)}
+          />
           <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
         </div>
         <div className="campaign-detail-hero-copy">

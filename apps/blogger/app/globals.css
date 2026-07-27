@@ -222,6 +222,21 @@ dd {
   transform: translateY(-1px);
 }
 
+.refresh-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.refresh-button.is-refreshing svg {
+  animation: header-refresh-spin 700ms linear infinite;
+}
+
+@keyframes header-refresh-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
 .notification-button > span {
   position: absolute;
   top: 3px;
@@ -392,6 +407,24 @@ dd {
   padding-top: 18px;
 }
 
+.tab-loading-copy {
+  display: grid;
+  gap: 5px;
+  padding: 2px 2px 4px;
+}
+
+.tab-loading-copy strong {
+  color: var(--color-text-strong);
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.tab-loading-copy p {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .tab-loading-hero,
 .tab-loading-tabs,
 .tab-loading-card span,
@@ -461,6 +494,7 @@ dd {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .refresh-button.is-refreshing svg,
   .floating-notification-card,
   .floating-notification-timer,
   .tab-loading-hero,

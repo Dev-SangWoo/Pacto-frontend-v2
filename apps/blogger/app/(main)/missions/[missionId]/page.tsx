@@ -13,7 +13,9 @@ import {
 } from "@pacto/utils";
 
 import { MissionSubmitAction } from "../../../_components/mock-actions";
+import { ResilientCampaignImage } from "../../../_components/resilient-campaign-image";
 import { fallbackOnNonAuthError, redirectOnAuthError } from "../../../_lib/auth-error";
+import { getFallbackCampaignThumbnail } from "../../../_lib/campaign-thumbnail";
 import { getBloggerSession } from "../../../_lib/session";
 
 type MissionDetailPageProps = {
@@ -68,9 +70,13 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
         href={`/campaigns/${displayMission.campaignId}`}
         aria-label={`${displayMission.campaignTitle} 캠페인 상세 보기`}
       >
-        <img
-          src={displayMission.thumbnailUrl}
+        <ResilientCampaignImage
           alt={`${displayMission.campaignTitle} 대표 이미지`}
+          campaignId={displayMission.campaignId}
+          fallbackSrc={getFallbackCampaignThumbnail(displayMission.campaignId)}
+          src={
+            displayMission.thumbnailUrl ?? getFallbackCampaignThumbnail(displayMission.campaignId)
+          }
         />
         <div>
           <div className="mission-detail-badges">

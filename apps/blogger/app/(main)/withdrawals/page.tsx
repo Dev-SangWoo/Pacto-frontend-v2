@@ -36,10 +36,7 @@ export default async function WithdrawalsPage() {
         </span>
       </section>
 
-      <WithdrawalForm
-        accessToken={session.accessToken}
-        availableBalance={wallet.availableBalance}
-      />
+      <WithdrawalForm availableBalance={wallet.availableBalance} />
 
       <section className="withdrawal-notice" aria-labelledby="withdrawal-notice-title">
         <span className="withdrawal-notice-icon" aria-hidden="true">

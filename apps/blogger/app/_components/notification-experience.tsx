@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { getUnreadNotificationsAction, readNotificationAction } from "../_actions/blogger-actions";
-import { listenForForegroundPush } from "../_lib/firebase-client";
 import { AppHeader } from "./app-nav";
 
 type FloatingNotification = {
@@ -22,7 +21,7 @@ type NotificationExperienceProps = {
 };
 
 const AUTO_DISMISS_MS = 5_000;
-const POLL_INTERVAL_MS = 20_000;
+const POLL_INTERVAL_MS = 60_000;
 const DUPLICATE_WINDOW_MS = 60_000;
 
 export function NotificationExperience({ initialNotifications }: NotificationExperienceProps) {
@@ -34,6 +33,7 @@ export function NotificationExperience({ initialNotifications }: NotificationExp
     new Set(initialNotifications.map((notification) => notification.id)),
   );
   const recentSignatures = useRef(new Map<string, number>());
+  const isSyncingNotifications = useRef(false);
   const currentNotification = queue[0];
 
   const enqueueNotification = useCallback((notification: Omit<FloatingNotification, "key">) => {
@@ -69,22 +69,36 @@ export function NotificationExperience({ initialNotifications }: NotificationExp
   }, []);
 
   const syncServerNotifications = useCallback(async () => {
-    const unreadNotifications = await getUnreadNotificationsAction();
-    setUnreadCount(unreadNotifications.length);
+    if (
+      isSyncingNotifications.current ||
+      document.visibilityState !== "visible" ||
+      !navigator.onLine
+    ) {
+      return;
+    }
 
-    unreadNotifications
-      .filter((notification) => !knownNotificationIds.current.has(notification.id))
-      .sort(
-        (left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime(),
-      )
-      .forEach((notification) => {
-        enqueueNotification({
-          content: notification.content,
-          id: notification.id,
-          targetUrl: notification.targetUrl,
-          title: notification.title,
+    isSyncingNotifications.current = true;
+
+    try {
+      const unreadNotifications = await getUnreadNotificationsAction();
+      setUnreadCount(unreadNotifications.length);
+
+      unreadNotifications
+        .filter((notification) => !knownNotificationIds.current.has(notification.id))
+        .sort(
+          (left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime(),
+        )
+        .forEach((notification) => {
+          enqueueNotification({
+            content: notification.content,
+            id: notification.id,
+            targetUrl: notification.targetUrl,
+            title: notification.title,
+          });
         });
-      });
+    } finally {
+      isSyncingNotifications.current = false;
+    }
   }, [enqueueNotification]);
 
   useEffect(() => {
@@ -109,18 +123,21 @@ export function NotificationExperience({ initialNotifications }: NotificationExp
     let unsubscribe: () => void = () => undefined;
     let isCancelled = false;
 
-    void listenForForegroundPush((payload) => {
-      const didEnqueue = enqueueNotification({
-        content: payload.body?.trim() || "새로운 활동 알림이 도착했어요.",
-        id: payload.notificationId,
-        targetUrl: payload.targetUrl,
-        title: payload.title?.trim() || "새 알림",
-      });
+    void import("../_lib/firebase-client")
+      .then(({ listenForForegroundPush }) =>
+        listenForForegroundPush((payload) => {
+          const didEnqueue = enqueueNotification({
+            content: payload.body?.trim() || "새로운 활동 알림이 도착했어요.",
+            id: payload.notificationId,
+            targetUrl: payload.targetUrl,
+            title: payload.title?.trim() || "새 알림",
+          });
 
-      if (didEnqueue) {
-        setUnreadCount((currentCount) => currentCount + 1);
-      }
-    })
+          if (didEnqueue) {
+            setUnreadCount((currentCount) => currentCount + 1);
+          }
+        }),
+      )
       .then((stopListening) => {
         if (isCancelled) {
           stopListening();

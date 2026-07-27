@@ -2,6 +2,7 @@ import { getMyNotifications } from "@pacto/api";
 import type { Notification } from "@pacto/types";
 
 import { BottomNav } from "../_components/app-nav";
+import { BloggerQueryProvider } from "../_components/blogger-query-provider";
 import { NotificationExperience } from "../_components/notification-experience";
 import { PushRegistrationSync } from "../_components/push-registration-sync";
 import { fallbackOnNonAuthError } from "../_lib/auth-error";
@@ -17,10 +18,12 @@ export default async function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <main className="mobile-shell">
-      <PushRegistrationSync />
-      <NotificationExperience initialNotifications={unreadNotifications} />
-      <div className="screen-content">{children}</div>
-      <BottomNav />
+      <BloggerQueryProvider>
+        <PushRegistrationSync />
+        <NotificationExperience initialNotifications={unreadNotifications} />
+        <div className="screen-content">{children}</div>
+        <BottomNav />
+      </BloggerQueryProvider>
     </main>
   );
 }
@@ -30,18 +33,10 @@ async function getUnreadNotifications(accessToken?: string): Promise<Notificatio
     return [];
   }
 
-  const firstPage = await getMyNotifications(accessToken, { size: 100 }).catch((error: unknown) =>
-    fallbackOnNonAuthError(error, { content: [], currentPage: 1, totalPages: 0 }),
+  const notificationPage = await getMyNotifications(accessToken, { size: 100 }).catch(
+    (error: unknown) =>
+      fallbackOnNonAuthError(error, { content: [], currentPage: 1, totalPages: 0 }),
   );
-  const remainingPages = await Promise.all(
-    Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) => index + 2).map(
-      (page) =>
-        getMyNotifications(accessToken, { page, size: 100 }).catch((error: unknown) =>
-          fallbackOnNonAuthError(error, { content: [], currentPage: page, totalPages: 0 }),
-        ),
-    ),
-  );
-  const notifications = [firstPage, ...remainingPages].flatMap((page) => page.content);
 
-  return notifications.filter((notification) => !notification.read);
+  return notificationPage.content.filter((notification) => !notification.read);
 }

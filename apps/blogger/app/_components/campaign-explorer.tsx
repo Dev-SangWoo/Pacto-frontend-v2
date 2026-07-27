@@ -15,6 +15,9 @@ import {
 } from "@pacto/utils";
 import type { CampaignDiscoveryCategory } from "@pacto/utils";
 
+import { getFallbackCampaignThumbnail } from "../_lib/campaign-thumbnail";
+import { ResilientCampaignImage } from "./resilient-campaign-image";
+
 type CampaignExplorerProps = {
   campaigns: Campaign[];
   loadErrorMessage?: string;
@@ -43,7 +46,9 @@ export function CampaignExplorer({
           alt=""
           aria-hidden="true"
           className="campaign-promotion-image"
-          src="/illustrations/woman-social-tablet-hd-transparent-refined.png"
+          height={992}
+          src="/illustrations/woman-social-tablet-hd-transparent-refined.webp"
+          width={1586}
         />
       </section>
 
@@ -111,7 +116,8 @@ type CampaignCardProps = {
 function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
   const badge = getCampaignDiscoveryBadge(campaign);
   const missionCopy = getCampaignSummaryText(campaign.guidelines);
-  const thumbnailUrl = campaign.thumbnailUrl ?? getFallbackThumbnail(campaign.id);
+  const fallbackThumbnail = getFallbackCampaignThumbnail(campaign.id);
+  const thumbnailUrl = campaign.thumbnailUrl ?? fallbackThumbnail;
   const totalSlots = campaign.totalSlots || campaign.recruitCount;
   const campaignHref = `/campaigns/${campaign.id}`;
 
@@ -119,15 +125,13 @@ function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
     <article className="campaign-list-card">
       <div className="campaign-card-summary">
         <Link className="campaign-card-image-link" href={campaignHref}>
-          <img
+          <ResilientCampaignImage
             alt={`${campaign.title} 대표 이미지`}
+            campaignId={campaign.id}
             decoding="async"
+            fallbackSrc={fallbackThumbnail}
             fetchPriority={isPriority ? "high" : "auto"}
             loading={isPriority ? "eager" : "lazy"}
-            onError={(event) => {
-              event.currentTarget.onerror = null;
-              event.currentTarget.src = getFallbackThumbnail(campaign.id);
-            }}
             src={thumbnailUrl}
           />
         </Link>
@@ -173,15 +177,4 @@ function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
       </div>
     </article>
   );
-}
-
-function getFallbackThumbnail(id?: number): string {
-  const thumbnails = [
-    "/campaigns/seongsu-brunch-cafe.webp",
-    "/campaigns/hongdae-nail-studio.webp",
-    "/campaigns/jamsil-fitness-lounge.webp",
-  ];
-  const index = id == null ? 0 : Math.abs(id - 1) % thumbnails.length;
-
-  return thumbnails[index] ?? thumbnails[0];
 }

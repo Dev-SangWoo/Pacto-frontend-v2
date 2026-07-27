@@ -1,10 +1,20 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Bell, House, Search, Target, UserCircle, WalletCards } from "lucide-react";
+import {
+  ArrowLeft,
+  Bell,
+  House,
+  RefreshCw,
+  Search,
+  Target,
+  UserCircle,
+  WalletCards,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 const navItems: Array<{
   href: string;
@@ -32,7 +42,9 @@ export function AppHeader({ notificationCount = 0 }: AppHeaderProps) {
   const hasNotifications = notificationCount > 0;
   const isCampaignHome = pathname === "/campaigns";
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isRefreshing, startRefresh] = useTransition();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (isSearchOpen) {
@@ -76,6 +88,20 @@ export function AppHeader({ notificationCount = 0 }: AppHeaderProps) {
             <span className="header-notification-dot" aria-hidden="true" />
           ) : null}
         </Link>
+        <button
+          aria-label={isRefreshing ? "새로고침 중" : "현재 화면 새로고침"}
+          className={`icon-button refresh-button ${isRefreshing ? "is-refreshing" : ""}`}
+          disabled={isRefreshing}
+          onClick={() => {
+            startRefresh(async () => {
+              await queryClient.invalidateQueries({ queryKey: ["blogger"] });
+              router.refresh();
+            });
+          }}
+          type="button"
+        >
+          <RefreshCw aria-hidden="true" size={21} strokeWidth={2.15} />
+        </button>
         {isCampaignHome ? (
           <button
             aria-expanded={isSearchOpen}
@@ -86,11 +112,7 @@ export function AppHeader({ notificationCount = 0 }: AppHeaderProps) {
           >
             <Search aria-hidden="true" size={22} strokeWidth={2} />
           </button>
-        ) : (
-          <Link className="icon-button profile" href="/profile" aria-label="내 정보">
-            <UserCircle aria-hidden="true" size={23} strokeWidth={2.25} />
-          </Link>
-        )}
+        ) : null}
         {isCampaignHome && isSearchOpen ? (
           <form action="/campaigns" className="campaign-header-search" method="get">
             <Search aria-hidden="true" size={18} />

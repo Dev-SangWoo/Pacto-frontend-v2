@@ -1,23 +1,24 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ApiError, requestWithdraw } from "@pacto/api";
 import { formatPoint } from "@pacto/utils";
 
+import { requestWithdrawalAction } from "../../../_actions/blogger-actions";
 import { KOREAN_BANKS } from "../../../_lib/banks";
 
 type WithdrawalFormProps = {
-  accessToken?: string;
   availableBalance: number;
 };
 
-export function WithdrawalForm({ accessToken, availableBalance }: WithdrawalFormProps) {
+export function WithdrawalForm({ availableBalance }: WithdrawalFormProps) {
   const [amount, setAmount] = useState("");
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
   const numericAmount = amount === "" ? 0 : Number(amount);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,30 +36,22 @@ export function WithdrawalForm({ accessToken, availableBalance }: WithdrawalForm
 
     try {
       setIsLoading(true);
-      await requestWithdraw(
-        {
-          amount: numericAmount,
-          bankName,
-          accountNumber,
-        },
-        accessToken,
-      );
+      const result = await requestWithdrawalAction({
+        accountNumber,
+        amount: numericAmount,
+        bankName,
+      });
 
+      if (!result.ok) {
+        alert(result.message ?? "출금 신청 중 오류가 발생했습니다.");
+        return;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["blogger", "wallet"] });
       alert("출금 신청이 완료되었습니다.");
       router.push("/wallet");
       router.refresh();
-    } catch (error) {
-      if (error instanceof ApiError && error.statusCode === 401) {
-        router.push("/logout?reason=session-expired");
-        return;
-      }
-
-      if (error instanceof ApiError && error.statusCode === 403) {
-        router.push("/forbidden");
-        return;
-      }
-
-      console.error("출금 실패:", error);
+    } catch {
       alert("출금 신청 중 오류가 발생했습니다. 잔액을 확인해 주세요.");
     } finally {
       setIsLoading(false);
