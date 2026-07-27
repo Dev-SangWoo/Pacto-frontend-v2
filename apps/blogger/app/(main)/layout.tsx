@@ -1,4 +1,4 @@
-import { getMe, getMyNotifications } from "@pacto/api";
+import { getMyNotifications } from "@pacto/api";
 
 import { AppHeader, BottomNav } from "../_components/app-nav";
 import { PushRegistrationSync } from "../_components/push-registration-sync";
@@ -11,30 +11,16 @@ type MainLayoutProps = {
 
 export default async function MainLayout({ children }: MainLayoutProps) {
   const session = await getBloggerSession();
-  const [bloggerName, notificationCount] = await Promise.all([
-    getBloggerName(session.accessToken),
-    getNotificationCount(session.accessToken),
-  ]);
+  const notificationCount = await getNotificationCount(session.accessToken);
 
   return (
     <main className="mobile-shell">
       <PushRegistrationSync />
-      <AppHeader bloggerName={bloggerName} notificationCount={notificationCount} />
+      <AppHeader notificationCount={notificationCount} />
       <div className="screen-content">{children}</div>
       <BottomNav />
     </main>
   );
-}
-
-async function getBloggerName(accessToken?: string) {
-  if (accessToken == null) {
-    return undefined;
-  }
-
-  const user = await getMe(accessToken).catch(() => undefined);
-  const name = user?.bloggerProfile?.nickname?.trim() || user?.bloggerProfile?.name?.trim();
-
-  return name || undefined;
 }
 
 async function getNotificationCount(accessToken?: string) {

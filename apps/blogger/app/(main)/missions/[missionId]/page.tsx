@@ -63,7 +63,11 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
       className="screen-stack detail-screen mission-detail-page"
       aria-labelledby="mission-detail-title"
     >
-      <section className="mission-detail-overview" aria-label="미션 요약">
+      <Link
+        className="mission-detail-overview"
+        href={`/campaigns/${displayMission.campaignId}`}
+        aria-label={`${displayMission.campaignTitle} 캠페인 상세 보기`}
+      >
         <img
           src={displayMission.thumbnailUrl}
           alt={`${displayMission.campaignTitle} 대표 이미지`}
@@ -76,7 +80,7 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
           <p className="section-label">{displayMission.brandName}</p>
           <h1 id="mission-detail-title">{displayMission.campaignTitle}</h1>
         </div>
-      </section>
+      </Link>
 
       <section className="mission-detail-metrics" aria-label="미션 수행 정보">
         <article>

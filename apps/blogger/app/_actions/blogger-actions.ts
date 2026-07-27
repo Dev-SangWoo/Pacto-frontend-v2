@@ -9,6 +9,7 @@ import {
   markNotificationAsRead,
   registerPushSubscription,
   submitMission,
+  uploadProfileImage,
   updateMyProfile,
 } from "@pacto/api";
 
@@ -32,6 +33,13 @@ export async function updateBloggerProfileAction(
       redirect("/login");
     }
 
+    const profileImage = readImageFile(formData.get("profileImage"));
+    const imageValidationMessage = validateProfileImage(profileImage);
+
+    if (imageValidationMessage != null) {
+      return { message: imageValidationMessage, ok: false };
+    }
+
     await updateMyProfile(
       {
         bloggerProfile: {
@@ -46,10 +54,19 @@ export async function updateBloggerProfileAction(
       },
       session.accessToken,
     );
+
+    if (profileImage != null) {
+      await uploadProfileImage(profileImage, session.accessToken);
+    }
+
     revalidatePath("/profile");
     revalidatePath("/profile/edit");
 
-    return { message: "프로필 정보를 저장했어요.", ok: true };
+    return {
+      message:
+        profileImage == null ? "프로필 정보를 저장했어요." : "프로필 사진과 정보를 저장했어요.",
+      ok: true,
+    };
   } catch (error) {
     redirectIfAuthError(error);
 
@@ -181,6 +198,29 @@ function isApiErrorLike(error: unknown): error is { message: string; statusCode:
 
 function readText(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
+}
+
+const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_PROFILE_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"]);
+
+function readImageFile(value: FormDataEntryValue | null): File | undefined {
+  return value instanceof File && value.size > 0 ? value : undefined;
+}
+
+function validateProfileImage(file: File | undefined) {
+  if (file == null) {
+    return undefined;
+  }
+
+  if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+    return "프로필 사진은 10MB 이하만 업로드할 수 있어요.";
+  }
+
+  if (!ALLOWED_PROFILE_IMAGE_TYPES.has(file.type)) {
+    return "프로필 사진은 JPG, PNG, WEBP, GIF 형식만 사용할 수 있어요.";
+  }
+
+  return undefined;
 }
 
 function getProfileUpdateErrorMessage(error: unknown) {

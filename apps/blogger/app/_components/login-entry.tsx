@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -76,18 +76,6 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
       </div>
 
       <div className={`auth-form-panel ${authMode == null ? "is-hidden" : "is-visible"}`}>
-        <button
-          aria-label="처음 화면으로 돌아가기"
-          className="auth-back-button"
-          onClick={() => {
-            setAuthMode(null);
-            setErrorMessage(undefined);
-          }}
-          type="button"
-        >
-          <ArrowLeft aria-hidden="true" size={18} />
-        </button>
-
         <div className="auth-form-heading">
           <p>Pacto Creator</p>
           <h2>{isSignup ? "회원가입" : "로그인"}</h2>
@@ -144,10 +132,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
           </label>
 
           <button className="primary-button auth-submit" disabled={isPending} type="submit">
-            <span>
-              {isPending ? "처리 중" : isSignup ? "가입하고 시작하기" : "캠페인 보러가기"}
-            </span>
-            <ArrowRight aria-hidden="true" size={18} />
+            {isPending ? "처리 중" : isSignup ? "가입하고 시작하기" : "캠페인 보러가기"}
           </button>
         </form>
 

@@ -63,10 +63,10 @@ export function adaptCampaign(response: CampaignResponse): Campaign {
     id,
     advertiserId: response.advertiserId ?? response.advertiser_id ?? 0,
     brandName:
-      response.brandName ??
-      response.companyName ??
-      response.advertiserName ??
-      `광고주 #${response.advertiserId ?? response.advertiser_id ?? 0}`,
+      response.brandName?.trim() ||
+      response.companyName?.trim() ||
+      response.advertiserName?.trim() ||
+      "Pacto",
     title: response.title ?? "캠페인",
     thumbnailUrl: response.thumbnailUrl ?? response.thumbnail_url ?? getFallbackThumbnail(id),
     rewardPoint: response.rewardPoint ?? response.reward_point ?? 0,
@@ -105,6 +105,9 @@ function normalizeGuidelines(guidelines?: unknown): string {
     }
     if ("content" in guidelines && typeof guidelines.content === "string") {
       return guidelines.content;
+    }
+    if ("note" in guidelines && typeof guidelines.note === "string") {
+      return guidelines.note;
     }
     return JSON.stringify(guidelines);
   }

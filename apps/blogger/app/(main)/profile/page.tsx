@@ -1,4 +1,5 @@
 import { getMe } from "@pacto/api";
+import { ChevronRight, Landmark, PencilLine, WalletCards } from "lucide-react";
 
 import { PushNotificationSetting } from "../../_components/push-notification-setting";
 import { PushAwareLogoutButton } from "../../_components/push-aware-logout-button";
@@ -17,69 +18,54 @@ export default async function ProfilePage() {
   const avatarLabel = getAvatarLabel(profile?.nickname ?? profile?.name ?? email);
 
   return (
-    <section aria-label="계정 설정" className="screen-stack mobile-system-page profile-system-page">
-      <section className="profile-section" aria-labelledby="account-profile-title">
-        <div className="section-head">
-          <div>
-            <p className="section-label">계정</p>
-            <h2 id="account-profile-title">프로필</h2>
-          </div>
-        </div>
-        <div className="profile-card">
+    <section
+      aria-label="계정 설정"
+      className="screen-stack mobile-system-page profile-system-page profile-home-page"
+    >
+      <h1 className="profile-page-title">내 정보</h1>
+
+      <section className="profile-overview" aria-labelledby="account-profile-title">
+        <div className="profile-overview-identity">
           {profileImageUrl != null && profileImageUrl.length > 0 ? (
-            <img className="profile-photo-preview image" src={profileImageUrl} alt="프로필" />
+            <img className="profile-photo-preview image" src={profileImageUrl} alt="프로필 사진" />
           ) : (
             <span className="profile-photo-preview" aria-hidden="true">
               {avatarLabel}
             </span>
           )}
           <div className="profile-card-copy">
-            <strong>{profile?.nickname || profile?.name || email}</strong>
+            <h2 id="account-profile-title">{profile?.nickname || profile?.name || email}</h2>
             <span>{email}</span>
             <span>블로거 ID #{session.bloggerId}</span>
           </div>
         </div>
-        <div className="profile-action-list">
-          <a href="/profile/edit">
-            <span>내 정보 수정</span>
-            <strong>프로필과 정산 계좌 관리</strong>
-          </a>
-        </div>
+        <a className="profile-edit-link" href="/profile/edit">
+          <PencilLine aria-hidden="true" size={18} strokeWidth={2.2} />내 정보 수정
+        </a>
       </section>
 
-      <a className="profile-image-cta" href="/profile/edit">
-        <span>
-          <small>프로필 완성하기</small>
-          <strong>활동 정보와 정산 계좌를 확인해 주세요</strong>
-          <em>정보 수정하기</em>
-        </span>
-        <img alt="" aria-hidden="true" src="/illustrations/goal-mountain.webp" />
-      </a>
-
-      <section className="profile-section" aria-labelledby="payout-profile-title">
-        <div className="section-head">
-          <div>
-            <p className="section-label">정산 정보</p>
-            <h2 id="payout-profile-title">지갑과 출금</h2>
-          </div>
-        </div>
-        <div className="profile-action-list">
-          <a href="/wallet">
-            <span>지갑</span>
-            <strong>정산과 거래 내역 확인</strong>
-          </a>
-          <a href="/withdrawals">
-            <span>출금 계좌</span>
-            <strong>출금 신청 화면에서 입력</strong>
-          </a>
-        </div>
+      <section className="profile-quick-actions" aria-label="정산 바로가기">
+        <a href="/wallet">
+          <span className="profile-quick-action-icon">
+            <WalletCards aria-hidden="true" size={21} strokeWidth={2.1} />
+          </span>
+          <strong>지갑</strong>
+          <ChevronRight aria-hidden="true" size={19} />
+        </a>
+        <a href="/withdrawals">
+          <span className="profile-quick-action-icon">
+            <Landmark aria-hidden="true" size={21} strokeWidth={2.1} />
+          </span>
+          <strong>출금 계좌</strong>
+          <ChevronRight aria-hidden="true" size={19} />
+        </a>
       </section>
 
-      <PwaInstallSetting />
-
-      <PushNotificationSetting />
-
-      <PushAwareLogoutButton />
+      <section className="profile-settings-list" aria-label="앱과 계정 설정">
+        <PwaInstallSetting compact />
+        <PushNotificationSetting compact />
+        <PushAwareLogoutButton compact />
+      </section>
     </section>
   );
 }

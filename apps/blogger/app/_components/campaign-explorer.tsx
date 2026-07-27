@@ -136,7 +136,7 @@ function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
             <span className={`campaign-discovery-badge ${badge.tone}`}>{badge.label}</span>
             <Link href={campaignHref}>{campaign.title}</Link>
           </div>
-          <p className="campaign-card-description">{missionCopy}</p>
+          <p className="campaign-card-description">{campaign.brandName || "Pacto"}</p>
           <dl className="campaign-card-metrics">
             <div>
               <dt>

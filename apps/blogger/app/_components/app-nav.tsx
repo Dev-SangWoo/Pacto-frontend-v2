@@ -20,11 +20,10 @@ const navItems: Array<{
 const rootPaths = new Set(navItems.map((item) => item.href));
 
 type AppHeaderProps = {
-  bloggerName?: string;
   notificationCount?: number;
 };
 
-export function AppHeader({ bloggerName, notificationCount = 0 }: AppHeaderProps) {
+export function AppHeader({ notificationCount = 0 }: AppHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -48,7 +47,6 @@ export function AppHeader({ bloggerName, notificationCount = 0 }: AppHeaderProps
           <span className="app-brand-mark" aria-hidden="true">
             <img src="/brand/logo-bg-rm-cropped.webp" alt="" />
           </span>
-          {bloggerName != null ? <small className="app-blogger-name">{bloggerName}</small> : null}
         </Link>
       ) : (
         <button

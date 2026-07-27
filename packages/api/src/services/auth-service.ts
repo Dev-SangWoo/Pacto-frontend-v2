@@ -18,6 +18,11 @@ export type ProfileUpdatePayload = {
   bloggerProfile?: BloggerProfile;
 };
 
+export type ProfileImageUploadResponse = {
+  profileImageKey: string;
+  userId: number;
+};
+
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   const response = await apiRequest<CommonResponse<LoginResponse> | LoginResponse>(
     "/api/v1/auth/login",
@@ -65,4 +70,22 @@ export async function updateMyProfile(
   );
 
   return adaptUser(unwrapCommonResponse<MeResponse>(response));
+}
+
+export async function uploadProfileImage(
+  file: File,
+  token?: string,
+): Promise<ProfileImageUploadResponse> {
+  const body = new FormData();
+  body.append("file", file);
+
+  const response = await apiRequest<
+    CommonResponse<ProfileImageUploadResponse> | ProfileImageUploadResponse
+  >("/api/v1/auth/me/profile-image", {
+    body,
+    method: "POST",
+    token,
+  });
+
+  return unwrapCommonResponse<ProfileImageUploadResponse>(response);
 }
