@@ -1,4 +1,4 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css");
+@import url("https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css");
 
 :root {
   color-scheme: light;
@@ -35,8 +35,8 @@ body {
   color: var(--grey-800);
   background: var(--grey-100);
   font-family:
-    "Pretendard Variable",
-    Pretendard,
+    "SUIT Variable",
+    SUIT,
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
@@ -2651,6 +2651,8 @@ td strong {
   display: grid;
   justify-items: center;
   gap: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .campaign-preview-copy {
@@ -2675,6 +2677,8 @@ td strong {
 .phone-frame {
   position: relative;
   width: min(100%, 360px);
+  min-width: 0;
+  max-width: 100%;
   aspect-ratio: 9 / 19.5;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 48px;
@@ -2735,6 +2739,7 @@ td strong {
   display: grid;
   grid-template-rows: 24px 188px minmax(0, 1fr) auto;
   height: 100%;
+  min-width: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 34px;
@@ -2805,6 +2810,8 @@ td strong {
   gap: 14px;
   align-content: start;
   min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 18px 16px 20px;
 }
@@ -2820,6 +2827,8 @@ td strong {
   font-size: 23px;
   font-weight: 900;
   line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .phone-reward-row {
@@ -2873,6 +2882,7 @@ td strong {
 .phone-guideline-section {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .phone-guideline-section > h3 {
@@ -2884,12 +2894,15 @@ td strong {
 .phone-guideline-preview {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .phone-guideline-preview h3 {
   color: var(--grey-900);
   font-size: 15px;
   font-weight: 900;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .phone-guideline-preview p,
@@ -2899,6 +2912,8 @@ td strong {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .phone-guideline-preview strong {
@@ -2915,6 +2930,8 @@ td strong {
   font-weight: 900;
   text-decoration: underline;
   text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .phone-guideline-preview ul,
@@ -3205,63 +3222,87 @@ td strong {
   opacity: 0.42;
 }
 
-.guideline-tiptap-surface {
+.guideline-editor-loading {
   min-height: 220px;
+  display: grid;
+  place-items: center;
   border: 1px solid var(--grey-200);
   border-radius: 8px;
+  color: var(--grey-500);
+  background: var(--grey-50);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.guideline-markdown-editor {
+  border: 1px solid var(--grey-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.guideline-markdown-toolbar {
+  border-bottom: 1px solid var(--grey-200);
+  background: var(--grey-50);
+}
+
+.guideline-markdown-surface {
+  min-height: 220px;
   padding: 14px;
   color: var(--grey-900);
-  background: var(--grey-50);
+  background: var(--white);
   font-size: 14px;
   font-weight: 700;
   line-height: 1.65;
   outline: none;
 }
 
-.guideline-tiptap-surface:focus {
+.guideline-markdown-editor:focus-within {
   border-color: var(--blue-500);
-  background: var(--white);
   box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.12);
 }
 
-.guideline-tiptap-surface p,
-.guideline-tiptap-surface h2,
-.guideline-tiptap-surface ul,
-.guideline-tiptap-surface ol,
-.guideline-tiptap-surface blockquote {
+.guideline-markdown-surface p,
+.guideline-markdown-surface h1,
+.guideline-markdown-surface h2,
+.guideline-markdown-surface h3,
+.guideline-markdown-surface ul,
+.guideline-markdown-surface ol,
+.guideline-markdown-surface blockquote {
   margin: 0 0 12px;
 }
 
-.guideline-tiptap-surface h2 {
+.guideline-markdown-surface h1,
+.guideline-markdown-surface h2,
+.guideline-markdown-surface h3 {
   font-size: 19px;
   font-weight: 900;
   line-height: 1.35;
 }
 
-.guideline-tiptap-surface ul,
-.guideline-tiptap-surface ol {
+.guideline-markdown-surface ul,
+.guideline-markdown-surface ol {
   padding-left: 22px;
 }
 
-.guideline-tiptap-surface blockquote {
+.guideline-markdown-surface blockquote {
   border-left: 3px solid var(--grey-300);
   padding-left: 12px;
   color: var(--grey-600);
 }
 
-.guideline-tiptap-surface a {
+.guideline-markdown-surface a {
   color: var(--blue-600);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-.guideline-tiptap-surface img {
+.guideline-markdown-surface img {
   display: block;
   max-width: 100%;
   border-radius: 8px;
 }
 
-.guideline-tiptap-surface p.is-editor-empty:first-child::before {
+.guideline-markdown-surface p.is-editor-empty:first-child::before {
   content: "촬영 가이드, 필수 해시태그, 제출 기준을 입력하세요.";
   float: left;
   height: 0;
@@ -3352,6 +3393,29 @@ td strong {
 .review-item strong {
   color: var(--grey-800);
   font-size: 14px;
+}
+
+.submitted-url-link {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+  color: var(--blue-600);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.submitted-url-link:hover,
+.submitted-url-link:focus-visible {
+  color: var(--blue-500);
+  filter: brightness(0.86);
+  text-decoration: underline;
+}
+
+.submitted-url-link span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .empty-panel {
