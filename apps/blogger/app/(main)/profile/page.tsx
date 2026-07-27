@@ -13,6 +13,7 @@ export default async function ProfilePage() {
       : undefined;
   const email = user?.email ?? session.email ?? "로그인이 필요해요";
   const profile = user?.bloggerProfile;
+  const profileImageUrl = profile?.profileImageDownloadUrl ?? profile?.profileImageUrl;
   const avatarLabel = getAvatarLabel(profile?.nickname ?? profile?.name ?? email);
 
   return (
@@ -25,12 +26,8 @@ export default async function ProfilePage() {
           </div>
         </div>
         <div className="profile-card">
-          {profile?.profileImageUrl != null && profile.profileImageUrl.length > 0 ? (
-            <img
-              className="profile-photo-preview image"
-              src={profile.profileImageUrl}
-              alt="프로필"
-            />
+          {profileImageUrl != null && profileImageUrl.length > 0 ? (
+            <img className="profile-photo-preview image" src={profileImageUrl} alt="프로필" />
           ) : (
             <span className="profile-photo-preview" aria-hidden="true">
               {avatarLabel}

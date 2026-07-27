@@ -8,6 +8,8 @@ export type BloggerProfile = {
   contact?: string;
   name?: string;
   nickname?: string;
+  /** S3 object key를 직접 노출하지 않는 조회용 Presigned URL입니다. */
+  profileImageDownloadUrl?: string;
   profileImageUrl?: string;
 };
 
