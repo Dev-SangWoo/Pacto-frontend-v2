@@ -13,7 +13,9 @@ import {
 } from "@pacto/utils";
 
 import { MissionSubmitAction } from "../../../_components/mock-actions";
+import { ResilientCampaignImage } from "../../../_components/resilient-campaign-image";
 import { fallbackOnNonAuthError, redirectOnAuthError } from "../../../_lib/auth-error";
+import { getFallbackCampaignThumbnail } from "../../../_lib/campaign-thumbnail";
 import { getBloggerSession } from "../../../_lib/session";
 
 type MissionDetailPageProps = {
@@ -63,10 +65,18 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
       className="screen-stack detail-screen mission-detail-page"
       aria-labelledby="mission-detail-title"
     >
-      <section className="mission-detail-overview" aria-label="미션 요약">
-        <img
-          src={displayMission.thumbnailUrl}
+      <Link
+        className="mission-detail-overview"
+        href={`/campaigns/${displayMission.campaignId}`}
+        aria-label={`${displayMission.campaignTitle} 캠페인 상세 보기`}
+      >
+        <ResilientCampaignImage
           alt={`${displayMission.campaignTitle} 대표 이미지`}
+          campaignId={displayMission.campaignId}
+          fallbackSrc={getFallbackCampaignThumbnail(displayMission.campaignId)}
+          src={
+            displayMission.thumbnailUrl ?? getFallbackCampaignThumbnail(displayMission.campaignId)
+          }
         />
         <div>
           <div className="mission-detail-badges">
@@ -76,7 +86,7 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
           <p className="section-label">{displayMission.brandName}</p>
           <h1 id="mission-detail-title">{displayMission.campaignTitle}</h1>
         </div>
-      </section>
+      </Link>
 
       <section className="mission-detail-metrics" aria-label="미션 수행 정보">
         <article>

@@ -6,13 +6,25 @@ import { redirect } from "next/navigation";
 import {
   ApiError,
   applyToCampaign,
+  getCampaignDetail,
+  getMe,
+  getMyNotifications,
   markNotificationAsRead,
   registerPushSubscription,
+  requestWithdraw,
   submitMission,
+  uploadProfileImage,
   updateMyProfile,
 } from "@pacto/api";
 
 import { getBloggerSession } from "../_lib/session";
+import {
+  getMissionPageData,
+  getWalletPageData,
+  type MissionPageData,
+  type WalletPageData,
+} from "../_lib/blogger-page-data";
+import type { Notification } from "@pacto/types";
 
 type ActionResult = {
   message?: string;
@@ -32,6 +44,13 @@ export async function updateBloggerProfileAction(
       redirect("/login");
     }
 
+    const profileImage = readImageFile(formData.get("profileImage"));
+    const imageValidationMessage = validateProfileImage(profileImage);
+
+    if (imageValidationMessage != null) {
+      return { message: imageValidationMessage, ok: false };
+    }
+
     await updateMyProfile(
       {
         bloggerProfile: {
@@ -46,10 +65,19 @@ export async function updateBloggerProfileAction(
       },
       session.accessToken,
     );
+
+    if (profileImage != null) {
+      await uploadProfileImage(profileImage, session.accessToken);
+    }
+
     revalidatePath("/profile");
     revalidatePath("/profile/edit");
 
-    return { message: "프로필 정보를 저장했어요.", ok: true };
+    return {
+      message:
+        profileImage == null ? "프로필 정보를 저장했어요." : "프로필 사진과 정보를 저장했어요.",
+      ok: true,
+    };
   } catch (error) {
     redirectIfAuthError(error);
 
@@ -124,6 +152,107 @@ export async function readNotificationAction(notificationId: number, targetUrl?:
   redirect(getSafeNotificationTarget(targetUrl));
 }
 
+export async function getUnreadNotificationsAction(): Promise<Notification[]> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    return [];
+  }
+
+  try {
+    const notificationPage = await getMyNotifications(session.accessToken, { size: 100 });
+    return notificationPage.content.filter((notification) => !notification.read);
+  } catch (error) {
+    redirectIfAuthError(error);
+    return [];
+  }
+}
+
+export async function getMissionPageDataAction(): Promise<MissionPageData> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    return await getMissionPageData(session.accessToken);
+  } catch (error) {
+    redirectIfAuthError(error);
+    throw error;
+  }
+}
+
+export async function getWalletPageDataAction(): Promise<WalletPageData> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    return await getWalletPageData(session.accessToken);
+  } catch (error) {
+    redirectIfAuthError(error);
+    throw error;
+  }
+}
+
+export async function getProfilePageDataAction() {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    return await getMe(session.accessToken);
+  } catch (error) {
+    redirectIfAuthError(error);
+    throw error;
+  }
+}
+
+export async function requestWithdrawalAction(input: {
+  accountNumber: string;
+  amount: number;
+  bankName: string;
+}): Promise<ActionResult> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    redirect("/login");
+  }
+
+  try {
+    await requestWithdraw(input, session.accessToken);
+    revalidatePath("/wallet");
+    revalidatePath("/withdrawals");
+    return { ok: true };
+  } catch (error) {
+    redirectIfAuthError(error);
+    return { message: "출금 신청에 실패했어요. 잔액과 계좌 정보를 확인해 주세요.", ok: false };
+  }
+}
+
+export async function getFreshCampaignThumbnailAction(
+  campaignId: number,
+): Promise<string | undefined> {
+  const session = await getBloggerSession();
+
+  if (session.accessToken == null) {
+    return undefined;
+  }
+
+  try {
+    const campaign = await getCampaignDetail(campaignId, session.accessToken);
+    return campaign?.thumbnailUrl;
+  } catch (error) {
+    redirectIfAuthError(error);
+    return undefined;
+  }
+}
+
 export async function registerPushTokenAction(registrationId: string): Promise<ActionResult> {
   const session = await getBloggerSession();
 
@@ -181,6 +310,29 @@ function isApiErrorLike(error: unknown): error is { message: string; statusCode:
 
 function readText(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
+}
+
+const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_PROFILE_IMAGE_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"]);
+
+function readImageFile(value: FormDataEntryValue | null): File | undefined {
+  return value instanceof File && value.size > 0 ? value : undefined;
+}
+
+function validateProfileImage(file: File | undefined) {
+  if (file == null) {
+    return undefined;
+  }
+
+  if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+    return "프로필 사진은 10MB 이하만 업로드할 수 있어요.";
+  }
+
+  if (!ALLOWED_PROFILE_IMAGE_TYPES.has(file.type)) {
+    return "프로필 사진은 JPG, PNG, WEBP, GIF 형식만 사용할 수 있어요.";
+  }
+
+  return undefined;
 }
 
 function getProfileUpdateErrorMessage(error: unknown) {

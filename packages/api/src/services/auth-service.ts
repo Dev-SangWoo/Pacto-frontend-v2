@@ -11,11 +11,18 @@ export type LoginPayload = {
   role: User["role"];
 };
 
-export type SignupPayload = LoginPayload;
+export type SignupPayload = LoginPayload & {
+  name?: string;
+};
 
 export type ProfileUpdatePayload = {
   advertiserProfile?: AdvertiserProfile;
   bloggerProfile?: BloggerProfile;
+};
+
+export type ProfileImageUploadResponse = {
+  profileImageKey: string;
+  userId: number;
 };
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
@@ -65,4 +72,22 @@ export async function updateMyProfile(
   );
 
   return adaptUser(unwrapCommonResponse<MeResponse>(response));
+}
+
+export async function uploadProfileImage(
+  file: File,
+  token?: string,
+): Promise<ProfileImageUploadResponse> {
+  const body = new FormData();
+  body.append("file", file);
+
+  const response = await apiRequest<
+    CommonResponse<ProfileImageUploadResponse> | ProfileImageUploadResponse
+  >("/api/v1/auth/me/profile-image", {
+    body,
+    method: "POST",
+    token,
+  });
+
+  return unwrapCommonResponse<ProfileImageUploadResponse>(response);
 }

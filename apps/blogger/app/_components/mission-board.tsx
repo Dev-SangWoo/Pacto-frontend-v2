@@ -17,6 +17,9 @@ import {
   getMissionStatusView,
 } from "@pacto/utils";
 
+import { getFallbackCampaignThumbnail } from "../_lib/campaign-thumbnail";
+import { ResilientCampaignImage } from "./resilient-campaign-image";
+
 type MissionBoardProps = {
   activeMissionCount: number;
   applications: EnrichedApplicationResponse[];
@@ -386,13 +389,16 @@ function ApplicationCard({ application }: { application: EnrichedApplicationResp
   const statusView = getApplicationStatusView(application.status);
   const campaignTitle = application.campaignTitle ?? `캠페인 #${application.campaignId}`;
   const applicationGuide = getApplicationGuide(application.status);
+  const fallbackThumbnail = getFallbackCampaignThumbnail(application.campaignId);
 
   return (
     <Link className="mission-card" href={`/campaigns/${application.campaignId}`}>
-      <img
-        src={application.thumbnailUrl ?? getFallbackThumbnail(application.campaignId)}
+      <ResilientCampaignImage
         alt={`${campaignTitle} 대표 이미지`}
+        campaignId={application.campaignId}
+        fallbackSrc={fallbackThumbnail}
         loading="lazy"
+        src={application.thumbnailUrl ?? fallbackThumbnail}
       />
       <div>
         <div className="ticket-topline">
@@ -440,10 +446,17 @@ type MissionCardProps = {
 function MissionCard({ groupKey, mission }: MissionCardProps) {
   const statusView = getMissionStatusView(mission.status);
   const schedule = getMissionSchedule(groupKey, mission);
+  const fallbackThumbnail = getFallbackCampaignThumbnail(mission.campaignId);
 
   return (
     <Link className="mission-card" href={`/missions/${mission.id}`}>
-      <img src={mission.thumbnailUrl} alt={`${mission.campaignTitle} 대표 이미지`} loading="lazy" />
+      <ResilientCampaignImage
+        alt={`${mission.campaignTitle} 대표 이미지`}
+        campaignId={mission.campaignId}
+        fallbackSrc={fallbackThumbnail}
+        loading="lazy"
+        src={mission.thumbnailUrl ?? fallbackThumbnail}
+      />
       <div>
         <div className="ticket-topline">
           <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
@@ -499,15 +512,4 @@ function getMissionSchedule(groupKey: string, mission: Mission) {
     label: "상태",
     value: mission.reason ?? getMissionStatusView(mission.status).label,
   };
-}
-
-function getFallbackThumbnail(id?: number): string {
-  const thumbnails = [
-    "/campaigns/seongsu-brunch-cafe.webp",
-    "/campaigns/hongdae-nail-studio.webp",
-    "/campaigns/jamsil-fitness-lounge.webp",
-  ];
-  const index = id == null ? 0 : Math.abs(id - 1) % thumbnails.length;
-
-  return thumbnails[index] ?? thumbnails[0];
 }

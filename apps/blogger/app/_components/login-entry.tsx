@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -29,12 +29,13 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
 
   function handleAuthSubmit(formData: FormData) {
     const email = String(formData.get("email") ?? "").trim();
+    const name = String(formData.get("name") ?? "").trim();
     const password = String(formData.get("password") ?? "");
 
     setErrorMessage(undefined);
     startTransition(async () => {
       const result = isSignup
-        ? await signupAction(email, password)
+        ? await signupAction(email, password, name)
         : await loginAction(email, password);
 
       if (result.ok) {
@@ -62,9 +63,6 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
         {sessionMessage != null ? (
           <p className="form-error auth-session-message">{sessionMessage}</p>
         ) : null}
-        <p className="auth-beta-note">
-          베타 기간에는 실제 사용하는 비밀번호 대신 테스트용 비밀번호를 사용해 주세요.
-        </p>
         <div className="auth-entry-actions" aria-label="계정 시작">
           <button className="primary-button" onClick={() => openAuth("login")} type="button">
             로그인
@@ -76,18 +74,6 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
       </div>
 
       <div className={`auth-form-panel ${authMode == null ? "is-hidden" : "is-visible"}`}>
-        <button
-          aria-label="처음 화면으로 돌아가기"
-          className="auth-back-button"
-          onClick={() => {
-            setAuthMode(null);
-            setErrorMessage(undefined);
-          }}
-          type="button"
-        >
-          <ArrowLeft aria-hidden="true" size={18} />
-        </button>
-
         <div className="auth-form-heading">
           <p>Pacto Creator</p>
           <h2>{isSignup ? "회원가입" : "로그인"}</h2>
@@ -101,6 +87,25 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
           }}
         >
           {errorMessage != null ? <p className="form-error">{errorMessage}</p> : null}
+
+          {isSignup ? (
+            <label>
+              <span className="auth-label-with-help">
+                이름
+                <small>‘PJT_26반_4팀_홍길동’ 형식으로 입력해 주세요.</small>
+              </span>
+              <div className="input-shell">
+                <UserRound aria-hidden="true" size={18} />
+                <input
+                  autoComplete="name"
+                  name="name"
+                  placeholder="PJT_26반_4팀_홍길동"
+                  required
+                  type="text"
+                />
+              </div>
+            </label>
+          ) : null}
 
           <label>
             <span>이메일</span>
@@ -118,7 +123,10 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
           </label>
 
           <label>
-            <span>비밀번호</span>
+            <span className={isSignup ? "auth-label-with-help" : undefined}>
+              비밀번호
+              {isSignup ? <small>베타 기간에는 테스트용 비밀번호를 사용해 주세요.</small> : null}
+            </span>
             <div className="input-shell">
               <LockKeyhole aria-hidden="true" size={18} />
               <input
@@ -144,10 +152,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
           </label>
 
           <button className="primary-button auth-submit" disabled={isPending} type="submit">
-            <span>
-              {isPending ? "처리 중" : isSignup ? "가입하고 시작하기" : "캠페인 보러가기"}
-            </span>
-            <ArrowRight aria-hidden="true" size={18} />
+            {isPending ? "처리 중" : isSignup ? "가입하고 시작하기" : "캠페인 보러가기"}
           </button>
         </form>
 

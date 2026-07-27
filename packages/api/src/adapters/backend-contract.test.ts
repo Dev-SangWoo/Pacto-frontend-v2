@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { mapCampaignStatus } from "./campaign-adapter";
+import { adaptCampaign, mapCampaignStatus } from "./campaign-adapter";
 import { adaptEscrowLedger } from "./escrow-adapter";
 import { mapMissionStatus } from "./mission-adapter";
 import { adaptPointHistory } from "./wallet-adapter";
@@ -9,6 +9,19 @@ describe("backend response adapters", () => {
   it("maps backend campaign progress statuses to the frontend progress state", () => {
     expect(mapCampaignStatus("IN_PROGRESS")).toBe("in_progress");
     expect(mapCampaignStatus("FULL")).toBe("in_progress");
+  });
+
+  it("unwraps a note-only campaign guideline object as display text", () => {
+    expect(
+      adaptCampaign({
+        guidelines: { note: "test" },
+        id: 64,
+        title: "S3 재검증용 테스트",
+      }),
+    ).toMatchObject({
+      brandName: "Pacto",
+      guidelines: "test",
+    });
   });
 
   it("maps a READY mission to the frontend in-progress state", () => {

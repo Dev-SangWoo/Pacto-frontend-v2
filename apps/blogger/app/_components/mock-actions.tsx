@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import type { ApplicationStatusResponse, CampaignStatus, MissionStatus } from "@pacto/types";
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -23,6 +24,7 @@ export function CampaignApplyAction({
   missionId,
   missionStatus,
 }: CampaignApplyActionProps) {
+  const queryClient = useQueryClient();
   const [currentStatus, setCurrentStatus] = useState<ApplicationStatusResponse | undefined>(
     applicationStatus,
   );
@@ -98,6 +100,7 @@ export function CampaignApplyAction({
 
             if (result.ok) {
               setCurrentStatus("PENDING");
+              await queryClient.invalidateQueries({ queryKey: ["blogger", "missions"] });
             } else {
               setErrorMessage(result.message);
             }
@@ -117,6 +120,7 @@ type MissionSubmitActionProps = {
 };
 
 export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionProps) {
+  const queryClient = useQueryClient();
   const [reviewUrl, setReviewUrl] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -154,6 +158,10 @@ export function MissionSubmitAction({ enabled, missionId }: MissionSubmitActionP
 
             if (result.ok) {
               setIsSubmitted(true);
+              await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["blogger", "missions"] }),
+                queryClient.invalidateQueries({ queryKey: ["blogger", "wallet"] }),
+              ]);
             } else {
               setErrorMessage(result.message);
             }

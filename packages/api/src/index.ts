@@ -38,7 +38,7 @@ export {
 
 export { getMyPayments, getPayment, preparePayment } from "./services/payment-service";
 export { getMyPointHistories, getMyWallet, requestWithdraw } from "./services/wallet-service";
-export { getMe, login, signup, updateMyProfile } from "./services/auth-service";
+export { getMe, login, signup, updateMyProfile, uploadProfileImage } from "./services/auth-service";
 export {
   getMyNotifications,
   markNotificationAsRead,
@@ -46,7 +46,12 @@ export {
   unregisterPushSubscription,
 } from "./services/notification-service";
 export { ApiError } from "./client/api-error";
-export type { LoginPayload, ProfileUpdatePayload, SignupPayload } from "./services/auth-service";
+export type {
+  LoginPayload,
+  ProfileImageUploadResponse,
+  ProfileUpdatePayload,
+  SignupPayload,
+} from "./services/auth-service";
 export type { CreateCampaignPayload, GetCampaignsParams } from "./services/campaign-service";
 export type { GetEscrowsParams } from "./services/escrow-service";
 export type {

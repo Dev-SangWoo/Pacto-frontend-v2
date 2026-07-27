@@ -1,11 +1,55 @@
 "use client";
 
-import { Download, Smartphone } from "lucide-react";
+import { ChevronRight, Download, Smartphone } from "lucide-react";
+import { useState } from "react";
 
 import { usePwaInstall } from "./pwa-install-provider";
 
-export function PwaInstallSetting() {
+type PwaInstallSettingProps = {
+  compact?: boolean;
+};
+
+export function PwaInstallSetting({ compact = false }: PwaInstallSettingProps) {
   const { install, isInstalled, isIos, isPromptAvailable, message } = usePwaInstall();
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+
+  if (compact) {
+    return (
+      <div className="profile-setting-row-group">
+        <button
+          aria-label={isInstalled ? "앱 설치 완료" : "앱 설치"}
+          className="profile-setting-row"
+          onClick={() => {
+            if (isPromptAvailable) {
+              void install();
+              return;
+            }
+
+            setIsGuideOpen((open) => !open);
+          }}
+          type="button"
+        >
+          <Smartphone aria-hidden="true" size={21} strokeWidth={2.1} />
+          <span>
+            <strong>앱 설치</strong>
+          </span>
+          <ChevronRight aria-hidden="true" size={19} />
+        </button>
+        {!isInstalled && isGuideOpen && !isPromptAvailable ? (
+          <p className="profile-setting-guide" role="status">
+            {isIos
+              ? "Safari 공유 메뉴에서 ‘홈 화면에 추가’를 선택해 주세요."
+              : "브라우저 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 선택해 주세요."}
+          </p>
+        ) : null}
+        {message != null ? (
+          <p className="profile-setting-guide" role="status">
+            {message}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <section className="profile-section pwa-install-setting" aria-labelledby="pwa-install-title">

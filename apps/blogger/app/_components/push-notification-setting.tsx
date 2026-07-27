@@ -1,6 +1,6 @@
 "use client";
 
-import { BellRing } from "lucide-react";
+import { BellRing, ChevronRight } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 
 import { registerPushTokenAction } from "../_actions/blogger-actions";
@@ -11,7 +11,11 @@ import {
 } from "../_lib/firebase-client";
 import { isIosDevice, isStandalonePwa } from "../_lib/pwa-client";
 
-export function PushNotificationSetting() {
+type PushNotificationSettingProps = {
+  compact?: boolean;
+};
+
+export function PushNotificationSetting({ compact = false }: PushNotificationSettingProps) {
   const [message, setMessage] = useState<string>();
   const [requiresHomeScreenInstall, setRequiresHomeScreenInstall] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -35,6 +39,54 @@ export function PushNotificationSetting() {
     return () => unsubscribe();
   }, []);
 
+  const enablePushNotifications = () => {
+    setMessage(undefined);
+    startTransition(async () => {
+      try {
+        const token = await requestFirebasePushToken();
+        const result = await registerPushTokenAction(token);
+        setMessage(result.message);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "푸시 알림을 설정하지 못했어요.");
+      }
+    });
+  };
+
+  if (compact) {
+    const isDisabled = !isConfigured || isPending || requiresHomeScreenInstall;
+
+    return (
+      <div className="profile-setting-row-group">
+        <button
+          aria-label={
+            isPending
+              ? "푸시 알림 설정 중"
+              : requiresHomeScreenInstall
+                ? "앱 설치 후 푸시 알림 설정 가능"
+                : isConfigured
+                  ? "푸시 알림 설정"
+                  : "푸시 알림 사용 불가"
+          }
+          className="profile-setting-row"
+          disabled={isDisabled}
+          onClick={enablePushNotifications}
+          type="button"
+        >
+          <BellRing aria-hidden="true" size={21} strokeWidth={2.1} />
+          <span>
+            <strong>{isPending ? "푸시 알림 설정 중..." : "푸시 알림"}</strong>
+          </span>
+          <ChevronRight aria-hidden="true" size={19} />
+        </button>
+        {message != null ? (
+          <p className="profile-setting-guide" role="status">
+            {message}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <section className="profile-section push-setting" aria-labelledby="push-setting-title">
       <div className="section-head">
@@ -48,18 +100,7 @@ export function PushNotificationSetting() {
       <button
         className="primary-button weak-button full-width"
         disabled={!isConfigured || isPending || requiresHomeScreenInstall}
-        onClick={() => {
-          setMessage(undefined);
-          startTransition(async () => {
-            try {
-              const token = await requestFirebasePushToken();
-              const result = await registerPushTokenAction(token);
-              setMessage(result.message);
-            } catch (error) {
-              setMessage(error instanceof Error ? error.message : "푸시 알림을 설정하지 못했어요.");
-            }
-          });
-        }}
+        onClick={enablePushNotifications}
         type="button"
       >
         {isPending

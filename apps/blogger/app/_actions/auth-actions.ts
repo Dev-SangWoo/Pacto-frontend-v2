@@ -1,6 +1,13 @@
 "use server";
 
-import { ApiError, getMe, login, signup, unregisterPushSubscription } from "@pacto/api";
+import {
+  ApiError,
+  getMe,
+  login,
+  signup,
+  unregisterPushSubscription,
+  updateMyProfile,
+} from "@pacto/api";
 import { redirect } from "next/navigation";
 
 import { clearBloggerSession, getBloggerSession, setBloggerSession } from "../_lib/session";
@@ -39,13 +46,36 @@ export async function loginAction(email: string, password: string): Promise<Auth
   }
 }
 
-export async function signupAction(email: string, password: string): Promise<AuthActionResult> {
-  try {
-    const result = await signup({ email, password, role: "BLOGGER" });
+export async function signupAction(
+  email: string,
+  password: string,
+  name: string,
+): Promise<AuthActionResult> {
+  if (name.trim().length === 0) {
+    return { message: "이름을 입력해 주세요.", ok: false };
+  }
 
-    if (result.accessToken.length > 0) {
-      await saveAuthenticatedSession(result.accessToken, email);
+  try {
+    const signupResult = await signup({ email, name: name.trim(), password, role: "BLOGGER" });
+    const accessToken =
+      signupResult.accessToken || (await login({ email, password, role: "BLOGGER" })).accessToken;
+
+    if (accessToken.length === 0) {
+      return {
+        message: "회원가입은 완료됐지만 로그인하지 못했어요. 로그인 화면에서 다시 시도해 주세요.",
+        ok: false,
+      };
     }
+
+    await updateMyProfile(
+      {
+        bloggerProfile: {
+          name: name.trim(),
+        },
+      },
+      accessToken,
+    );
+    await saveAuthenticatedSession(accessToken, email);
 
     return { ok: true };
   } catch (error) {

@@ -1,13 +1,15 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import type { FocusEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useState } from "react";
 import type { BloggerProfile } from "@pacto/types";
 
 import { updateBloggerProfileAction, type ProfileUpdateState } from "../_actions/blogger-actions";
+import { KOREAN_BANKS } from "../_lib/banks";
+import { profilePageQueryKey } from "./blogger-query-provider";
 
 const initialState: ProfileUpdateState = { ok: false };
-const PROFILE_FIELD_COUNT = 7;
 
 type ProfileEditFormProps = {
   profile?: BloggerProfile;
@@ -15,140 +17,188 @@ type ProfileEditFormProps = {
 
 export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const [state, formAction, isPending] = useActionState(updateBloggerProfileAction, initialState);
-  const [revealedStep, setRevealedStep] = useState(0);
+  const [localImagePreviewUrl, setLocalImagePreviewUrl] = useState<string>();
+  const [selectedImageName, setSelectedImageName] = useState("");
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const profileImageUrl = profile?.profileImageDownloadUrl ?? profile?.profileImageUrl;
+  const imagePreviewUrl = localImagePreviewUrl ?? profileImageUrl;
+  const currentBankName = profile?.bankName ?? "";
+  const hasUnlistedBank =
+    currentBankName.length > 0 &&
+    !KOREAN_BANKS.includes(currentBankName as (typeof KOREAN_BANKS)[number]);
 
-  const revealNextField = (step: number, event: FocusEvent<HTMLInputElement>) => {
-    const input = event.currentTarget;
+  useEffect(() => {
+    if (state.ok) {
+      void queryClient.invalidateQueries({ queryKey: profilePageQueryKey });
+      router.replace("/profile");
+    }
+  }, [queryClient, router, state.ok]);
 
-    if (!input.validity.valid || (input.required && input.value.trim().length === 0)) {
+  useEffect(() => {
+    return () => {
+      if (localImagePreviewUrl != null) {
+        URL.revokeObjectURL(localImagePreviewUrl);
+      }
+    };
+  }, [localImagePreviewUrl]);
+
+  const previewProfileImage = (file: File | undefined) => {
+    if (file == null) {
+      setLocalImagePreviewUrl(undefined);
+      setSelectedImageName("");
       return;
     }
 
-    setRevealedStep((currentStep) => Math.max(currentStep, step + 1));
+    setLocalImagePreviewUrl(URL.createObjectURL(file));
+    setSelectedImageName(file.name);
   };
 
   return (
     <form action={formAction} className="profile-edit-form">
-      <div className="profile-form-progress">
-        <span>
-          <strong>{Math.min(revealedStep + 1, PROFILE_FIELD_COUNT)}</strong>/{PROFILE_FIELD_COUNT}
-        </span>
-        <p>입력을 마치면 다음 항목이 열려요.</p>
-        {revealedStep < PROFILE_FIELD_COUNT ? (
-          <button onClick={() => setRevealedStep(PROFILE_FIELD_COUNT)} type="button">
-            전체 펼치기
-          </button>
-        ) : null}
-      </div>
-
-      <div className="profile-form-grid profile-basic-fields">
-        <label>
-          <span>이름</span>
-          <input
-            defaultValue={profile?.name ?? ""}
-            name="name"
-            onBlur={(event) => revealNextField(0, event)}
-            placeholder="실명"
-            required
+      <section className="profile-image-field" aria-labelledby="profile-image-field-title">
+        {imagePreviewUrl != null && imagePreviewUrl.length > 0 ? (
+          <img
+            className="profile-image-field-preview"
+            src={imagePreviewUrl}
+            alt="프로필 사진 미리보기"
           />
-        </label>
-        {revealedStep >= 1 ? (
-          <label>
+        ) : (
+          <span className="profile-image-field-placeholder" aria-hidden="true">
+            사진
+          </span>
+        )}
+        <div className="profile-image-field-content">
+          <div className="profile-image-field-copy">
+            <strong id="profile-image-field-title">프로필 사진</strong>
+            <small id="profile-image-field-hint">JPG, PNG, WEBP, GIF · 최대 10MB</small>
+          </div>
+          <label className="profile-image-select-button" htmlFor="profileImage">
+            {selectedImageName.length > 0 ? "사진 다시 선택" : "사진 선택"}
+          </label>
+          <input
+            accept="image/gif,image/jpeg,image/png,image/webp"
+            aria-describedby="profile-image-field-hint"
+            className="visually-hidden"
+            id="profileImage"
+            name="profileImage"
+            onChange={(event) => previewProfileImage(event.currentTarget.files?.[0])}
+            type="file"
+          />
+          {selectedImageName.length > 0 ? (
+            <span className="profile-image-file-name">{selectedImageName}</span>
+          ) : null}
+        </div>
+      </section>
+
+      <p className="profile-form-intro">
+        이름만 필수예요. 나머지는 활동과 정산에 필요한 정보만 입력해 주세요.
+      </p>
+
+      <fieldset className="profile-form-section">
+        <legend>기본 정보</legend>
+        <p>프로필과 캠페인 활동에 표시되는 정보예요.</p>
+        <div className="profile-form-grid profile-basic-fields">
+          <label htmlFor="profileName">
+            <span>
+              이름 <em>필수</em>
+            </span>
+            <input
+              autoComplete="name"
+              defaultValue={profile?.name ?? ""}
+              id="profileName"
+              name="name"
+              placeholder="실명"
+              required
+            />
+          </label>
+          <label htmlFor="profileNickname">
             <span>활동 닉네임</span>
             <input
               defaultValue={profile?.nickname ?? ""}
+              id="profileNickname"
               name="nickname"
-              onBlur={(event) => revealNextField(1, event)}
               placeholder="블로그에서 사용하는 이름"
             />
           </label>
-        ) : null}
-        {revealedStep >= 2 ? (
-          <label className="profile-form-full">
+          <label className="profile-form-full" htmlFor="profileBlogUrl">
             <span>블로그 주소</span>
             <input
               defaultValue={profile?.blogUrl ?? ""}
+              id="profileBlogUrl"
               inputMode="url"
               name="blogUrl"
-              onBlur={(event) => revealNextField(2, event)}
               placeholder="https://blog.naver.com/..."
               type="url"
             />
           </label>
-        ) : null}
-        {revealedStep >= 3 ? (
-          <label className="profile-form-full">
+          <label className="profile-form-full" htmlFor="profileContact">
             <span>연락처</span>
             <input
+              autoComplete="tel"
               defaultValue={profile?.contact ?? ""}
+              id="profileContact"
               inputMode="tel"
               name="contact"
-              onBlur={(event) => revealNextField(3, event)}
               placeholder="010-0000-0000"
               type="tel"
             />
           </label>
-        ) : null}
-      </div>
+        </div>
+      </fieldset>
 
-      {revealedStep >= 4 ? (
-        <>
-          <div className="profile-form-divider" />
-          <div className="profile-form-heading">
-            <strong>정산 계좌</strong>
-            <span>캠페인 보상을 출금할 계좌 정보를 입력해 주세요.</span>
-          </div>
-          <div className="profile-form-grid profile-payout-fields">
-            <label>
-              <span>은행</span>
-              <input
-                defaultValue={profile?.bankName ?? ""}
-                name="bankName"
-                onBlur={(event) => revealNextField(4, event)}
-                placeholder="은행명"
-              />
-            </label>
-            {revealedStep >= 5 ? (
-              <label>
-                <span>예금주</span>
-                <input
-                  defaultValue={profile?.accountHolder ?? ""}
-                  name="accountHolder"
-                  onBlur={(event) => revealNextField(5, event)}
-                  placeholder="예금주명"
-                />
-              </label>
-            ) : null}
-            {revealedStep >= 6 ? (
-              <label className="profile-form-full">
-                <span>계좌번호</span>
-                <input
-                  defaultValue={profile?.accountNumber ?? ""}
-                  inputMode="numeric"
-                  name="accountNumber"
-                  onBlur={(event) => revealNextField(6, event)}
-                  placeholder="하이픈 없이 입력"
-                />
-              </label>
-            ) : null}
-          </div>
-        </>
-      ) : null}
+      <fieldset className="profile-form-section">
+        <legend>정산 계좌</legend>
+        <p>캠페인 보상을 출금할 본인 명의 계좌를 입력해 주세요.</p>
+        <div className="profile-form-grid profile-payout-fields">
+          <label htmlFor="profileBankName">
+            <span>은행</span>
+            <select defaultValue={profile?.bankName ?? ""} id="profileBankName" name="bankName">
+              <option value="">은행을 선택해 주세요</option>
+              {hasUnlistedBank ? <option value={currentBankName}>{currentBankName}</option> : null}
+              {KOREAN_BANKS.map((bank) => (
+                <option key={bank} value={bank}>
+                  {bank}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label htmlFor="profileAccountHolder">
+            <span>예금주</span>
+            <input
+              autoComplete="off"
+              defaultValue={profile?.accountHolder ?? ""}
+              id="profileAccountHolder"
+              name="accountHolder"
+              placeholder="예금주명"
+            />
+          </label>
+          <label className="profile-form-full" htmlFor="profileAccountNumber">
+            <span>계좌번호</span>
+            <input
+              autoComplete="off"
+              defaultValue={profile?.accountNumber ?? ""}
+              id="profileAccountNumber"
+              inputMode="numeric"
+              name="accountNumber"
+              placeholder="하이픈 없이 입력"
+            />
+          </label>
+        </div>
+      </fieldset>
 
       {state.message != null ? (
         <p
           className={state.ok ? "profile-form-message success" : "profile-form-message error"}
-          role="status"
+          role={state.ok ? "status" : "alert"}
         >
           {state.message}
         </p>
       ) : null}
 
-      {revealedStep >= PROFILE_FIELD_COUNT ? (
-        <button className="primary-button full-width" disabled={isPending} type="submit">
-          {isPending ? "저장 중..." : "프로필 저장"}
-        </button>
-      ) : null}
+      <button className="primary-button full-width" disabled={isPending} type="submit">
+        {isPending ? "저장 중..." : "변경사항 저장"}
+      </button>
     </form>
   );
 }
