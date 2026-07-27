@@ -10,5 +10,5 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
-  return <ProfilePageClient bloggerId={session.bloggerId} fallbackEmail={session.email} />;
+  return <ProfilePageClient fallbackEmail={session.email} />;
 }

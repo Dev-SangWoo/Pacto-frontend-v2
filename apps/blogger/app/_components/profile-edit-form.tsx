@@ -2,11 +2,12 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import type { BloggerProfile } from "@pacto/types";
 
 import { updateBloggerProfileAction, type ProfileUpdateState } from "../_actions/blogger-actions";
 import { KOREAN_BANKS } from "../_lib/banks";
+import { compressProfileImage } from "../_lib/profile-image-compression";
 import { profilePageQueryKey } from "./blogger-query-provider";
 
 const initialState: ProfileUpdateState = { ok: false };
@@ -18,7 +19,11 @@ type ProfileEditFormProps = {
 export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const [state, formAction, isPending] = useActionState(updateBloggerProfileAction, initialState);
   const [localImagePreviewUrl, setLocalImagePreviewUrl] = useState<string>();
+  const [compressedImage, setCompressedImage] = useState<File>();
+  const [imageErrorMessage, setImageErrorMessage] = useState<string>();
+  const [isCompressingImage, setIsCompressingImage] = useState(false);
   const [selectedImageName, setSelectedImageName] = useState("");
+  const [isSubmitting, startSubmit] = useTransition();
   const queryClient = useQueryClient();
   const router = useRouter();
   const profileImageUrl = profile?.profileImageDownloadUrl ?? profile?.profileImageUrl;
@@ -43,19 +48,53 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     };
   }, [localImagePreviewUrl]);
 
-  const previewProfileImage = (file: File | undefined) => {
+  const previewProfileImage = async (file: File | undefined) => {
+    setImageErrorMessage(undefined);
+    setCompressedImage(undefined);
+
     if (file == null) {
       setLocalImagePreviewUrl(undefined);
       setSelectedImageName("");
       return;
     }
 
-    setLocalImagePreviewUrl(URL.createObjectURL(file));
     setSelectedImageName(file.name);
+    setIsCompressingImage(true);
+
+    try {
+      const compressedFile = await compressProfileImage(file);
+      setCompressedImage(compressedFile);
+      setLocalImagePreviewUrl(URL.createObjectURL(compressedFile));
+    } catch (error) {
+      setLocalImagePreviewUrl(undefined);
+      setImageErrorMessage(error instanceof Error ? error.message : "사진을 압축하지 못했어요.");
+    } finally {
+      setIsCompressingImage(false);
+    }
   };
 
   return (
-    <form action={formAction} className="profile-edit-form">
+    <form
+      action={formAction}
+      className="profile-edit-form"
+      onSubmit={(event) => {
+        event.preventDefault();
+
+        if (isCompressingImage || imageErrorMessage != null) {
+          return;
+        }
+
+        const formData = new FormData(event.currentTarget);
+
+        if (compressedImage != null) {
+          formData.set("profileImage", compressedImage);
+        }
+
+        startSubmit(() => {
+          formAction(formData);
+        });
+      }}
+    >
       <section className="profile-image-field" aria-labelledby="profile-image-field-title">
         {imagePreviewUrl != null && imagePreviewUrl.length > 0 ? (
           <img
@@ -71,20 +110,32 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         <div className="profile-image-field-content">
           <div className="profile-image-field-copy">
             <strong id="profile-image-field-title">프로필 사진</strong>
-            <small id="profile-image-field-hint">JPG, PNG, WEBP, GIF · 최대 10MB</small>
+            <small id="profile-image-field-hint">모바일 사진은 JPG로 자동 압축해 업로드해요.</small>
           </div>
           <label className="profile-image-select-button" htmlFor="profileImage">
             {selectedImageName.length > 0 ? "사진 다시 선택" : "사진 선택"}
           </label>
           <input
-            accept="image/gif,image/jpeg,image/png,image/webp"
+            accept="image/*,.heic,.heif"
             aria-describedby="profile-image-field-hint"
             className="visually-hidden"
             id="profileImage"
             name="profileImage"
-            onChange={(event) => previewProfileImage(event.currentTarget.files?.[0])}
+            onChange={(event) => {
+              void previewProfileImage(event.currentTarget.files?.[0]);
+            }}
             type="file"
           />
+          {isCompressingImage ? (
+            <span className="profile-image-compression-status" role="status">
+              모바일 업로드에 맞게 사진을 압축하고 있어요.
+            </span>
+          ) : null}
+          {imageErrorMessage != null ? (
+            <span className="profile-image-compression-error" role="alert">
+              {imageErrorMessage}
+            </span>
+          ) : null}
           {selectedImageName.length > 0 ? (
             <span className="profile-image-file-name">{selectedImageName}</span>
           ) : null}
@@ -196,8 +247,16 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         </p>
       ) : null}
 
-      <button className="primary-button full-width" disabled={isPending} type="submit">
-        {isPending ? "저장 중..." : "변경사항 저장"}
+      <button
+        className="primary-button full-width"
+        disabled={isPending || isSubmitting || isCompressingImage || imageErrorMessage != null}
+        type="submit"
+      >
+        {isCompressingImage
+          ? "사진 압축 중..."
+          : isPending || isSubmitting
+            ? "저장 중..."
+            : "변경사항 저장"}
       </button>
     </form>
   );
