@@ -129,7 +129,7 @@ export function WalletPageClient() {
       <div className="fixed-cta">
         <a
           aria-disabled={wallet.availableBalance === 0}
-          className={`primary-button ${wallet.availableBalance === 0 ? "disabled" : ""}`}
+          className={`primary-button withdrawal-button ${wallet.availableBalance === 0 ? "disabled" : ""}`}
           href="/withdrawals"
         >
           출금 신청하기

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { loginAction, signupAction } from "../_actions/auth-actions";
+import { FlowCompletion } from "./flow-completion";
 
 type AuthMode = "login" | "signup";
 
@@ -16,6 +17,7 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [isSignupComplete, setIsSignupComplete] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -39,12 +41,41 @@ export function LoginEntry({ sessionMessage }: LoginEntryProps) {
         : await loginAction(email, password);
 
       if (result.ok) {
+        if (isSignup) {
+          setIsSignupComplete(true);
+          return;
+        }
+
         router.push("/campaigns");
         router.refresh();
       } else {
         setErrorMessage(result.message);
       }
     });
+  }
+
+  if (isSignupComplete) {
+    return (
+      <section className="auth-studio">
+        <FlowCompletion
+          actions={
+            <button
+              className="primary-button full-width"
+              onClick={() => {
+                router.push("/campaigns");
+                router.refresh();
+              }}
+              type="button"
+            >
+              캠페인 둘러보기
+            </button>
+          }
+          description="가입한 계정으로 로그인되었어요. 이제 참여할 캠페인을 확인해 보세요."
+          eyebrow="Pacto 가입 완료"
+          title="회원가입이 완료되었습니다!"
+        />
+      </section>
+    );
   }
 
   return (
