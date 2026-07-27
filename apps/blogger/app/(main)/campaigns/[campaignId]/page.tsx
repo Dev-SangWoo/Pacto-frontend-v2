@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 import { getCampaignDetail } from "@pacto/api";
 import { CalendarDays, Coins, FileText, UserRoundCheck, UsersRound } from "lucide-react";
@@ -113,12 +113,18 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
           </div>
         </div>
         <div className="mission-guide-list">
-          {missionGuideItems.map((item, index) => (
-            <article key={`${item.label}-${index}`}>
-              <span>{item.label}</span>
-              <div className="mission-guide-content">{item.content}</div>
-            </article>
-          ))}
+          {missionGuideItems.map((item, index) =>
+            item.kind === "markdown" ? (
+              <div className="mission-guide-markdown" key={`${item.label}-${index}`}>
+                <div className="mission-guide-content">{item.content}</div>
+              </div>
+            ) : (
+              <article key={`${item.label}-${index}`}>
+                <span>{item.label}</span>
+                <div className="mission-guide-content">{item.content}</div>
+              </article>
+            ),
+          )}
         </div>
         {(campaign.guidelineImageUrls?.length ?? 0) > 0 ? (
           <div className="campaign-guideline-gallery" aria-label="캠페인 가이드 이미지">
@@ -136,6 +142,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
 
       <div className="fixed-cta">
         <CampaignApplyAction
+          applicationId={myApplication?.applicationId}
           applicationStatus={myApplication?.status}
           campaignStatus={campaign.status}
           campaignId={campaign.id}
@@ -150,6 +157,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
 
 type MissionGuideItem = {
   content: ReactNode;
+  kind?: "markdown";
   label: string;
 };
 
@@ -173,6 +181,7 @@ function parseMissionGuide(guidelines: string): MissionGuideItem[] {
       return [
         {
           content: <TiptapGuideContent nodes={parsedGuidelines.content.content} />,
+          kind: "markdown",
           label: "미션 가이드",
         },
       ];
@@ -186,14 +195,13 @@ function parseMissionGuide(guidelines: string): MissionGuideItem[] {
       .filter((item) => getTextContent(item.content).length > 0);
   }
 
-  return trimmedGuidelines
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line, index) => ({
-      content: <p>{line}</p>,
-      label: index === 0 ? "상세 안내" : `안내 ${index + 1}`,
-    }));
+  return [
+    {
+      content: <MarkdownGuideContent markdown={trimmedGuidelines} />,
+      kind: "markdown",
+      label: "미션 가이드",
+    },
+  ];
 }
 
 type TiptapTextNode = {
@@ -204,6 +212,155 @@ type TiptapTextNode = {
   text?: string;
   type?: string;
 };
+
+function MarkdownGuideContent({ markdown }: { markdown: string }) {
+  return <>{renderMarkdownBlocks(markdown)}</>;
+}
+
+function renderMarkdownBlocks(markdown: string): ReactNode[] {
+  const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
+  const blocks: ReactNode[] = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index] ?? "";
+
+    if (line.trim().length === 0) {
+      index += 1;
+      continue;
+    }
+
+    const heading = /^(#{1,3})\s+(.+)$/.exec(line);
+    if (heading != null) {
+      blocks.push(
+        <h3
+          className={`markdown-heading markdown-heading-${heading[1].length}`}
+          key={`heading-${index}`}
+        >
+          {renderMarkdownInline(heading[2], index)}
+        </h3>,
+      );
+      index += 1;
+      continue;
+    }
+
+    const image = /^!\[([^\]]*)\]\(([^\s)]+)(?:\s+"[^"]*")?\)$/.exec(line.trim());
+    if (image != null && isSafeMarkdownUrl(image[2])) {
+      blocks.push(<img alt={image[1]} key={`image-${index}`} src={image[2]} />);
+      index += 1;
+      continue;
+    }
+
+    if (/^>\s?/.test(line)) {
+      const quoteLines: string[] = [];
+      while (index < lines.length && /^>\s?/.test(lines[index] ?? "")) {
+        quoteLines.push((lines[index] ?? "").replace(/^>\s?/, ""));
+        index += 1;
+      }
+      blocks.push(
+        <blockquote key={`quote-${index}`}>
+          {quoteLines.filter(Boolean).map((quoteLine, quoteIndex) => (
+            <p key={quoteIndex}>{renderMarkdownInline(quoteLine, index + quoteIndex)}</p>
+          ))}
+        </blockquote>,
+      );
+      continue;
+    }
+
+    const listMatch = /^([-*+]|\d+\.)\s+(.+)$/.exec(line);
+    if (listMatch != null) {
+      const ordered = /\d+\./.test(listMatch[1]);
+      const itemPattern = ordered ? /^\d+\.\s+(.+)$/ : /^[-*+]\s+(.+)$/;
+      const items: ReactNode[] = [];
+      while (index < lines.length) {
+        const item = itemPattern.exec(lines[index] ?? "");
+        if (item == null) {
+          break;
+        }
+        items.push(<li key={index}>{renderMarkdownInline(item[1], index)}</li>);
+        index += 1;
+      }
+      blocks.push(
+        ordered ? <ol key={`list-${index}`}>{items}</ol> : <ul key={`list-${index}`}>{items}</ul>,
+      );
+      continue;
+    }
+
+    const paragraphLines = [line];
+    index += 1;
+    while (
+      index < lines.length &&
+      (lines[index] ?? "").trim().length > 0 &&
+      !isMarkdownBlock(lines[index] ?? "")
+    ) {
+      paragraphLines.push(lines[index] ?? "");
+      index += 1;
+    }
+    blocks.push(
+      <p key={`paragraph-${index}`}>{renderMarkdownInline(paragraphLines.join(" "), index)}</p>,
+    );
+  }
+
+  return blocks;
+}
+
+function isMarkdownBlock(line: string) {
+  return /^(#{1,3})\s+|^>\s?|^([-*+]|\d+\.)\s+|^!\[[^\]]*\]\([^\s)]+/.test(line);
+}
+
+function renderMarkdownInline(value: string, keyPrefix: number): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  const pattern = /\[([^\]]+)\]\(([^\s)]+)\)|(\*\*|__)(.+?)\3|(\*|_)(.+?)\5|`([^`]+)`/g;
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+  let tokenIndex = 0;
+
+  const appendText = (text: string) => {
+    if (text.length > 0) {
+      nodes.push(text);
+      tokenIndex += 1;
+    }
+  };
+
+  while ((match = pattern.exec(value)) != null) {
+    appendText(value.slice(cursor, match.index));
+
+    if (match[1] != null && match[2] != null && isSafeMarkdownUrl(match[2])) {
+      nodes.push(
+        <a
+          href={match[2]}
+          key={`${keyPrefix}-${tokenIndex++}`}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {renderMarkdownInline(match[1], keyPrefix * 100 + tokenIndex)}
+        </a>,
+      );
+    } else if (match[4] != null) {
+      nodes.push(<strong key={`${keyPrefix}-${tokenIndex++}`}>{match[4]}</strong>);
+    } else if (match[6] != null) {
+      nodes.push(<em key={`${keyPrefix}-${tokenIndex++}`}>{match[6]}</em>);
+    } else if (match[7] != null) {
+      nodes.push(<code key={`${keyPrefix}-${tokenIndex++}`}>{match[7]}</code>);
+    } else {
+      appendText(match[0]);
+    }
+
+    cursor = pattern.lastIndex;
+  }
+
+  appendText(value.slice(cursor));
+  return nodes;
+}
+
+function isSafeMarkdownUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
 
 type TiptapNode = TiptapTextNode & {
   attrs?: Record<string, unknown>;
@@ -228,7 +385,12 @@ function TiptapGuideContent({ nodes }: { nodes: TiptapNode[] }) {
 
 function renderTiptapNode(node: TiptapNode, index: number): ReactNode {
   if (node.type === "heading") {
-    return <h3 key={index}>{renderInlineContent(node.content)}</h3>;
+    const level = typeof node.attrs?.level === "number" ? node.attrs.level : 2;
+    return (
+      <h3 className={`markdown-heading markdown-heading-${level}`} key={index}>
+        {renderInlineContent(node.content)}
+      </h3>
+    );
   }
 
   if (node.type === "paragraph") {
@@ -269,7 +431,34 @@ function renderTiptapNode(node: TiptapNode, index: number): ReactNode {
   return null;
 }
 
+function getTiptapNodeText(node: TiptapNode): string {
+  if (typeof node.text === "string") {
+    return node.marks?.some((mark) => mark.type === "italic") ? `_${node.text}_` : node.text;
+  }
+
+  if (node.type === "hardBreak") {
+    return "\n";
+  }
+
+  return (node.content ?? []).map(getTiptapNodeText).join("");
+}
+
 function renderInlineContent(nodes?: TiptapNode[]): ReactNode {
+  const legacyInlineCode = (nodes ?? []).map(getTiptapNodeText).join("").trim();
+
+  if (legacyInlineCode.includes("`")) {
+    return legacyInlineCode
+      .split(/(`[^`]+`)/g)
+      .filter(Boolean)
+      .map((part, index) =>
+        part.startsWith("`") && part.endsWith("`") ? (
+          <code key={`legacy-inline-code-${index}`}>{part.slice(1, -1)}</code>
+        ) : (
+          part
+        ),
+      );
+  }
+
   return (nodes ?? []).map((node, index) => {
     if (node.type === "text") {
       return renderTextNode(node, index);
@@ -279,7 +468,7 @@ function renderInlineContent(nodes?: TiptapNode[]): ReactNode {
       return <br key={index} />;
     }
 
-    return <span key={index}>{renderInlineContent(node.content)}</span>;
+    return <Fragment key={index}>{renderInlineContent(node.content)}</Fragment>;
   });
 }
 
@@ -297,6 +486,10 @@ function renderTextNode(node: TiptapNode, index: number): ReactNode {
     content = <em>{content}</em>;
   }
 
+  if (marks.some((mark) => mark.type === "code")) {
+    content = <code>{content}</code>;
+  }
+
   if (marks.some((mark) => mark.type === "strike")) {
     content = <s>{content}</s>;
   }
@@ -309,7 +502,7 @@ function renderTextNode(node: TiptapNode, index: number): ReactNode {
     );
   }
 
-  return <span key={index}>{content}</span>;
+  return <Fragment key={index}>{content}</Fragment>;
 }
 
 function renderBlockContent(nodes?: TiptapNode[]): ReactNode {

@@ -51,6 +51,12 @@ describe("campaign discovery presentation", () => {
     );
   });
 
+  it("Markdown 가이드는 첫 번째 의미 있는 줄만 카드에 표시한다", () => {
+    expect(
+      getCampaignSummaryText("## 촬영 가이드\n\n첫 번째 안내입니다.\n두 번째 안내입니다."),
+    ).toBe("촬영 가이드");
+  });
+
   it("빈 가이드는 안전한 기본 미션 문구를 반환한다", () => {
     expect(getCampaignSummaryText("  ")).toBe("캠페인 상세에서 수행 미션을 확인해 주세요.");
   });

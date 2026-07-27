@@ -5,6 +5,7 @@ import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { CampaignExplorer } from "../../_components/campaign-explorer";
+import { getBloggerActivity } from "../../_lib/blogger-activity";
 import { getBloggerSession } from "../../_lib/session";
 
 type CampaignsPageProps = {
@@ -20,10 +21,21 @@ export default async function CampaignsPage({ searchParams }: CampaignsPageProps
     redirect("/login");
   }
 
+  const { applications } = await getBloggerActivity(session.accessToken).catch(() => ({
+    applications: [],
+    missions: [],
+  }));
+  const cancelledApplicationCampaignIds = new Set(
+    applications
+      .filter((application) => application.status === "CANCELLED")
+      .map((application) => application.campaignId),
+  );
+
   const campaignResult = await getCachedRecruitingCampaigns().then(
     (campaigns) => ({
       campaigns: campaigns
         .filter(isCurrentlyApplicableCampaign)
+        .filter((campaign) => !cancelledApplicationCampaignIds.has(campaign.id))
         .filter((campaign) => matchesCampaignSearch(campaign, searchQuery)),
       errorMessage: undefined,
     }),

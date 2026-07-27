@@ -30,8 +30,10 @@ export function CampaignExplorer({
   searchQuery,
 }: CampaignExplorerProps) {
   const [selectedCategory, setSelectedCategory] = useState<CampaignDiscoveryCategory>("전체");
-  const filteredCampaigns = campaigns.filter((campaign) =>
-    matchesCampaignDiscoveryCategory(campaign, selectedCategory),
+  const filteredCampaigns = campaigns.filter(
+    (campaign) =>
+      campaign.status !== "cancelled" &&
+      matchesCampaignDiscoveryCategory(campaign, selectedCategory),
   );
 
   return (
@@ -124,7 +126,7 @@ function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
   return (
     <article className="campaign-list-card">
       <div className="campaign-card-summary">
-        <Link className="campaign-card-image-link" href={campaignHref}>
+        <div className="campaign-card-image-link">
           <ResilientCampaignImage
             alt={`${campaign.title} 대표 이미지`}
             campaignId={campaign.id}
@@ -134,11 +136,11 @@ function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
             loading={isPriority ? "eager" : "lazy"}
             src={thumbnailUrl}
           />
-        </Link>
+        </div>
         <div className="campaign-card-content">
           <div className="campaign-card-title-row">
             <span className={`campaign-discovery-badge ${badge.tone}`}>{badge.label}</span>
-            <Link href={campaignHref}>{campaign.title}</Link>
+            <h2>{campaign.title}</h2>
           </div>
           <p className="campaign-card-description">{campaign.brandName || "Pacto"}</p>
           <dl className="campaign-card-metrics">
@@ -175,6 +177,11 @@ function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
         </p>
         <Link href={campaignHref}>신청하기</Link>
       </div>
+      <Link
+        aria-label={`${campaign.title} 캠페인 상세 보기`}
+        className="campaign-card-overlay-link"
+        href={campaignHref}
+      />
     </article>
   );
 }
