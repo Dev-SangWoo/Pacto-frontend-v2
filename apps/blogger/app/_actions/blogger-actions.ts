@@ -98,6 +98,7 @@ export async function acceptCampaignAction(campaignId: number): Promise<ActionRe
     }
 
     await applyToCampaign({ campaignId }, session.accessToken);
+    revalidatePath("/campaigns");
     revalidatePath(`/campaigns/${campaignId}`);
     revalidatePath("/missions");
 
@@ -121,6 +122,7 @@ export async function cancelCampaignApplicationAction(
     }
 
     await cancelApplication(applicationId, session.accessToken);
+    revalidatePath("/campaigns");
     revalidatePath(`/campaigns/${campaignId}`);
     revalidatePath("/missions");
 

@@ -1,10 +1,10 @@
 import { getCampaigns } from "@pacto/api";
 import type { Campaign } from "@pacto/types";
 import { matchesCampaignSearch } from "@pacto/utils";
-import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { CampaignExplorer } from "../../_components/campaign-explorer";
+import { CampaignLiveRefresh } from "../../_components/campaign-live-refresh";
 import { getBloggerActivity } from "../../_lib/blogger-activity";
 import { getBloggerSession } from "../../_lib/session";
 
@@ -31,7 +31,7 @@ export default async function CampaignsPage({ searchParams }: CampaignsPageProps
       .map((application) => application.campaignId),
   );
 
-  const campaignResult = await getCachedRecruitingCampaigns().then(
+  const campaignResult = await getRecruitingCampaigns().then(
     (campaigns) => ({
       campaigns: campaigns
         .filter(isCurrentlyApplicableCampaign)
@@ -46,25 +46,25 @@ export default async function CampaignsPage({ searchParams }: CampaignsPageProps
   );
 
   return (
-    <CampaignExplorer
-      campaigns={campaignResult.campaigns}
-      loadErrorMessage={campaignResult.errorMessage}
-      searchQuery={searchQuery}
-    />
+    <>
+      <CampaignLiveRefresh />
+      <CampaignExplorer
+        campaigns={campaignResult.campaigns}
+        loadErrorMessage={campaignResult.errorMessage}
+        searchQuery={searchQuery}
+      />
+    </>
   );
 }
 
-const getCachedRecruitingCampaigns = unstable_cache(
-  () =>
-    getCampaigns({
-      page: 0,
-      size: 24,
-      sort: "campaignId,desc",
-      status: "RECRUITING",
-    }),
-  ["blogger-recruiting-campaigns-v1"],
-  { revalidate: 30, tags: ["blogger-campaigns"] },
-);
+function getRecruitingCampaigns() {
+  return getCampaigns({
+    page: 0,
+    size: 24,
+    sort: "campaignId,desc",
+    status: "RECRUITING",
+  });
+}
 
 function isCurrentlyApplicableCampaign(campaign: Campaign) {
   const remainingSlots =

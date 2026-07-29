@@ -12,6 +12,7 @@ import {
 } from "@pacto/utils";
 
 import { CampaignApplyAction } from "../../../_components/mock-actions";
+import { CampaignLiveRefresh } from "../../../_components/campaign-live-refresh";
 import { ResilientCampaignImage } from "../../../_components/resilient-campaign-image";
 import { fallbackOnNonAuthError, redirectOnAuthError } from "../../../_lib/auth-error";
 import { getBloggerActivity } from "../../../_lib/blogger-activity";
@@ -56,6 +57,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
       className="screen-stack detail-screen campaign-detail-page"
       aria-labelledby="campaign-detail-title"
     >
+      <CampaignLiveRefresh />
       <section className="campaign-detail-hero" aria-label="캠페인 요약">
         <div className="campaign-detail-cover">
           <ResilientCampaignImage
