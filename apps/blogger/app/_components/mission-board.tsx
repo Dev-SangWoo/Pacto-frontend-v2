@@ -24,6 +24,7 @@ type MissionBoardProps = {
   activeMissionCount: number;
   applications: EnrichedApplicationResponse[];
   expectedReward: number;
+  initialTab?: MissionTabKey;
   missions: Mission[];
   pendingApplicationCount: number;
 };
@@ -52,7 +53,7 @@ type MissionGroupConfig = {
 };
 
 type MissionViewKey = "closed" | "in-progress" | "pending-applications" | "settled" | "submitted";
-type MissionTabKey = "applications" | "closed" | "in-progress" | "settled" | "submitted";
+export type MissionTabKey = "applications" | "closed" | "in-progress" | "settled" | "submitted";
 
 const pendingApplicationGroup: ApplicationGroupConfig = {
   key: "pending-applications",
@@ -72,10 +73,10 @@ const acceptedApplicationGroup: ApplicationGroupConfig = {
 
 const rejectedApplicationGroup: ApplicationGroupConfig = {
   key: "rejected-applications",
-  title: "반려/취소된 신청",
-  description: "미션으로 이어지지 않은 신청",
-  emptyText: "반려되거나 취소된 신청이 없어요.",
-  statuses: ["REJECTED", "CANCELLED"],
+  title: "반려된 신청",
+  description: "미션으로 이어지지 않은 반려 신청",
+  emptyText: "반려된 신청이 없어요.",
+  statuses: ["REJECTED"],
 };
 
 const missionGroups: MissionGroupConfig[] = [
@@ -113,13 +114,15 @@ export function MissionBoard({
   activeMissionCount,
   applications,
   expectedReward,
+  initialTab,
   missions,
   pendingApplicationCount,
 }: MissionBoardProps) {
   const missionCampaignIds = new Set(missions.map((mission) => mission.campaignId));
   const visibleApplications = applications.filter(
     (application) =>
-      application.status !== "ACCEPTED" || !missionCampaignIds.has(application.campaignId),
+      application.status !== "CANCELLED" &&
+      (application.status !== "ACCEPTED" || !missionCampaignIds.has(application.campaignId)),
   );
   const totalItems = visibleApplications.length + missions.length;
   const tabItems: Array<{ count: number; key: MissionTabKey; label: string }> = [
@@ -146,13 +149,13 @@ export function MissionBoard({
     {
       count:
         filterMissions(missions, ["rejected", "cancelled"]).length +
-        filterApplications(visibleApplications, ["REJECTED", "CANCELLED"]).length,
+        filterApplications(visibleApplications, ["REJECTED"]).length,
       key: "closed",
       label: "종료",
     },
   ];
-  const [selectedTab, setSelectedTab] = useState<MissionTabKey>(() =>
-    getInitialMissionTab(tabItems),
+  const [selectedTab, setSelectedTab] = useState<MissionTabKey>(
+    () => initialTab ?? getInitialMissionTab(tabItems),
   );
 
   return (

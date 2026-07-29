@@ -1,13 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 
 import { getMissionPageDataAction } from "../_actions/blogger-actions";
 import { missionPageQueryKey } from "./blogger-query-provider";
 import { MainTabLoading } from "./main-tab-loading";
 import { MissionBoard } from "./mission-board";
+import type { MissionTabKey } from "./mission-board";
 
 export function MissionPageClient() {
+  const searchParams = useSearchParams();
+  const initialTab = getRequestedMissionTab(searchParams.get("tab"));
   const missionQuery = useQuery({
     queryFn: getMissionPageDataAction,
     queryKey: missionPageQueryKey,
@@ -43,11 +47,16 @@ export function MissionPageClient() {
         activeMissionCount={activeMissionCount}
         applications={applications}
         expectedReward={expectedReward}
+        initialTab={initialTab}
         missions={missions}
         pendingApplicationCount={pendingApplicationCount}
       />
     </section>
   );
+}
+
+function getRequestedMissionTab(value: string | null): MissionTabKey | undefined {
+  return value === "applications" ? value : undefined;
 }
 
 type QueryLoadErrorProps = {

@@ -120,7 +120,6 @@ function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
   const missionCopy = getCampaignSummaryText(campaign.guidelines);
   const fallbackThumbnail = getFallbackCampaignThumbnail(campaign.id);
   const thumbnailUrl = campaign.thumbnailUrl ?? fallbackThumbnail;
-  const totalSlots = campaign.totalSlots || campaign.recruitCount;
   const campaignHref = `/campaigns/${campaign.id}`;
 
   return (
@@ -163,9 +162,7 @@ function CampaignCard({ campaign, isPriority }: CampaignCardProps) {
                 <UsersRound aria-hidden="true" size={15} strokeWidth={1.7} />
                 신청 현황
               </dt>
-              <dd>
-                {campaign.applicantCount}/{totalSlots}
-              </dd>
+              <dd>{campaign.applicantCount}명</dd>
             </div>
           </dl>
         </div>

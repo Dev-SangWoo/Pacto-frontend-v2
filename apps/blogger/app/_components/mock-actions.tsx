@@ -42,13 +42,28 @@ export function CampaignApplyAction({
   const [isCancelConfirming, setIsCancelConfirming] = useState(false);
   const [isApplicationComplete, setIsApplicationComplete] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const submitApplication = () => {
+    setErrorMessage(undefined);
+    startTransition(async () => {
+      const result = await acceptCampaignAction(campaignId);
+
+      if (result.ok) {
+        setCurrentStatus("PENDING");
+        setIsApplicationComplete(true);
+        await queryClient.invalidateQueries({ queryKey: ["blogger", "missions"] });
+        router.refresh();
+      } else {
+        setErrorMessage(result.message);
+      }
+    });
+  };
 
   if (isApplicationComplete) {
     return (
       <FlowCompletion
         actions={
           <>
-            <Link className="primary-button" href="/missions">
+            <Link className="primary-button" href="/missions?tab=applications">
               신청 상태 확인하기
             </Link>
             <Link className="text-link-button" href="/campaigns">
@@ -113,7 +128,7 @@ export function CampaignApplyAction({
                                 );
 
                                 if (result.ok) {
-                                  setCurrentStatus("CANCELLED");
+                                  setCurrentStatus(undefined);
                                   setIsCancelConfirming(false);
                                   await queryClient.invalidateQueries({
                                     queryKey: ["blogger", "missions"],
@@ -209,21 +224,7 @@ export function CampaignApplyAction({
       <button
         className="primary-button"
         disabled={isPending}
-        onClick={() => {
-          setErrorMessage(undefined);
-          startTransition(async () => {
-            const result = await acceptCampaignAction(campaignId);
-
-            if (result.ok) {
-              setCurrentStatus("PENDING");
-              setIsApplicationComplete(true);
-              await queryClient.invalidateQueries({ queryKey: ["blogger", "missions"] });
-              router.refresh();
-            } else {
-              setErrorMessage(result.message);
-            }
-          });
-        }}
+        onClick={submitApplication}
         type="button"
       >
         {isPending ? "신청 중..." : "캠페인 신청하기"}
