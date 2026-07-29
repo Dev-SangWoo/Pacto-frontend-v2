@@ -44,7 +44,11 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
   const { applications, missions } = await getBloggerActivity(session.accessToken).catch(
     (error: unknown) => fallbackOnNonAuthError(error, { applications: [], missions: [] }),
   );
-  const myApplication = applications.find((application) => application.campaignId === campaign.id);
+  const myApplication = applications.find(
+    (application) =>
+      application.campaignId === campaign.id &&
+      (application.status === "PENDING" || application.status === "ACCEPTED"),
+  );
   const myCampaignMission = missions.find((mission) => mission.campaignId === campaign.id);
   const statusView = getCampaignStatusView(campaign.status);
   const isApplyEnabled = canApplyToCampaign(campaign.status);
