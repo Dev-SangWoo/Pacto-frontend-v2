@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { ApplicationStatusResponse, CampaignStatus, MissionStatus } from "@pacto/types";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 
@@ -33,6 +34,7 @@ export function CampaignApplyAction({
   missionStatus,
 }: CampaignApplyActionProps) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [currentStatus, setCurrentStatus] = useState<ApplicationStatusResponse | undefined>(
     applicationStatus,
   );
@@ -116,6 +118,7 @@ export function CampaignApplyAction({
                                   await queryClient.invalidateQueries({
                                     queryKey: ["blogger", "missions"],
                                   });
+                                  router.refresh();
                                 } else {
                                   setErrorMessage(result.message);
                                 }
@@ -215,6 +218,7 @@ export function CampaignApplyAction({
               setCurrentStatus("PENDING");
               setIsApplicationComplete(true);
               await queryClient.invalidateQueries({ queryKey: ["blogger", "missions"] });
+              router.refresh();
             } else {
               setErrorMessage(result.message);
             }
