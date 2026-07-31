@@ -2,7 +2,7 @@ import type { AdvertiserProfile, BloggerProfile, User } from "@pacto/types";
 
 import { adaptUser } from "../adapters/auth-adapter";
 import type { LoginResponse, MeResponse } from "../adapters/auth-adapter";
-import { apiRequest, unwrapCommonResponse } from "../client/http-client";
+import { apiRequest, getResponseCookie, unwrapCommonResponse } from "../client/http-client";
 import type { CommonResponse } from "../client/http-client";
 
 export type LoginPayload = {
@@ -25,16 +25,24 @@ export type ProfileImageUploadResponse = {
   userId: number;
 };
 
-export async function login(payload: LoginPayload): Promise<LoginResponse> {
+export type AuthenticatedTokenResponse = LoginResponse & {
+  refreshToken?: string;
+};
+
+export async function login(payload: LoginPayload): Promise<AuthenticatedTokenResponse> {
+  let refreshToken: string | undefined;
   const response = await apiRequest<CommonResponse<LoginResponse> | LoginResponse>(
     "/api/v1/auth/login",
     {
       body: payload,
       method: "POST",
+      onResponse: (rawResponse) => {
+        refreshToken = getResponseCookie(rawResponse, "refreshToken");
+      },
     },
   );
 
-  return unwrapCommonResponse<LoginResponse>(response);
+  return { ...unwrapCommonResponse<LoginResponse>(response), refreshToken };
 }
 
 export async function signup(payload: SignupPayload): Promise<LoginResponse> {

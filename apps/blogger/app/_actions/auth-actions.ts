@@ -21,13 +21,14 @@ function getApiErrorMessage(error: unknown, fallbackMessage: string): string {
   return error instanceof ApiError ? error.message : fallbackMessage;
 }
 
-async function saveAuthenticatedSession(accessToken: string, email: string) {
+async function saveAuthenticatedSession(accessToken: string, email: string, refreshToken?: string) {
   const user = await getMe(accessToken);
 
   await setBloggerSession({
     accessToken,
     bloggerId: user.id,
     email: user.email || email,
+    refreshToken,
   });
 }
 
@@ -35,7 +36,7 @@ export async function loginAction(email: string, password: string): Promise<Auth
   try {
     const result = await login({ email, password, role: "BLOGGER" });
 
-    await saveAuthenticatedSession(result.accessToken, email);
+    await saveAuthenticatedSession(result.accessToken, email, result.refreshToken);
 
     return { ok: true };
   } catch (error) {
@@ -56,9 +57,9 @@ export async function signupAction(
   }
 
   try {
-    const signupResult = await signup({ email, name: name.trim(), password, role: "BLOGGER" });
-    const accessToken =
-      signupResult.accessToken || (await login({ email, password, role: "BLOGGER" })).accessToken;
+    await signup({ email, name: name.trim(), password, role: "BLOGGER" });
+    const loginResult = await login({ email, password, role: "BLOGGER" });
+    const accessToken = loginResult.accessToken;
 
     if (accessToken.length === 0) {
       return {
@@ -75,7 +76,7 @@ export async function signupAction(
       },
       accessToken,
     );
-    await saveAuthenticatedSession(accessToken, email);
+    await saveAuthenticatedSession(accessToken, email, loginResult.refreshToken);
 
     return { ok: true };
   } catch (error) {

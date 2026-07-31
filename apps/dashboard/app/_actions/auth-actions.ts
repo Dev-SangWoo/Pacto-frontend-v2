@@ -40,6 +40,7 @@ export async function loginAction(
       accessToken: result.accessToken,
       email: user.email ?? email,
       role: user.role,
+      refreshToken: result.refreshToken,
       userId: user.id,
     });
   } catch (error) {

@@ -15,6 +15,7 @@ type ApiRequestOptions = {
   body?: FormData | unknown;
   method?: HttpMethod;
   next?: NextFetchRequestConfig;
+  onResponse?: (response: Response) => void;
   query?: Record<string, number | string | undefined>;
   token?: string;
 };
@@ -35,7 +36,7 @@ export function getApiBaseUrl(): string {
 }
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  const { body, method = "GET", next, query, token = getServerAccessToken() } = options;
+  const { body, method = "GET", next, onResponse, query, token = getServerAccessToken() } = options;
   const baseUrl = getApiBaseUrl();
 
   if (!baseUrl && !path.startsWith("http")) {
@@ -77,6 +78,8 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     },
   } as RequestInit & { next?: NextFetchRequestConfig });
 
+  onResponse?.(response);
+
   const payload = await parseResponseBody(response);
 
   if (!response.ok) {
@@ -85,6 +88,17 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   }
 
   return payload as T;
+}
+
+export function getResponseCookie(response: Response, name: string): string | undefined {
+  const setCookie = response.headers.get("set-cookie");
+
+  if (setCookie == null) {
+    return undefined;
+  }
+
+  const match = setCookie.match(new RegExp(`(?:^|,\\s*)${escapeRegExp(name)}=([^;]*)`));
+  return match?.[1];
 }
 
 export function unwrapCommonResponse<T>(response: CommonResponse<T> | T): T {
@@ -139,4 +153,8 @@ function toApiError(statusCode: number, payload: unknown): ApiError {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
