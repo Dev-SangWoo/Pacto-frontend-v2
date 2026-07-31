@@ -4,11 +4,13 @@ export type BloggerSession = {
   accessToken?: string;
   bloggerId: number;
   email?: string;
+  refreshToken?: string;
 };
 
 const ACCESS_TOKEN_COOKIE = "pacto_access_token";
 const BLOGGER_ID_COOKIE = "pacto_blogger_id";
 const EMAIL_COOKIE = "pacto_email";
+const REFRESH_TOKEN_COOKIE = "pacto_refresh_token";
 const DEFAULT_TEST_BLOGGER_ID = 1;
 const LEGACY_PREVIEW_TOKEN = "local-preview-token";
 
@@ -21,6 +23,7 @@ export async function getBloggerSession(): Promise<BloggerSession> {
     accessToken: accessToken === LEGACY_PREVIEW_TOKEN ? undefined : accessToken,
     bloggerId: Number.isFinite(bloggerId) ? bloggerId : DEFAULT_TEST_BLOGGER_ID,
     email: cookieStore.get(EMAIL_COOKIE)?.value,
+    refreshToken: cookieStore.get(REFRESH_TOKEN_COOKIE)?.value,
   };
 }
 
@@ -41,6 +44,13 @@ export async function setBloggerSession(session: BloggerSession) {
   if (session.accessToken != null) {
     cookieStore.set(ACCESS_TOKEN_COOKIE, session.accessToken, options);
   }
+
+  if (session.refreshToken != null) {
+    cookieStore.set(REFRESH_TOKEN_COOKIE, session.refreshToken, {
+      ...options,
+      maxAge: 60 * 60 * 24 * 14,
+    });
+  }
 }
 
 export async function clearBloggerSession() {
@@ -52,4 +62,5 @@ export async function clearBloggerSession() {
   cookieStore.delete({ name: ACCESS_TOKEN_COOKIE, ...options });
   cookieStore.delete({ name: BLOGGER_ID_COOKIE, ...options });
   cookieStore.delete({ name: EMAIL_COOKIE, ...options });
+  cookieStore.delete({ name: REFRESH_TOKEN_COOKIE, ...options });
 }
