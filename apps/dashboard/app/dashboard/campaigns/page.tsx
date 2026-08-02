@@ -15,6 +15,7 @@ import { CampaignTransitionActions } from "./_components/campaign-transition-act
 type DashboardCampaignsPageProps = {
   searchParams?: Promise<{
     q?: string;
+    sort?: string;
     status?: string;
   }>;
 };
@@ -37,20 +38,25 @@ const validCampaignStatuses = new Set<CampaignStatus>([
   "cancelled",
 ]);
 
+type CampaignSortOrder = "latest" | "oldest";
+
 export default async function DashboardCampaignsPage({
   searchParams,
 }: DashboardCampaignsPageProps) {
   const params = await searchParams;
   const query = params?.q?.trim() ?? "";
+  const sortOrder = normalizeCampaignSortOrder(params?.sort);
   const activeStatus = normalizeCampaignStatus(params?.status);
   const session = await getDashboardSession();
   const campaigns = await getOwnedDashboardCampaigns(session);
-  const filteredCampaigns = campaigns.filter((campaign) => {
-    const matchesStatus = activeStatus === "all" || campaign.status === activeStatus;
-    const matchesQuery = matchesCampaignSearch(campaign, query);
+  const filteredCampaigns = campaigns
+    .filter((campaign) => {
+      const matchesStatus = activeStatus === "all" || campaign.status === activeStatus;
+      const matchesQuery = matchesCampaignSearch(campaign, query);
 
-    return matchesStatus && matchesQuery;
-  });
+      return matchesStatus && matchesQuery;
+    })
+    .sort((left, right) => (sortOrder === "latest" ? right.id - left.id : left.id - right.id));
   const openCount = campaigns.filter((campaign) => campaign.status === "open").length;
   const inProgressCount = campaigns.filter((campaign) => campaign.status === "in_progress").length;
   const completedCount = campaigns.filter((campaign) => campaign.status === "completed").length;
@@ -107,7 +113,23 @@ export default async function DashboardCampaignsPage({
             <h2>내 캠페인</h2>
             <p>상태와 모집률을 보면서 다음 액션이 필요한 캠페인을 찾습니다.</p>
           </div>
-          <span>{filteredCampaigns.length}건</span>
+          <div className="campaign-list-heading-actions">
+            <nav className="campaign-sort-controls" aria-label="캠페인 정렬">
+              <a
+                className={sortOrder === "latest" ? "active" : undefined}
+                href={getCampaignSortHref("latest", activeStatus, query)}
+              >
+                최신순
+              </a>
+              <a
+                className={sortOrder === "oldest" ? "active" : undefined}
+                href={getCampaignSortHref("oldest", activeStatus, query)}
+              >
+                오래된순
+              </a>
+            </nav>
+            <span>{filteredCampaigns.length}건</span>
+          </div>
         </div>
 
         <div className="campaign-list-toolbar">
@@ -115,6 +137,7 @@ export default async function DashboardCampaignsPage({
             {activeStatus !== "all" ? (
               <input name="status" type="hidden" value={activeStatus} />
             ) : null}
+            {sortOrder !== "latest" ? <input name="sort" type="hidden" value={sortOrder} /> : null}
             <input
               aria-label="캠페인 검색"
               defaultValue={query}
@@ -128,7 +151,7 @@ export default async function DashboardCampaignsPage({
             {campaignStatusFilters.map((filter) => (
               <a
                 className={filter.value === activeStatus ? "active" : undefined}
-                href={getCampaignFilterHref(filter.value, query)}
+                href={getCampaignFilterHref(filter.value, query, sortOrder)}
                 key={filter.value}
               >
                 {filter.label}
@@ -169,8 +192,24 @@ export default async function DashboardCampaignsPage({
                           className="campaign-row-link"
                           href={`/dashboard/campaigns/${campaign.id}`}
                         >
-                          <strong>{campaign.title}</strong>
-                          <span>{campaign.brandName}</span>
+                          {campaign.thumbnailUrl ? (
+                            <img
+                              alt=""
+                              className="campaign-card-thumbnail"
+                              src={campaign.thumbnailUrl}
+                            />
+                          ) : (
+                            <span
+                              className="campaign-card-thumbnail campaign-card-thumbnail-fallback"
+                              aria-hidden="true"
+                            >
+                              {campaign.brandName.slice(0, 1)}
+                            </span>
+                          )}
+                          <span className="campaign-card-title">
+                            <strong>{campaign.title}</strong>
+                            <span>{campaign.brandName}</span>
+                          </span>
                         </a>
                       </td>
                       <td>
@@ -281,6 +320,10 @@ function normalizeCampaignStatus(status?: string): CampaignStatus | "all" {
   return validCampaignStatuses.has(status as CampaignStatus) ? (status as CampaignStatus) : "all";
 }
 
+function normalizeCampaignSortOrder(sort?: string): CampaignSortOrder {
+  return sort === "oldest" ? "oldest" : "latest";
+}
+
 function matchesCampaignSearch(campaign: Campaign, query: string) {
   if (!query) {
     return true;
@@ -293,7 +336,11 @@ function matchesCampaignSearch(campaign: Campaign, query: string) {
   );
 }
 
-function getCampaignFilterHref(status: CampaignStatus | "all", query: string) {
+function getCampaignFilterHref(
+  status: CampaignStatus | "all",
+  query: string,
+  sortOrder: CampaignSortOrder,
+) {
   const params = new URLSearchParams();
 
   if (status !== "all") {
@@ -302,6 +349,34 @@ function getCampaignFilterHref(status: CampaignStatus | "all", query: string) {
 
   if (query) {
     params.set("q", query);
+  }
+
+  if (sortOrder !== "latest") {
+    params.set("sort", sortOrder);
+  }
+
+  const search = params.toString();
+
+  return search ? `/dashboard/campaigns?${search}` : "/dashboard/campaigns";
+}
+
+function getCampaignSortHref(
+  sortOrder: CampaignSortOrder,
+  status: CampaignStatus | "all",
+  query: string,
+) {
+  const params = new URLSearchParams();
+
+  if (status !== "all") {
+    params.set("status", status);
+  }
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  if (sortOrder !== "latest") {
+    params.set("sort", sortOrder);
   }
 
   const search = params.toString();
