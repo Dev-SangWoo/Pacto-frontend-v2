@@ -1,4 +1,3 @@
-import { getCampaigns } from "@pacto/api";
 import type { Campaign, CampaignStatus } from "@pacto/types";
 import type { LucideIcon } from "lucide-react";
 import { CheckCircle2, Megaphone, Rocket, UsersRound } from "lucide-react";
@@ -10,7 +9,7 @@ import {
 } from "@pacto/utils";
 
 import { getDashboardSession } from "../../_lib/session";
-import { filterOwnedCampaigns } from "../_lib/owned-campaigns";
+import { getOwnedDashboardCampaigns } from "../_lib/owned-campaigns";
 import { CampaignTransitionActions } from "./_components/campaign-transition-actions";
 
 type DashboardCampaignsPageProps = {
@@ -45,10 +44,7 @@ export default async function DashboardCampaignsPage({
   const query = params?.q?.trim() ?? "";
   const activeStatus = normalizeCampaignStatus(params?.status);
   const session = await getDashboardSession();
-  const campaigns = await filterOwnedCampaigns(
-    await getCampaigns({ page: 0, size: 100, sort: "campaignId,desc" }, session.accessToken),
-    session,
-  );
+  const campaigns = await getOwnedDashboardCampaigns(session);
   const filteredCampaigns = campaigns.filter((campaign) => {
     const matchesStatus = activeStatus === "all" || campaign.status === activeStatus;
     const matchesQuery = matchesCampaignSearch(campaign, query);
