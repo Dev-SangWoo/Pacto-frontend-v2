@@ -7,6 +7,7 @@ import { formatKoreanDate, formatPoint, getSettlementStatusView } from "@pacto/u
 import { getDashboardSession } from "../../../../_lib/session";
 import { isOwnedCampaign } from "../../_lib/campaign-ownership";
 import { CampaignStepProgress } from "../_components/campaign-step-progress";
+import { CampaignStatusManager } from "../_components/campaign-status-manager";
 
 type SettlementsPageProps = {
   params: Promise<{
@@ -51,7 +52,7 @@ export default async function CampaignSettlementsPage({ params }: SettlementsPag
   return (
     <>
       <header className="campaign-page-header">
-        <div className="topbar">
+        <div className="topbar campaign-detail-hero">
           <div>
             <p className="eyebrow">{campaign.title}</p>
             <h1>정산 추적</h1>
@@ -60,8 +61,15 @@ export default async function CampaignSettlementsPage({ params }: SettlementsPag
               블로거의 출금 가능 잔액으로 지급됩니다.
             </p>
           </div>
+          <div className="campaign-detail-hero-actions">
+            <CampaignStatusManager
+              campaignId={campaign.id}
+              selectedCount={campaign.approvedCount}
+              status={campaign.status}
+            />
+          </div>
         </div>
-        <CampaignStepProgress activeStep="settlements" campaignId={campaign.id} />
+        <CampaignStepProgress activeStep="missions" campaignId={campaign.id} />
       </header>
 
       <section className="summary-grid">
