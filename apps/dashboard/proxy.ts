@@ -3,13 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 const ACCESS_TOKEN_COOKIE = "pacto_dashboard_access_token";
 const REFRESH_TOKEN_COOKIE = "pacto_dashboard_refresh_token";
 const REFRESH_BEFORE_EXPIRY_SECONDS = 60;
+const ACCESS_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 14;
 const REFRESH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 14;
 
 export async function proxy(request: NextRequest) {
   const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
 
-  if (accessToken == null || refreshToken == null || !shouldRefresh(accessToken))
+  if (refreshToken == null || (accessToken != null && !shouldRefresh(accessToken)))
     return NextResponse.next();
 
   const apiBaseUrl = getApiBaseUrl();
@@ -55,7 +56,9 @@ function shouldRefresh(token: string): boolean {
   const payload = token.split(".")[1];
   if (payload == null) return false;
   try {
-    const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/"))) as {
+    const base64Payload = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const paddedPayload = base64Payload.padEnd(Math.ceil(base64Payload.length / 4) * 4, "=");
+    const claims = JSON.parse(atob(paddedPayload)) as {
       exp?: number;
     };
     return (
@@ -92,7 +95,10 @@ function setAuthenticationCookies(
     sameSite: "lax" as const,
     secure: request.nextUrl.protocol === "https:",
   };
-  response.cookies.set(ACCESS_TOKEN_COOKIE, accessToken, common);
+  response.cookies.set(ACCESS_TOKEN_COOKIE, accessToken, {
+    ...common,
+    maxAge: ACCESS_TOKEN_MAX_AGE_SECONDS,
+  });
   response.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken, {
     ...common,
     maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,

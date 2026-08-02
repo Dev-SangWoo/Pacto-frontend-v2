@@ -8,19 +8,16 @@ import {
   getCampaignEscrows,
   getCampaignMissions,
 } from "@pacto/api";
-import type { CampaignStatus } from "@pacto/types";
-import {
-  formatDeadlineDday,
-  formatKoreanDate,
-  formatPoint,
-  getCampaignStatusView,
-} from "@pacto/utils";
+import { formatDeadlineDday, formatKoreanDate, formatPoint } from "@pacto/utils";
 
 import { getDashboardSession } from "../../../_lib/session";
-import { CampaignTransitionActions } from "../_components/campaign-transition-actions";
 import { isOwnedCampaign } from "../_lib/campaign-ownership";
+import { CampaignGuideModal } from "./_components/campaign-guide-modal";
 import { CampaignImageUploadForm } from "./_components/campaign-image-upload-form";
+import { CampaignStatusManager } from "./_components/campaign-status-manager";
 import { CampaignStepProgress } from "./_components/campaign-step-progress";
+import type { TiptapGuidelines, TiptapNode } from "../new/_components/guideline-editor";
+import { GuidelinePreview } from "../new/_components/guideline-preview";
 
 type CampaignDetailPageProps = {
   params: Promise<{
@@ -50,8 +47,8 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
     (mission) => mission.status === "approved",
   ).length;
   const campaignEscrows = escrows;
+  const settledEscrowCount = campaignEscrows.filter((escrow) => escrow.status === "paid").length;
   const settlementReadyAmount = approvedMissionCount * campaign.rewardPoint;
-  const statusView = getCampaignStatusView(campaign.status);
   const totalSlots = campaign.totalSlots ?? campaign.recruitCount;
   const applicantCount = applicants.length > 0 ? applicants.length : campaign.applicantCount;
   const approvedSlotsFromApplicants = applicants.filter(
@@ -141,82 +138,113 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
               모집, 검수, 정산까지 이 캠페인의 다음 작업을 한 화면에서 확인합니다.
             </p>
           </div>
-          <div className="dashboard-header-actions">
-            <span className={`status-badge ${statusView.tone}`}>{statusView.label}</span>
+          <div className="campaign-detail-hero-actions">
+            <CampaignStatusManager
+              campaignId={campaign.id}
+              selectedCount={approvedSlots}
+              status={campaign.status}
+            />
           </div>
         </div>
         <CampaignStepProgress activeStep="overview" campaignId={campaign.id} />
       </header>
 
-      <section className="campaign-action-grid" aria-label="현재 필요한 작업">
-        {actionCards.map((card) => {
-          const Icon = card.icon;
+      <section className="campaign-detail-overview-grid">
+        <div className="campaign-detail-summary-stack">
+          <section className="campaign-action-grid" aria-label="현재 필요한 작업">
+            {actionCards.map((card) => {
+              const Icon = card.icon;
 
-          return (
-            <a className={`campaign-action-card ${card.tone}`} href={card.href} key={card.label}>
+              return (
+                <a
+                  className={`campaign-action-card ${card.tone}`}
+                  href={card.href}
+                  key={card.label}
+                >
+                  <span>
+                    <span className={`info-card-icon ${card.iconTone}`} aria-hidden="true">
+                      <Icon size={22} strokeWidth={2.1} />
+                    </span>
+                    {card.label}
+                  </span>
+                  <strong>{card.value}</strong>
+                  <p>{card.description}</p>
+                </a>
+              );
+            })}
+          </section>
+
+          <section className="campaign-detail-kpi-grid" aria-label="캠페인 핵심 지표">
+            <CampaignKpiCard icon={Gift} iconTone="green" label="보상">
+              <strong>{formatPoint(campaign.rewardPoint)}</strong>
+              <span>참여자 1명 기준</span>
+            </CampaignKpiCard>
+            <CampaignKpiCard icon={TrendingUp} iconTone="blue" label="모집률">
+              <strong>{recruitProgress}%</strong>
+              <span>승인된 인원 · 남은 {remainingSlots}</span>
+            </CampaignKpiCard>
+            <CampaignKpiCard icon={UsersRound} iconTone="yellow" label="지원자">
+              <strong>{applicantCount}</strong>
               <span>
-                <span className={`info-card-icon ${card.iconTone}`} aria-hidden="true">
-                  <Icon size={22} strokeWidth={2.1} />
-                </span>
-                {card.label}
+                승인 {approvedSlots} · 대기 {pendingApplicantCount}
               </span>
-              <strong>{card.value}</strong>
-              <p>{card.description}</p>
-            </a>
-          );
-        })}
-      </section>
+            </CampaignKpiCard>
+            <CampaignKpiCard icon={CalendarDays} iconTone="blue" label="마감일">
+              <strong>{formatKoreanDate(campaign.deadline)}</strong>
+              <span>{formatDeadlineDday(campaign.deadline)}</span>
+              <span>모집 종료 기준</span>
+            </CampaignKpiCard>
+          </section>
+          <article className="panel campaign-pipeline-panel">
+            <div className="panel-heading">
+              <div>
+                <h2>운영 파이프라인</h2>
+                <p>모집부터 정산까지 현재 캠페인이 어느 단계에 있는지 확인합니다.</p>
+              </div>
+            </div>
+            <div className="campaign-pipeline">
+              {operationSteps.map((step, index) => (
+                <a href={step.href} key={step.label}>
+                  <span className="campaign-pipeline-index">{index + 1}</span>
+                  <div>
+                    <strong>{step.label}</strong>
+                    <p>{step.description}</p>
+                    <small>{step.meta}</small>
+                  </div>
+                  <em>{step.value}</em>
+                </a>
+              ))}
+            </div>
+          </article>
+        </div>
 
-      <section className="campaign-detail-kpi-grid" aria-label="캠페인 핵심 지표">
-        <CampaignKpiCard icon={Gift} iconTone="green" label="보상">
-          <strong>{formatPoint(campaign.rewardPoint)}</strong>
-          <span>참여자 1명 기준</span>
-        </CampaignKpiCard>
-        <CampaignKpiCard icon={TrendingUp} iconTone="blue" label="모집률">
-          <strong>{recruitProgress}%</strong>
-          <span>승인된 인원 · 남은 {remainingSlots}</span>
-        </CampaignKpiCard>
-        <CampaignKpiCard icon={UsersRound} iconTone="yellow" label="지원자">
-          <strong>{applicantCount}</strong>
-          <span>
-            승인 {approvedSlots} · 대기 {pendingApplicantCount}
-          </span>
-        </CampaignKpiCard>
-        <CampaignKpiCard icon={CalendarDays} iconTone="blue" label="마감일">
-          <strong>{formatKoreanDate(campaign.deadline)}</strong>
-          <span>{formatDeadlineDday(campaign.deadline)}</span>
-          <span>모집 종료 기준</span>
-        </CampaignKpiCard>
-      </section>
-
-      <section className="content-grid">
-        <article className="panel">
-          <div className="panel-heading">
+        <aside className="panel campaign-guide-preview-panel">
+          <CampaignGuideModal
+            brandName={campaign.brandName}
+            deadlineLabel={formatDeadlineDday(campaign.deadline)}
+            guidelineImageUrls={campaign.guidelineImageUrls ?? []}
+            guidelines={toGuidelinePreview(campaign.guidelines)}
+            rewardLabel={formatPoint(campaign.rewardPoint)}
+            thumbnailUrl={campaign.thumbnailUrl}
+            title={campaign.title}
+          />
+          <div className="panel-heading compact">
             <div>
-              <h2>운영 파이프라인</h2>
-              <p>모집부터 정산까지 현재 캠페인이 어느 단계에 있는지 확인합니다.</p>
+              <h2>미션 가이드</h2>
+              <p>블로거에게 전달되는 모바일 가이드 화면입니다.</p>
             </div>
           </div>
-          <div className="campaign-pipeline">
-            {operationSteps.map((step, index) => (
-              <a href={step.href} key={step.label}>
-                <span className="campaign-pipeline-index">{index + 1}</span>
-                <div>
-                  <strong>{step.label}</strong>
-                  <p>{step.description}</p>
-                  <small>{step.meta}</small>
-                </div>
-                <em>{step.value}</em>
-              </a>
-            ))}
-          </div>
-        </article>
-        <aside className="panel">
-          <div className="panel-heading compact">
-            <h2>미션 가이드</h2>
-          </div>
-          <div className="panel-body">
-            <p>{formatGuidelinesText(campaign.guidelines)}</p>
+          <div className="campaign-guide-phone" aria-label="블로거 모바일 가이드 미리보기">
+            <div className="campaign-guide-phone-bar">
+              <span>PACTO</span>
+              <strong>미션 가이드</strong>
+            </div>
+            <div className="phone-guideline-section">
+              <GuidelinePreview guidelines={toGuidelinePreview(campaign.guidelines)} />
+              {(campaign.guidelineImageUrls ?? []).map((imageUrl, index) => (
+                <img alt={`가이드 이미지 ${index + 1}`} key={imageUrl} src={imageUrl} />
+              ))}
+            </div>
           </div>
           <div className="compact-list campaign-meta-list">
             <div>
@@ -228,8 +256,8 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
               <strong>{approvedMissionCount}</strong>
             </div>
             <div>
-              <span>에스크로</span>
-              <strong>{campaignEscrows.length}</strong>
+              <span>정산완료</span>
+              <strong>{settledEscrowCount}</strong>
             </div>
           </div>
           <CampaignImageUploadForm
@@ -239,114 +267,8 @@ export default async function DashboardCampaignDetailPage({ params }: CampaignDe
           />
         </aside>
       </section>
-
-      <CampaignStateDock
-        campaignId={campaign.id}
-        redirectTo={`/dashboard/campaigns/${campaign.id}`}
-        selectedCount={approvedSlots}
-        status={campaign.status}
-        statusLabel={statusView.label}
-        statusTone={statusView.tone}
-      />
     </>
   );
-}
-
-function CampaignStateDock({
-  campaignId,
-  redirectTo,
-  selectedCount,
-  status,
-  statusLabel,
-  statusTone,
-}: {
-  campaignId: number;
-  redirectTo: string;
-  selectedCount: number;
-  status: CampaignStatus;
-  statusLabel: string;
-  statusTone: "amber" | "blue" | "green" | "grey" | "red";
-}) {
-  const hasTransitionAction = status === "open" || status === "closed";
-
-  return (
-    <aside className="campaign-state-dock" aria-label="캠페인 상태 관리">
-      <div className="campaign-state-dock-head">
-        <div>
-          <span>상태 관리</span>
-          <strong>다음 운영 단계로 전환</strong>
-        </div>
-        <span className={`status-badge ${statusTone}`}>{statusLabel}</span>
-      </div>
-
-      <CampaignStatusProcess status={status} />
-
-      <div className="campaign-state-dock-actions">
-        {hasTransitionAction ? (
-          <CampaignTransitionActions
-            campaignId={campaignId}
-            redirectTo={redirectTo}
-            selectedCount={selectedCount}
-            status={status}
-            variant="floating"
-          />
-        ) : (
-          <p>현재 상태에서 바로 변경할 수 있는 다음 액션이 없습니다.</p>
-        )}
-      </div>
-    </aside>
-  );
-}
-
-function CampaignStatusProcess({ status }: { status: CampaignStatus }) {
-  const activeIndex = getCampaignStatusProcessIndex(status);
-  const isCancelled = status === "cancelled";
-  const steps = isCancelled
-    ? [
-        { label: "모집", helper: "시작" },
-        { label: "취소", helper: "종료" },
-      ]
-    : [
-        { label: "모집", helper: "신청 접수" },
-        { label: "선정", helper: "지원자 확정" },
-        { label: "진행", helper: "미션 수행" },
-        { label: "완료", helper: "정산 종료" },
-      ];
-
-  return (
-    <ol className="campaign-state-process">
-      {steps.map((step, index) => {
-        const state =
-          index < activeIndex ? "completed" : index === activeIndex ? "active" : "upcoming";
-
-        return (
-          <li className={state} key={step.label}>
-            <span>{index + 1}</span>
-            <div>
-              <strong>{step.label}</strong>
-              <em>{step.helper}</em>
-            </div>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
-
-function getCampaignStatusProcessIndex(status: CampaignStatus) {
-  switch (status) {
-    case "draft":
-    case "open":
-      return 0;
-    case "closed":
-      return 1;
-    case "in_progress":
-      return 2;
-    case "completed":
-      return 3;
-    case "cancelled":
-      return 1;
-  }
 }
 
 function CampaignKpiCard({
@@ -373,40 +295,40 @@ function CampaignKpiCard({
   );
 }
 
-function formatGuidelinesText(guidelines: string) {
+function toGuidelinePreview(guidelines: string): TiptapGuidelines {
   const trimmedGuidelines = guidelines.trim();
-
-  if (trimmedGuidelines.length === 0) {
-    return "캠페인 가이드를 확인해 주세요.";
-  }
 
   try {
     const parsed = JSON.parse(trimmedGuidelines) as unknown;
 
     if (isTiptapGuidelines(parsed)) {
-      const text = extractTiptapText(parsed.content.content);
-      return text.length > 0 ? text : "캠페인 가이드를 확인해 주세요.";
+      return parsed;
     }
   } catch {
-    return trimmedGuidelines;
+    // Legacy plain-text guides are converted into preview paragraphs below.
   }
 
-  return trimmedGuidelines;
+  const lines =
+    trimmedGuidelines.length > 0
+      ? trimmedGuidelines.split(/\n+/)
+      : ["아직 작성된 가이드가 없어요."];
+  return {
+    content: {
+      content: lines.map((line) => ({
+        content: [{ text: line, type: "text" }],
+        type: "paragraph",
+      })),
+      type: "doc",
+    },
+    editor: "tiptap",
+    version: 1,
+  };
 }
 
-type TiptapTextNode = {
-  text?: string;
-  type?: string;
-};
-
-type TiptapNode = TiptapTextNode & {
-  attrs?: Record<string, unknown>;
-  content?: TiptapNode[];
-};
-
 function isTiptapGuidelines(value: unknown): value is {
-  content: { content: TiptapNode[] };
+  content: { content: TiptapNode[]; type: "doc" };
   editor: "tiptap";
+  version: 1;
 } {
   if (typeof value !== "object" || value === null || !("content" in value)) {
     return false;
@@ -420,29 +342,6 @@ function isTiptapGuidelines(value: unknown): value is {
     content !== null &&
     Array.isArray((content as { content?: unknown }).content)
   );
-}
-
-function extractTiptapText(nodes: TiptapNode[] = []): string {
-  return nodes
-    .map(extractTiptapNodeText)
-    .filter((text) => text.length > 0)
-    .join("\n");
-}
-
-function extractTiptapNodeText(node: TiptapNode): string {
-  if (node.type === "text" && typeof node.text === "string") {
-    return node.text;
-  }
-
-  if (node.type === "image") {
-    const alt = typeof node.attrs?.alt === "string" ? node.attrs.alt : "가이드 이미지";
-    return `[이미지] ${alt}`;
-  }
-
-  return (node.content ?? [])
-    .map(extractTiptapNodeText)
-    .filter((text) => text.length > 0)
-    .join(" ");
 }
 
 function getPercentage(value: number, total: number) {

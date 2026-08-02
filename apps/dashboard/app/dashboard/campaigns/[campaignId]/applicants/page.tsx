@@ -5,6 +5,7 @@ import { getApplicants, getCampaignDetail } from "@pacto/api";
 import { getDashboardSession } from "../../../../_lib/session";
 import { isOwnedCampaign } from "../../_lib/campaign-ownership";
 import { CampaignStepProgress } from "../_components/campaign-step-progress";
+import { CampaignStatusManager } from "../_components/campaign-status-manager";
 import { ApplicantList } from "./_components/applicant-list";
 
 type ApplicantsPageProps = {
@@ -25,14 +26,24 @@ export default async function ApplicantsPage({ params }: ApplicantsPageProps) {
   }
 
   const initialApplicants = await getApplicants(campaign.id, session.accessToken);
+  const selectedCount = initialApplicants.filter(
+    (applicant) => applicant.status === "ACCEPTED",
+  ).length;
 
   return (
     <>
       <header className="campaign-page-header">
-        <div className="topbar">
+        <div className="topbar campaign-detail-hero">
           <div>
             <p className="eyebrow">{campaign.title}</p>
             <h1>지원자 관리</h1>
+          </div>
+          <div className="campaign-detail-hero-actions">
+            <CampaignStatusManager
+              campaignId={campaign.id}
+              selectedCount={selectedCount}
+              status={campaign.status}
+            />
           </div>
         </div>
         <CampaignStepProgress activeStep="applicants" campaignId={campaign.id} />

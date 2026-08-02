@@ -1,12 +1,7 @@
 import { redirect } from "next/navigation";
 import { Clock3, FileCheck2, Megaphone, UsersRound, WalletCards } from "lucide-react";
 
-import {
-  ApiError,
-  getAdvertiserDashboard,
-  getCampaigns,
-  type AdvertiserDashboardSummary,
-} from "@pacto/api";
+import { ApiError, getAdvertiserDashboard, type AdvertiserDashboardSummary } from "@pacto/api";
 import type { CampaignApplicant, PointHistory } from "@pacto/types";
 import {
   formatKoreanDate,
@@ -17,7 +12,7 @@ import {
 
 import { getDashboardSession } from "../_lib/session";
 import { DashboardCampaignPanel } from "./_components/dashboard-campaign-panel";
-import { filterOwnedCampaigns } from "./_lib/owned-campaigns";
+import { getOwnedDashboardCampaigns } from "./_lib/owned-campaigns";
 
 type DonutItem = {
   amount?: number;
@@ -45,12 +40,7 @@ export default async function DashboardHomePage() {
 
     throw error;
   });
-  const campaigns = await filterOwnedCampaigns(
-    await getCampaigns({ page: 0, size: 100, sort: "campaignId,desc" }, session.accessToken).catch(
-      () => [],
-    ),
-    session,
-  );
+  const campaigns = await getOwnedDashboardCampaigns(session).catch(() => []);
 
   const viewModel = createDashboardViewModel(dashboard);
   const acceptedBloggers = getAcceptedBloggerPreviews(dashboard.recentApplications);

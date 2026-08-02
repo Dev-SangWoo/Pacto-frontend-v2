@@ -1,4 +1,4 @@
-type CampaignStep = "overview" | "applicants" | "missions" | "settlements";
+type CampaignStep = "overview" | "applicants" | "missions";
 
 type CampaignStepProgressProps = {
   activeStep: CampaignStep;
@@ -25,15 +25,9 @@ const steps: Array<{
   },
   {
     id: "missions",
-    label: "미션 검수",
-    helper: "URL 확인",
+    label: "미션 검수 · 정산",
+    helper: "검수 · 지급 처리",
     href: (campaignId) => `/dashboard/campaigns/${campaignId}/missions`,
-  },
-  {
-    id: "settlements",
-    label: "정산",
-    helper: "지급 처리",
-    href: (campaignId) => `/dashboard/campaigns/${campaignId}/settlements`,
   },
 ];
 

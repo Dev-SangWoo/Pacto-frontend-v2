@@ -36,7 +36,10 @@ export async function setDashboardSession(session: DashboardSession) {
   };
 
   if (session.accessToken != null) {
-    cookieStore.set(ACCESS_TOKEN_COOKIE, session.accessToken, options);
+    cookieStore.set(ACCESS_TOKEN_COOKIE, session.accessToken, {
+      ...options,
+      maxAge: 60 * 60 * 24 * 14,
+    });
   }
 
   if (session.refreshToken != null) {

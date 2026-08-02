@@ -5,6 +5,7 @@ import { getCampaignDetail, getCampaignMissions } from "@pacto/api";
 import { getDashboardSession } from "../../../../_lib/session";
 import { isOwnedCampaign } from "../../_lib/campaign-ownership";
 import { CampaignStepProgress } from "../_components/campaign-step-progress";
+import { CampaignStatusManager } from "../_components/campaign-status-manager";
 import { MissionReviewList } from "./_components/mission-review-list";
 
 type MissionReviewPageProps = {
@@ -27,10 +28,17 @@ export default async function MissionReviewPage({ params }: MissionReviewPagePro
   return (
     <>
       <header className="campaign-page-header">
-        <div className="topbar">
+        <div className="topbar campaign-detail-hero">
           <div>
             <p className="eyebrow">{campaign.brandName}</p>
             <h1>미션 검수</h1>
+          </div>
+          <div className="campaign-detail-hero-actions">
+            <CampaignStatusManager
+              campaignId={campaign.id}
+              selectedCount={campaign.approvedCount}
+              status={campaign.status}
+            />
           </div>
         </div>
         <CampaignStepProgress activeStep="missions" campaignId={campaign.id} />

@@ -96,47 +96,51 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
   };
 
   return (
-    <section className="panel">
-      <div className="panel-heading">
-        <div>
-          <h2>지원자 심사</h2>
-          <p>왼쪽에서 지원자를 선택하고 오른쪽 패널에서 승인 여부를 결정합니다.</p>
+    <>
+      <section className="panel applicant-review-summary-panel">
+        <div className="panel-heading">
+          <div>
+            <h2>지원자 심사</h2>
+            <p>왼쪽에서 지원자를 선택하고 오른쪽 패널에서 승인 여부를 결정합니다.</p>
+          </div>
+          <div className="panel-actions">
+            <button
+              className="primary-button"
+              disabled={
+                isApprovingAll ||
+                processingApplicantId != null ||
+                applicants.every((applicant) => applicant.status !== "PENDING")
+              }
+              onClick={handleApproveAll}
+              type="button"
+            >
+              {isApprovingAll
+                ? "\uc2b9\uc778 \ucc98\ub9ac \uc911..."
+                : "\uc804\uccb4 \uc2b9\uc778 \ud6c4 \ub2e4\uc74c \ub2e8\uacc4"}
+            </button>
+          </div>
         </div>
-        <div className="panel-actions">
-          <span>{applicants.length}</span>
-          <button
-            className="primary-button"
-            disabled={
-              isApprovingAll ||
-              processingApplicantId != null ||
-              applicants.every((applicant) => applicant.status !== "PENDING")
-            }
-            onClick={handleApproveAll}
-            type="button"
-          >
-            {isApprovingAll
-              ? "\uc2b9\uc778 \ucc98\ub9ac \uc911..."
-              : "\uc804\uccb4 \uc2b9\uc778 \ud6c4 \ub2e4\uc74c \ub2e8\uacc4"}
-          </button>
+        <div className="applicant-review-summary" aria-label="지원자 상태 요약">
+          <div>
+            <span>승인 대기</span>
+            <strong>{pendingCount}</strong>
+          </div>
+          <div>
+            <span>승인 완료</span>
+            <strong>{acceptedCount}</strong>
+          </div>
+          <div>
+            <span>반려</span>
+            <strong>{rejectedCount}</strong>
+          </div>
         </div>
-      </div>
-      <div className="applicant-review-summary" aria-label="지원자 상태 요약">
-        <div>
-          <span>승인 대기</span>
-          <strong>{pendingCount}</strong>
-        </div>
-        <div>
-          <span>승인 완료</span>
-          <strong>{acceptedCount}</strong>
-        </div>
-        <div>
-          <span>반려</span>
-          <strong>{rejectedCount}</strong>
-        </div>
-      </div>
+      </section>
 
       <div className="applicant-review-shell">
-        <div className="applicant-list-panel" aria-label="지원자 목록">
+        <section className="panel applicant-list-panel" aria-label="지원자 목록">
+          <header className="applicant-list-panel-heading">
+            <h2>지원자 목록</h2>
+          </header>
           {applicants.length > 0 ? (
             applicants.map((applicant) => (
               <button
@@ -165,9 +169,12 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
               <p>신청자가 생기면 이곳에서 심사할 수 있습니다.</p>
             </div>
           )}
-        </div>
+        </section>
 
-        <aside className="applicant-detail-panel" aria-label="선택한 지원자 상세">
+        <aside className="panel applicant-detail-panel" aria-label="선택한 지원자 상세">
+          <header className="applicant-detail-panel-heading">
+            <h2>선택한 지원자 프로필</h2>
+          </header>
           {selectedApplicant != null ? (
             <>
               <div className="applicant-detail-header">
@@ -181,69 +188,78 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
                 <ApplicationStatusBadge status={selectedApplicant.status} />
               </div>
 
-              <div className="applicant-detail-grid">
-                <div>
-                  <span>지원자 ID</span>
-                  <strong>#{selectedApplicant.applicationId}</strong>
-                </div>
-                <div>
-                  <span>블로거 ID</span>
-                  <strong>#{selectedApplicant.bloggerId}</strong>
-                </div>
-                <div>
-                  <span>신청일</span>
-                  <strong>{formatKoreanDate(selectedApplicant.appliedAt)}</strong>
-                </div>
-                <div>
-                  <span>상태</span>
-                  <strong>{getApplicationStatusView(selectedApplicant.status).label}</strong>
-                </div>
-              </div>
-
-              <div className="applicant-blog-card">
-                <span>블로그 URL</span>
-                {selectedApplicant.blogUrl != null ? (
-                  <a href={selectedApplicant.blogUrl} rel="noreferrer" target="_blank">
-                    {selectedApplicant.blogUrl}
-                    <ExternalLink size={15} strokeWidth={2.2} />
-                  </a>
-                ) : (
-                  <strong>백엔드 응답에 블로그 URL이 아직 포함되지 않았어요</strong>
-                )}
-              </div>
-
-              <div className="applicant-decision-panel">
-                <div>
-                  <h3>심사 결정</h3>
-                  <p>승인하면 미션 검수 단계로 넘어가고, 반려하면 신청이 종료됩니다.</p>
-                </div>
-                {selectedApplicant.status === "PENDING" ? (
-                  <div className="applicant-decision-actions">
-                    <button
-                      className="primary-button"
-                      disabled={processingApplicantId != null || isApprovingAll}
-                      onClick={() => handleApprove(selectedApplicant.applicationId)}
-                      type="button"
-                    >
-                      {processingApplicantId === selectedApplicant.applicationId
-                        ? "처리 중..."
-                        : "승인"}
-                    </button>
-                    <button
-                      className="small-button muted danger"
-                      disabled={processingApplicantId != null || isApprovingAll}
-                      onClick={() => handleReject(selectedApplicant.applicationId)}
-                      type="button"
-                    >
-                      {processingApplicantId === selectedApplicant.applicationId
-                        ? "처리 중..."
-                        : "반려"}
-                    </button>
+              <section className="applicant-detail-section">
+                <p className="applicant-detail-section-label">기본 정보</p>
+                <div className="applicant-detail-grid">
+                  <div>
+                    <span>지원자 ID</span>
+                    <strong>#{selectedApplicant.applicationId}</strong>
                   </div>
-                ) : (
-                  <span className="applicant-complete-label">처리 완료</span>
-                )}
-              </div>
+                  <div>
+                    <span>블로거 ID</span>
+                    <strong>#{selectedApplicant.bloggerId}</strong>
+                  </div>
+                  <div>
+                    <span>신청일</span>
+                    <strong>{formatKoreanDate(selectedApplicant.appliedAt)}</strong>
+                  </div>
+                  <div>
+                    <span>상태</span>
+                    <strong>{getApplicationStatusView(selectedApplicant.status).label}</strong>
+                  </div>
+                </div>
+              </section>
+
+              <section className="applicant-detail-section">
+                <p className="applicant-detail-section-label">블로그 정보</p>
+                <div className="applicant-blog-card">
+                  <span>블로그 URL</span>
+                  {selectedApplicant.blogUrl != null ? (
+                    <a href={selectedApplicant.blogUrl} rel="noreferrer" target="_blank">
+                      {selectedApplicant.blogUrl}
+                      <ExternalLink size={15} strokeWidth={2.2} />
+                    </a>
+                  ) : (
+                    <strong>백엔드 응답에 블로그 URL이 아직 포함되지 않았어요</strong>
+                  )}
+                </div>
+              </section>
+
+              <section className="applicant-detail-section applicant-decision-section">
+                <p className="applicant-detail-section-label">심사 결정</p>
+                <div className="applicant-decision-panel">
+                  <div>
+                    <h3>심사 결정</h3>
+                    <p>승인하면 미션 검수 단계로 넘어가고, 반려하면 신청이 종료됩니다.</p>
+                  </div>
+                  {selectedApplicant.status === "PENDING" ? (
+                    <div className="applicant-decision-actions">
+                      <button
+                        className="primary-button"
+                        disabled={processingApplicantId != null || isApprovingAll}
+                        onClick={() => handleApprove(selectedApplicant.applicationId)}
+                        type="button"
+                      >
+                        {processingApplicantId === selectedApplicant.applicationId
+                          ? "처리 중..."
+                          : "승인"}
+                      </button>
+                      <button
+                        className="small-button muted danger"
+                        disabled={processingApplicantId != null || isApprovingAll}
+                        onClick={() => handleReject(selectedApplicant.applicationId)}
+                        type="button"
+                      >
+                        {processingApplicantId === selectedApplicant.applicationId
+                          ? "처리 중..."
+                          : "반려"}
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="applicant-complete-label">처리 완료</span>
+                  )}
+                </div>
+              </section>
             </>
           ) : (
             <div className="applicant-empty-state">
@@ -253,7 +269,7 @@ export function ApplicantList({ campaignId, initialApplicants }: ApplicantListPr
           )}
         </aside>
       </div>
-    </section>
+    </>
   );
 }
 
