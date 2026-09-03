@@ -78,7 +78,7 @@ Dashboard와 Blogger App을 완전히 같은 UI로 만들면 둘 중 하나가 �
 - 포인트 내역의 캠페인명
 - 대시보드 홈 전용 recentCampaigns
 
-이 값들은 `docs/backend-api-contract-requests.md`에 백엔드 요청 사항으로 계속 정리한다.
+이 값이 API 계약에 추가될 때는 `packages/api`의 adapter와 `packages/types`의 도메인 타입을 함께 갱신한다.
 
 ## 앞으로의 디자인 판단 기준
 
