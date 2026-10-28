@@ -20,10 +20,11 @@
 
 ## 성능
 
-| 문서                                                                                           | 내용                                     |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| [Lighthouse Baseline](./performance/lighthouse-baseline-2026-07-13.md)                         | 동일 조건에서 수집한 앱별 모바일 기준선  |
-| [Blogger Performance Improvement](./performance/blogger-performance-improvement-2026-07-13.md) | 이미지, 폰트, 중복 요청 개선과 검증 항목 |
+| 문서                                                                                           | 내용                                         |
+| ---------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| [Lighthouse Baseline](./performance/lighthouse-baseline-2026-07-13.md)                         | 동일 조건에서 수집한 앱별 모바일 기준선      |
+| [Blogger Performance Improvement](./performance/blogger-performance-improvement-2026-07-13.md) | 이미지, 폰트, 중복 요청 개선과 검증 항목     |
+| [2026-10-24 Performance Remeasurement](./performance/perf-remeasure-2026-10-24.md)             | 로컬 재측정 수치, 해석 범위, Lighthouse 캡처 |
 
 ## 유지 원칙
 
