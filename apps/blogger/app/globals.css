@@ -1,5 +1,3 @@
-@import url("https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css");
-
 :root {
   color-scheme: light;
   --color-primary: #1677f2;
@@ -46,7 +44,13 @@
   --shell-width: 430px;
   --bottom-nav-height: 64px;
   --bottom-nav-gap: max(14px, env(safe-area-inset-bottom));
-  --brand-font: "SUIT Variable", SUIT, sans-serif;
+  --system-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  /* SUIT(610KB)는 첫 화면 이후에 적용한다. suit-font-ready는 SuitFontLoader가 LCP 이후 붙인다. */
+  --brand-font: var(--system-font);
+}
+
+.suit-font-ready {
+  --brand-font: var(--font-suit), var(--system-font);
 }
 
 * {
@@ -64,14 +68,7 @@ body {
     radial-gradient(circle at 50% -10%, rgba(40, 184, 255, 0.18), transparent 32%),
     linear-gradient(180deg, #f7fbff 0%, var(--canvas) 42%, #e9f0f7 100%);
   color: var(--ink);
-  font-family:
-    "SUIT Variable",
-    SUIT,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    system-ui,
-    sans-serif;
+  font-family: var(--brand-font);
 }
 
 a {

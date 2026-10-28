@@ -1,7 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
 
 import { PwaInstallProvider } from "./_components/pwa-install-provider";
+import { SuitFontLoader } from "./_components/suit-font-loader";
 import "./globals.css";
+
+const suit = localFont({
+  src: "./fonts/SUIT-Variable.woff2",
+  display: "swap",
+  preload: false,
+  variable: "--font-suit",
+  weight: "100 900",
+});
 
 export const metadata: Metadata = {
   applicationName: "Pacto Blogger",
@@ -43,8 +53,9 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="ko">
+    <html className={suit.variable} lang="ko">
       <body>
+        <SuitFontLoader />
         <PwaInstallProvider>{children}</PwaInstallProvider>
       </body>
     </html>
